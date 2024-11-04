@@ -1,7 +1,10 @@
 
 const mongoose = require('mongoose');
 
-const dbURI = 'mongodb://localhost:27017/Subtlety'; 
+const dbURI = process.env; 
+
+console.log(dbURI);
+
 
 const connectDB = async () => {
     try {

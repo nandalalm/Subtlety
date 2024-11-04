@@ -7,7 +7,8 @@ const cors = require("cors");
 const userRoute = require("./routes/user");
 const adminRoute = require("./routes/admin");
 const authRoute = require("./routes/auth");
-const db = require("./config/db");
+const mongoose = require('mongoose');
+
 
 require("dotenv").config();
 require("./passport-setup");
@@ -47,7 +48,6 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-db();
 
 app.get("/", (req, res) => {
   res.redirect("/user/home");
@@ -66,6 +66,30 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).render("500", { message: "Something went wrong!" });
 });
+
+
+
+const dbURI = process.env.MONGO_URL;
+console.log(dbURI);
+
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect(dbURI, {
+          
+           
+        });
+        
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+        process.exit(1);
+    }
+};
+
+connectDB().then(()=>{
+  console.log("Mongo DB CONNECED SUCCESSFLY");
+  
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
