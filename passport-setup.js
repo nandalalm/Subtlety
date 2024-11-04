@@ -5,8 +5,8 @@ passport.use(
   new GoogleStrategy(
     {
       clientID:
-        "669675691251-65vog03j0sf3bj3f1d9jm6ios9p315ph.apps.googleusercontent.com",
-      clientSecret: "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",
+        process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
       scope: ["profile", "email"],
       prompt: "select_account", // Ensures the account selection screen appears
