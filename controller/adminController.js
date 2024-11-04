@@ -592,6 +592,7 @@ async function getOrders(req, res) {
       .populate("userId") // Populate userId to get user details
       .populate("items.productId")
       .sort({ createdAt: -1 }); // Sort by creation date, most recent first
+      
 
     // Split orders into two groups based on return request status
     const pendingOrders = orders.filter((order) =>
@@ -681,16 +682,6 @@ async function changeProductStatus(req, res) {
     const hasReturned = order.items.some((item) => item.status === "Returned");
     const hasPending = order.items.some((item) => item.status === "Pending");
     const hasShipped = order.items.some((item) => item.status === "Shipped");
-
-    console.log(
-      allDelivered,
-      allCancelled,
-      allReturned,
-      hasCancelled,
-      hasReturned,
-      hasPending,
-      hasShipped
-    );
 
     if (allDelivered) {
       order.orderStatus = "Completed"; // Set order status to completed
@@ -1282,6 +1273,31 @@ async function downloadSalesReportPdf(req, res) {
       $gte: new Date(today.setHours(0, 0, 0, 0)),
       $lte: new Date(today.setHours(23, 59, 59, 999)),
     };
+  } else if (reportType === "weekly") {
+    const startOfWeek = new Date();
+    const dayOfWeek = startOfWeek.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Set Monday as start
+    startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
+    startOfWeek.setHours(0, 0, 0, 0); // Start of the week
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 7); // End of the week
+    filter.orderDate = {
+      $gte: startOfWeek,
+      $lt: endOfWeek,
+    };
+  } else if (reportType === "monthly") {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1); // Set to first day of the month
+    startOfMonth.setHours(0, 0, 0, 0); // Start of the day
+
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Next month
+    endOfMonth.setHours(0, 0, 0, 0); // Start of next month
+    filter.orderDate = {
+      $gte: startOfMonth,
+      $lt: endOfMonth,
+    };
   }
   // Add other filtering logic for weekly and monthly as needed
 
@@ -1350,6 +1366,31 @@ async function downloadSalesReportExcel(req, res) {
     filter.orderDate = {
       $gte: new Date(today.setHours(0, 0, 0, 0)),
       $lte: new Date(today.setHours(23, 59, 59, 999)),
+    };
+  } else if (reportType === "weekly") {
+    const startOfWeek = new Date();
+    const dayOfWeek = startOfWeek.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Set Monday as start
+    startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
+    startOfWeek.setHours(0, 0, 0, 0); // Start of the week
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 7); // End of the week
+    filter.orderDate = {
+      $gte: startOfWeek,
+      $lt: endOfWeek,
+    };
+  } else if (reportType === "monthly") {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1); // Set to first day of the month
+    startOfMonth.setHours(0, 0, 0, 0); // Start of the day
+
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Next month
+    endOfMonth.setHours(0, 0, 0, 0); // Start of next month
+    filter.orderDate = {
+      $gte: startOfMonth,
+      $lt: endOfMonth,
     };
   }
   // Add other filtering logic for weekly and monthly as needed

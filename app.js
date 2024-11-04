@@ -67,11 +67,7 @@ app.use((err, req, res, next) => {
   res.status(500).render("500", { message: "Something went wrong!" });
 });
 
-
-
 const dbURI = process.env.MONGO_URL;
-console.log(dbURI);
-
 
 const connectDB = async () => {
     try {
@@ -87,8 +83,7 @@ const connectDB = async () => {
 };
 
 connectDB().then(()=>{
-  console.log("Mongo DB CONNECED SUCCESSFLY");
-  
+  console.log("Mongo DB CONNECED SUCCESSFULLY");
 })
 
 const PORT = process.env.PORT || 3000;

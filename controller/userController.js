@@ -1413,15 +1413,6 @@ async function downloadInvoice(req, res) {
         totalPaid += totalPrice; // Accumulate total price for delivered items
       }
 
-      // Debugging output to console
-      console.log(
-        `Item: ${item.productId.name}, Status: ${
-          item.status
-        }, Total Price: ${totalPrice.toFixed(
-          2
-        )}, Total Paid: ${totalPaid.toFixed(2)}`
-      );
-
       y += 20; // Adjusted y position for the next row
     });
 

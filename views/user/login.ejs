@@ -37,7 +37,6 @@
       /* Green border on focus */
     }
 
-
     /* Input focus styles */
     .form-control:focus {
       border-color: #80bdff;
@@ -51,6 +50,22 @@
 
     .form-control.is-invalid {
       border-color: #dc3545;
+    }
+
+    /* Password validation styles */
+    .password-validation {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .password-validation span {
+      color: red;
+    }
+
+    .password-validation .fa-eye {
+      cursor: pointer;
     }
   </style>
 </head>
@@ -80,7 +95,6 @@
       </div>
       <button type="submit" class="btn btn-primary btn-block rounded-pill hello mt-4">Login</button>
     </form>
-
     <p class="text-center">or</p>
     <a href='/auth/google' class="btn btn-primary btn-block rounded-pill hai">
       <img src="/images/google_icon.svg" alt="Google Icon" /> Login with Google
@@ -93,8 +107,11 @@
     </div>
 
     <div id="forgotPasswordForm" style="display: none;">
-      <input type="email" id="resetEmail" placeholder="Enter registered email" required style="width: 220px;margin-left: 5px;"> <!-- Increased width slightly -->
-      <button id="sendOtpButton" class="btn btn-sm btn-primary">Send OTP</button>
+      <div style="display: flex; align-items: center;">
+        <input type="email" id="resetEmail" placeholder="Enter registered email" required style="width: 220px; margin-right: 5px;" oninput="validateEmail(this.value)">
+        <button id="sendOtpButton" class="btn btn-sm btn-primary" disabled>Send OTP</button>
+      </div>
+      <div id="emailValidation" style="display: none; color: red;"><small>Please enter a valid email address.</small></div>
       <div id="loader" style="display: none;">
         <div class="spinner-border text-primary" role="status">
           <span class="sr-only">Loading...</span>
@@ -121,10 +138,22 @@
 
     <div id="changePasswordSection" style="display: none;">
       <label for="newPassword"><small>Enter new password</small></label>
-      <input type="password" id="newPassword" placeholder="New Password" required style="width: 310px;margin-left: 5px;">
+      <div class="password-validation">
+        <input type="password" id="newPassword" placeholder="New Password" required style="width: 310px; margin-left: 5px;" oninput="validateNewPassword(this.value)">
+        <i class="fa-regular fa-eye" id="toggleNewPassword" style="cursor: pointer;"></i>
+      </div>
+      <span id="newPasswordValidation" style="display: none; color: red;">
+        <small>At least 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character, no spaces</small>
+      </span>
+
       <label for="confirmNewPassword"><small>Confirm new password</small></label>
-      <input type="password" id="confirmNewPassword" placeholder="Confirm Password" required style="width: 310px;margin-left: 5px;">
-      <button id="changePasswordButton" class="btn btn-primary mt-3" style="width: 310px;margin-left: 5px;">Change Password</button>
+      <div class="password-validation">
+        <input type="password" id="confirmNewPassword" placeholder="Confirm Password" required style="width: 310px; margin-left: 5px;" oninput="validateConfirmPassword(this.value)">
+        <i class="fa-regular fa-eye" id="toggleConfirmNewPassword" style="cursor: pointer;"></i>
+      </div>
+      <span id="confirmNewPasswordValidation" style="display: none; color: red; font-size:smaller;"></span>
+
+      <button id="changePasswordButton" class="btn btn-primary mt-3" style="width: 310px; margin-left: 5px;">Change Password</button>
     </div>
 
     <script src="/js/login.js"></script>
@@ -171,6 +200,9 @@
           document.getElementById('sendOtpButton').style.display = 'none'; // Hide the send OTP button
         } else {
           const errorText = await response.text();
+          // Show the button again
+          document.getElementById('sendOtpButton').style.display = 'block'; // Show the send OTP button again
+          document.getElementById('loader').style.display = 'none'; // Hide the loader
           Swal.fire({
             icon: 'error',
             title: 'Error!',
@@ -179,9 +211,8 @@
         }
 
         // Hide loader and change button text back
-        document.getElementById('sendOtpButton').style.display = 'none';
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('loaderText').innerText = 'Sending OTP...';
+        document.getElementById('loader').style.display = 'none'; // Hide loader
+        document.getElementById('loaderText').innerText = 'Sending OTP...'; // Reset loader text
       };
 
       function startOtpTimer() {
@@ -275,7 +306,11 @@
 
         // Check if passwords match
         if (newPassword !== confirmNewPassword) {
-          alert('New passwords do not match');
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'New passwords do not match',
+          });
           return;
         }
 
@@ -348,6 +383,62 @@
         document.getElementById('loader').style.display = 'none';
         document.getElementById('loaderText').innerText = 'Resending OTP...';
       });
+
+      function validateEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (re.test(String(email).toLowerCase())) {
+          document.getElementById('resetEmail').style.borderColor = 'green';
+          document.getElementById('emailValidation').style.display = 'none';
+          document.getElementById('sendOtpButton').disabled = false; // Enable the send OTP button
+        } else {
+          document.getElementById('resetEmail').style.borderColor = 'red';
+          document.getElementById('emailValidation').style.display = 'block';
+          document.getElementById('sendOtpButton').disabled = true; // Disable the send OTP button
+        }
+      }
+
+      function validateNewPassword(password) {
+        const re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{6,}$/;
+        if (re.test(password)) {
+          document.getElementById('newPassword').style.borderColor = 'green';
+          document.getElementById('newPasswordValidation').style.display = 'none';
+        } else {
+          document.getElementById('newPassword').style.borderColor = 'red';
+          document.getElementById('newPasswordValidation').style.display = 'block';
+        }
+      }
+
+      function validateConfirmPassword(confirmPassword) {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPasswordValidation = document.getElementById('confirmNewPasswordValidation');
+
+        if (newPassword === confirmPassword) {
+          document.getElementById('confirmNewPassword').style.borderColor = 'green';
+          confirmPasswordValidation.innerText = ''; // Clear the error message
+          confirmPasswordValidation.style.display = 'none'; // Hide the error message
+        } else {
+          document.getElementById('confirmNewPassword').style.borderColor = 'red';
+          confirmPasswordValidation.innerText = 'Passwords do not match.'; // Set the error message
+          confirmPasswordValidation.style.display = 'block'; // Show the error message
+        }
+      }
+
+      // Toggle password visibility
+      document.getElementById('toggleNewPassword').onclick = function() {
+        const newPasswordInput = document.getElementById('newPassword');
+        const type = newPasswordInput.type === 'password' ? 'text' : 'password';
+        newPasswordInput.type = type;
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+      };
+
+      document.getElementById('toggleConfirmNewPassword').onclick = function() {
+        const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+        const type = confirmNewPasswordInput.type === 'password' ? 'text' : 'password';
+        confirmNewPasswordInput.type = type;
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+      };
     </script>
 </body>
 

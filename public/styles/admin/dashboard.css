@@ -163,6 +163,7 @@
     margin: 0 10px;
     font-weight: lighter !important;
 }
-#sidebar > ul > li:nth-child(10) > form > button{
+#sidebar > ul > li:nth-child(9) > form > button{
+    padding-left: 10px;
     color: red !important;
 }

@@ -138,7 +138,7 @@
 
           <div class="line"></div>
           <div class="">
-            <button style="background-color: #9135ED; color: white;" class="btn btn buy-buy <%= product.stock === 0 ? 'disabled' : '' %>"><i class="fa-solid fa-bolt" style="color: #ffffff;"></i> Buy Now</button>
+            <button style="background-color: #9135ED; color: white;" class="btn btn buy-buy <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fa-solid fa-bolt" style="color: #ffffff;"></i> Buy Now</button>
             <button style="margin-left: 2px;" class="btn btn-dark cart-cart btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart "></i> Add To Cart</button>
           </div>
         </div>
@@ -449,6 +449,63 @@
           }
         });
       });
+
+      const buyNowButton = document.querySelector('.btn.buy-buy');
+  if (buyNowButton) {
+    buyNowButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const productId = buyNowButton.getAttribute('data-product-id');
+      const userId = '<%= user ? user._id : null %>'; // Ensure this captures the user ID
+
+      if (!userId) {
+        Toastify({
+          text: "Please log in to proceed with the purchase",
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+        }).showToast();
+        return; // Exit if user ID is not available
+      }
+
+      try {
+        const response = await fetch('/user/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            user: userId,
+            productId,
+            quantity: 1
+          })
+        });
+
+        const result = await response.json();
+        Toastify({
+          text: result.message,
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          backgroundColor: response.ok ? "linear-gradient(to right, #00b09b, #96c93d)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
+        }).showToast();
+
+        if (response.ok) {
+          // Redirect to cart page if the product was added successfully
+          window.location.href = '/user/cart';
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        Toastify({
+          text: "Error adding item to cart",
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+        }).showToast();
+      }
+    });
+  }
     });
 
     document.querySelectorAll('.btn-add-to-wishlist').forEach(button => {
