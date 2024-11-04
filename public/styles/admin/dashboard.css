@@ -1,0 +1,168 @@
+/* Sidebar Styles */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    background-color: #ffffff; /* White background */
+    color: #212529; /* Dark text color */
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: width 0.3s; /* Transition only width */
+    border-right: 1px solid #dee2e6; /* Light border for separation */
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+.sidebar.active {
+    width: 0; /* Hide the sidebar */
+}
+
+.sidebar .sidebar-header {
+    background: #ffffff; /* White background */
+}
+
+.sidebar .list-unstyled {
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .list-unstyled li {
+    padding: 10px 15px;
+}
+
+.sidebar .list-unstyled li a {
+    color: #212529; /* Dark text color */
+    display: block;
+    text-decoration: none;
+    padding-left: 10px;
+}
+
+.sidebar .list-unstyled li a:hover {
+    background: #e9ecef; /* Light background on hover */
+    color: #007bff; /* Blue color on hover */
+}
+
+.sidebar .list-unstyled li a.active {
+    background: #007bff; /* Blue background for active item */
+    color: #ffffff; /* White text for active item */
+}
+/* Page Content Styles */
+#page-content-wrapper {
+    width: calc(100% - 250px); /* Adjust width based on sidebar width */
+    transition: margin-left 0.3s, width 0.3s; /* Transition both margin-left and width */
+    margin-left: 250px; /* Initial margin-left for sidebar */
+}
+
+#page-content-wrapper.toggled {
+    margin-left: 0; /* Remove margin-left when sidebar is toggled */
+    width: 100%; /* Full width when sidebar is toggled */
+}
+
+/* Navbar Styles */
+.navbar {
+    padding: 10px 19px;
+    background-color: #ffffff; /* White background for navbar */
+    border-radius: 10px;
+}
+
+.navbar .btn-primary {
+    background-color: #007bff; /* Blue button color */
+    border-color: #007bff;
+}
+
+.navbar .btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    border-color: #004085;
+}
+
+.profile-photo {
+    width: 40px; /* Adjust size as needed */
+    height: 40px; /* Ensure it's a square */
+    border-radius: 50%; /* Circular profile photo */
+    object-fit: cover; /* Ensure the photo covers the space without distortion */
+}
+
+/* Card Styles */
+.card {
+    border: none;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Custom Background Colors for Light Mode */
+.bg-primary {
+    background-color: #007bff !important; /* Blue background */
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.text-white {
+    color: #ffffff !important;
+}
+
+.text-dark {
+    color: #212529 !important;
+}
+
+/* Form Inline Styles */
+.form-inline {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.navbar-text {
+    color: #212529; /* Dark text color */
+    font-weight: bold;
+}
+.sidebar-item{
+    padding-right: 15px !important;
+}
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination button {
+    border: none;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination span {
+    font-size: 1.1rem;
+    padding-top: 10px;
+    margin: 0 10px;
+    font-weight: lighter !important;
+}
+#sidebar > ul > li:nth-child(10) > form > button{
+    color: red !important;
+}

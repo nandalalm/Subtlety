@@ -1,0 +1,144 @@
+.footer{
+  width: 100%;
+  margin: 0px;
+  display: flex;
+  justify-content: center;
+  background-color: black;
+}
+
+.first-div{
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 200px;
+  color: white;
+}
+
+.second-div{
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 200px;
+  color: white;
+}
+.brand-section{
+  width: 45%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.brand-section img{
+  display: inline-block;
+  width: 150px;
+}
+
+.company-social{
+  width: 50%;
+  display: flex;
+  flex-direction: row;
+  justify-content:center;
+}
+
+.logo a{
+  padding-right: 10px;
+}
+
+.logo i{
+  color: white;
+}
+
+.logo i:hover{
+  color:#9135ED;
+}
+
+.company{
+  width: 45%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.company ul{
+  margin: 0px;
+  padding: 0px;
+  list-style-type: none;
+  text-decoration: none;
+}
+
+.company a{
+  color: white;
+  text-decoration: none;
+}
+
+.help{
+  width: 50%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.help a{
+  color: white;
+  text-decoration: none;
+}
+
+.help ul{
+  margin: 0px;
+  padding: 0px;
+  list-style-type: none;
+  text-decoration: none;
+}
+
+.footer-last{
+  width: 100%;
+  padding: 5px;
+  background-color: rgb(185, 185, 185);
+}
+@media(max-width:757px){
+  .first-div{
+    height: 115px;
+  }
+  .second-div{
+    height: 115px;
+    margin-bottom: 15px;
+  }
+  .footer{
+    flex-direction: column;
+  }
+  .brand-section{
+    width: 50%;
+    justify-content: center;
+  }
+  .company-social{
+    width: 50%;
+    justify-content:center;
+  }
+  .company{
+    width: 50%;
+    justify-content: center;
+  }
+  .help{
+    width: 50%;
+    justify-content: center;
+  }
+  .footer-last p{
+    font-size: 10px;
+  }
+}
+
+@media(max-width:520px){
+  .brand-section img{
+    display: inline-block;
+    width: 130px;
+  }
+  .company a{
+    font-size: 13px;
+   }
+   .help a{
+     font-size: 13px;
+   }
+}

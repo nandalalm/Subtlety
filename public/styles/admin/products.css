@@ -1,0 +1,50 @@
+/* Products Page Styles */
+
+.list-group-item {
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 0.5rem;
+    background-color: #ffffff; /* White background */
+    color: #212529; /* Dark text color */
+    border: 1px solid #dee2e6; /* Light border */
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa; /* Light gray background on hover */
+}
+
+/* Product Image */
+.product-image {
+    width: 100px; /* Adjust size as needed */
+    height: 100px; /* Ensure it's a square */
+    object-fit: cover; /* Ensure the image covers the space without distortion */
+}
+
+/* Product Image Display Area */
+.product-image-display {
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #ffffff; /* White background */
+}
+
+.product-image-display h5 {
+    color: #212529; /* Dark text color */
+}
+
+.product-image-display img {
+    max-width: 100%;
+    height: auto;
+}
+.modal-lg {
+    max-width: 80%; /* Adjust as necessary */
+}
+.image-div{
+    display: flex;
+    flex-direction: row;
+    justify-content:space-between;
+    align-items: center;
+}
+.image-div-mini{
+    width: 22vw;
+}

@@ -1,0 +1,10 @@
+.product-image {
+  width: 100px; /* Adjust size as needed */
+  height: 100px; /* Ensure it's a square */
+  object-fit: cover; /* Ensure the image covers the space without distortion */
+}
+
+/* Modal styles */
+.modal-lg {
+  max-width: 80%; /* Adjust as necessary */
+}

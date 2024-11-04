@@ -1,0 +1,103 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #ffffff; /* White background for the body */
+    color: #000000; /* Black text color for readability */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensure body takes full viewport height */
+    margin: 0;
+}
+
+.login-container {
+    max-width: 360px;
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9; /* Light gray background for the container */
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Slightly darker shadow for contrast */
+    box-sizing: border-box; /* Include padding and border in element’s total width and height */
+}
+
+/* Hide default validation icons for valid inputs */
+.form-control:valid {
+    background: none; /* Ensure no default background image or icon */
+    padding-right: 0; /* Remove any default padding that might be used for icons */
+}
+
+/* Hide default validation icons for invalid inputs */
+.form-control:invalid {
+    background: none; /* Ensure no default background image or icon */
+    padding-right: 0; /* Remove any default padding that might be used for icons */
+}
+
+/* Remove any default icons or background images */
+.form-control:focus::-webkit-input-placeholder {
+    color: transparent; /* Ensure placeholder does not interfere */
+}
+
+/* Optional: For Firefox specific handling */
+.form-control:focus::-moz-placeholder {
+    color: transparent; /* Ensure placeholder does not interfere */
+}
+
+/* Optional: For Edge specific handling */
+.form-control:focus:-ms-input-placeholder {
+    color: transparent; /* Ensure placeholder does not interfere */
+}
+
+/* Custom styles for invalid feedback */
+.invalid-feedback {
+    display: none; /* Hide the error message by default */
+    color: #b71c1c; /* Red color for error messages */
+    font-size: 0.875em; /* Slightly smaller font size for feedback */
+}
+
+/* Show feedback for invalid inputs */
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block; /* Show feedback for invalid inputs */
+}
+
+/* Hide feedback for valid inputs */
+.form-control.is-valid ~ .invalid-feedback {
+    display: none; /* Hide feedback for valid inputs */
+}
+
+/* Custom styles for form controls */
+.form-control.is-invalid {
+    border-color: #b71c1c; /* Red border color for invalid inputs */
+}
+
+.form-control.is-valid {
+    border-color: #28a745; /* Green border color for valid inputs */
+}
+
+/* Ensure padding and background are handled for both valid and invalid states */
+.form-control {
+    color: #000000; /* Black text color */
+    background-color: #ffffff; /* White background for input fields */
+    border: 1px solid #cccccc; /* Light gray border color */
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition for changes */
+    padding-right: 40px; /* Adjust based on icon size if needed */
+}
+.password-wrapper {
+    position: relative;
+}
+
+/* Handle padding and positioning for password visibility toggle */
+.password-wrapper input[type="password"] {
+    padding-right: 10px; /* Adjust this value based on the size of the icon */
+}
+
+.password-wrapper i {
+    position: absolute;
+    right: 10px;
+    top: 56%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666666;
+}
+
+.password-wrapper i:hover {
+    color: #333333;
+}

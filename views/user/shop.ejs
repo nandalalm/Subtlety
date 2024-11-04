@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore Our Products - SUBTLETY</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/user/shop.css">
+  <link rel="stylesheet" href="/styles/user/home.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style>
+    .filter-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-icon {
+      margin-right: 5px;
+      color: #6c757d;
+    }
+
+    .filter-label {
+      font-weight: 500;
+      color: #495057;
+      margin-right: 10px;
+    }
+
+    select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ced4da;
+      background-color: white;
+      margin-right: 15px;
+    }
+
+    #showAllBtn {
+      background-color: #6c757d;
+      border: none;
+      padding: 9px 15px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      color: white;
+      transition: background-color 0.3s ease;
+      display: none;
+    }
+
+    #showAllBtn:hover {
+      background-color: #5a6268;
+    }
+
+    .out-of-stock {
+      opacity: 0.6;
+    }
+
+    .out-of-stock-label {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: red;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .offer-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #28a745;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .original-price {
+      text-decoration: line-through;
+      color: #6c757d;
+      font-size: 0.9em;
+    }
+
+    .discounted-price {
+      color: #28a745;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <%- include('partials/navBar') %>
+
+  <section style="height: 380px !important;" class="hero-section text-center py-5" style="background-color: black;">
+    <div class="container">
+      <h1 style="color: #9135ED;" class="pt-5">Explore Our Products</h1>
+      <div class="search-bar mt-4">
+        <input type="text" placeholder="Search for products..." value="<%= search || '' %>" id="search" name="search" />
+        <button type="button" id="search-btn">Search</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="filter-container mt-3">
+      <div class="d-flex align-items-center flex-wrap">
+
+        <div class="mr-4 mb-2">
+          <label for="category" class="filter-label"><i class="fas fa-filter filter-icon"></i>Filter by Category:</label>
+          <select id="category" onchange="applyFilters()">
+            <option value="all" <%= category === 'all' ? 'selected' : '' %>>All</option>
+            <% categories.forEach(cat => { %>
+            <option value="<%= cat._id %>" <%= category === cat._id.toString() ? 'selected' : '' %>><%= cat.name %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="mr-4 mb-2">
+          <label for="sort" class="filter-label"><i class="fas fa-sort filter-icon"></i>Sort by:</label>
+          <select id="sort" onchange="applyFilters()">
+            <option value="">Select from</option>
+            <option value="priceLowToHigh" <%= sort === 'priceLowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
+            <option value="priceHighToLow" <%= sort === 'priceHighToLow' ? 'selected' : '' %>>Price: High to Low</option>
+            <option value="aToZ" <%= sort === 'aToZ' ? 'selected' : '' %>>A - Z</option>
+            <option value="zToA" <%= sort === 'zToA' ? 'selected' : '' %>>Z - A</option>
+          </select>
+        </div>
+
+
+        <!-- Show All Button -->
+        <button id="showAllBtn" onclick="resetFilters()" class="btn btn-sm btn-secondary ml-2">
+          <i class="fas fa-sync-alt"></i> Show All
+        </button>
+      </div>
+    </div>
+
+    <div class="row g-5">
+      <% if (productsWithOffers && productsWithOffers.length > 0) { %>
+      <% productsWithOffers.forEach(({ product, bestOffer }) => { %>
+      <% if (product.isListed) { %>
+      <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
+        <a href="/user/single-product/<%= product._id %>" class="card-link">
+          <div class="card-img-half position-relative">
+            <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
+            <% if (product.stock === 0) { %>
+            <span class="out-of-stock-label">Out of Stock</span>
+            <% } %>
+          </div>
+          <div class="card-body-half">
+            <div class="product-details">
+              <h5 class="card-title text-center"><%= product.name %></h5>
+              <div class="star-rating text-center">
+                <p class="price text-center">
+                  <% if (bestOffer) { %>
+                  <span style="text-decoration: line-through;">₹ <%= product.price %></span>
+                  <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
+                  <% } else { %>
+                  <span>₹ <%= product.price %></span>
+                  <% } %>
+                </p>
+                <% if (bestOffer) { %>
+                <% if (bestOffer.offerType === 'percentage') { %>
+                <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
+                <% } else if (bestOffer.offerType === 'flat') { %>
+                <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
+                <% } %>
+                <% } %>
+
+              </div>
+              <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
+                <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <% } %>
+      <% }) %>
+      <% } else { %>
+      <p>No product was found of that criteria.</p>
+      <% } %>
+    </div>
+    <div class="text-center my-4 mt-5 pt-3">
+      <a href="#" class="btn btn-secondary view-more-btn">View More</a>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.5.2.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sortSelect = document.getElementById('sort');
+      const categorySelect = document.getElementById('category');
+      const searchInput = document.getElementById('search');
+      const searchButton = document.getElementById('search-btn');
+      const showAllBtn = document.getElementById('showAllBtn');
+
+      // Function to update the products based on search, sort, and category
+      const updateProducts = () => {
+        const search = searchInput.value.trim();
+        const sort = sortSelect.value;
+        const category = categorySelect.value;
+
+        const url = new URL(window.location.href);
+
+        // Update the search parameter
+        if (search) {
+          url.searchParams.set('search', search);
+        } else {
+          url.searchParams.delete('search');
+        }
+        url.searchParams.set('sort', sort);
+        url.searchParams.set('category', category);
+
+        // Show the "Show All" button if any filter is applied
+        showAllBtn.style.display = (search || sort || category !== 'all') ? 'inline-block' : 'none';
+
+        // Redirect to the updated URL
+        window.location.href = url.toString();
+      };
+
+      // Event listeners for changes
+      sortSelect.addEventListener('change', updateProducts);
+      categorySelect.addEventListener('change', updateProducts);
+
+      // Search button handling
+      searchButton.addEventListener('click', updateProducts);
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          updateProducts();
+        }
+      });
+
+      // Check if any filter is applied on page load
+      const currentUrl = new URL(window.location.href);
+      const hasSearch = currentUrl.searchParams.has('search');
+      const hasSort = currentUrl.searchParams.get('sort') !== null && currentUrl.searchParams.get('sort') !== '';
+      const hasCategory = currentUrl.searchParams.get('category') !== null && currentUrl.searchParams.get('category') !== 'all';
+
+      if (hasSearch || hasSort || hasCategory) {
+        showAllBtn.style.display = 'inline-block';
+      }
+    });
+  </script>
+  <script>
+    function applyFilters() {
+      const sort = document.getElementById('sort').value;
+      const category = document.getElementById('category').value;
+      const search = document.querySelector('input[placeholder="Search for products..."]').value;
+
+      const queryString = `?search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&category=${encodeURIComponent(category)}`;
+      window.location.href = window.location.pathname + queryString;
+    }
+
+    function resetFilters() {
+      // Clear the query parameters and reload the page
+      window.location.href = window.location.pathname;
+    }
+
+    // Add to Cart functionality
+    document.querySelectorAll('.btn-add-to-cart').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const productId = this.getAttribute('data-product-id');
+        // Add your cart logic here
+
+        // You can make an AJAX call to your server here
+      });
+    });
+  </script>
+  <script>
+    // Add to Cart functionality
+    document.querySelectorAll('.btn-add-to-cart').forEach(button => {
+      button.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const productId = this.getAttribute('data-product-id');
+        const userId = '<%= user ? user._id : null %>'; // Get user ID from server-side variable
+
+        if (!userId) {
+          Toastify({
+            text: "Please log in to add items to your cart",
+            duration: 3000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+          return; // Exit if user ID is not available
+        }
+
+        try {
+          const response = await fetch('/user/cart/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user: userId,
+              productId,
+              quantity: 1
+            }),
+          });
+
+          const result = await response.json();
+          Toastify({
+            text: result.message,
+            duration: 3000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #3097ff, #4d64f9)",
+          }).showToast();
+        } catch (error) {
+          console.error('Error adding to cart:', error);
+          Toastify({
+            text: "Error adding item to cart",
+            duration: 3000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+        }
+      });
+    });
+
+    document.querySelectorAll('.btn-add-to-wishlist').forEach(button => {
+      button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const productId = button.getAttribute('data-product-id');
+        const userId = '<%= user ? user._id : null %>'; // Check user ID
+
+        if (!userId) {
+          Toastify({
+            text: "Please log in to add items to your wishlist",
+            duration: 2000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+          return;
+        }
+
+        try {
+          const response = await fetch('/user/add-to-wishlist', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId,
+              productId
+            }),
+          });
+
+          const result = await response.json();
+          Toastify({
+            text: result.message,
+            duration: 2000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: response.ok ? "linear-gradient(to right, #3097ff, #4d64f9,#3097ff)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+        } catch (error) {
+          console.error('Error adding to wishlist:', error);
+          Toastify({
+            text: "Error adding item to wishlist",
+            duration: 2000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Success - SUBTLETY</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #28a745 !important;
+      /* Light green background */
+    }
+
+    .success-card {
+      background-color: #ffffff;
+      /* White background for the card */
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 32% !important;
+      margin: auto;
+      /* Center card */
+    }
+
+    .profile-section {
+      padding-top: 100px;
+      padding-bottom: 100px;
+    }
+
+    h1 {
+      color: #28a745;
+      /* Success color */
+      font-size: 2rem !important;
+      /* Adjusted size */
+    }
+
+    h2,
+    h3,
+    h4 {
+      font-size: 1.25rem !important;
+      /* Adjusted size */
+    }
+
+    .product-details {
+      display: flex;
+      justify-content: space-between;
+      /* Align items in a row */
+    }
+
+    .btn-back {
+      background-color: #28a745;
+      /* Success color */
+      color: #ffffff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <%- include('partials/navbar') %>
+
+  <section class="profile-section">
+    <div class="container success-card mb-5 mt-5 text-center">
+      <h1>Thank You for Your Order!</h1>
+      <h3>Order ID: <%= order._id %></h3>
+
+      <h4>Shipping Address:</h4>
+      <p>
+        <%= order.shippingAddress.fullname %><br>
+        <%= order.shippingAddress.address.split(',').slice(0, 4) %><br>
+        <%= order.shippingAddress.address.split(',').slice(4).join(', ') %><br>
+        <%= order.shippingAddress.pincode %><br>
+        Phone: <%= order.shippingAddress.phone %>
+      </p>
+
+      <h4 class="mt-4">Total Amount: ₹ <%= order.totalAmount %></h4>
+
+      <div class="text-center">
+        <a href="/user/home" class="btn btn-primary mt-4">Back to Home</a>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

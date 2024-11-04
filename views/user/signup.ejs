@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup - SUBTLETY</title>
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/styles/user/signup.css"> <!-- Point to your CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    .otp-inputs {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .otp-box {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #9135ED;
+      margin: 0 5px;
+      text-align: center;
+      font-size: 24px;
+      color: #9135ED;
+      outline: none;
+      cursor: text;
+      border-radius: 5px;
+    }
+
+    .otp-box:focus {
+      border: 2px solid #4CAF50;
+    }
+
+    input:focus {
+      box-shadow: none !important;
+      /* Removes the box shadow */
+    }
+
+    .input-group-append {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 10;
+    }
+
+    .input-group-append button {
+      height: 100%;
+      border: none;
+      background: none;
+    }
+
+    .form-control.is-valid,
+    .form-control.is-invalid {
+      background-image: none;
+      padding-right: 0.75rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="register-container">
+    <h2 style="color: #9135ED;" class="text-center">SUBTLETY</h2>
+    <form id="signupForm" method="post">
+      <div class="form-group">
+        <label for="firstname"><small>Firstname</small></label>
+        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter firstname" required>
+        <small id="firstname-error" class="form-text text-danger" style="display: none;"></small>
+        <small id="firstname-success" class="form-text text-success" style="display: none;">Looks good!</small>
+      </div>
+      <div class="form-group">
+        <label for="lastname"><small>Lastname</small></label>
+        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname" required>
+        <small id="lastname-error" class="form-text text-danger" style="display: none;"></small>
+        <small id="lastname-success" class="form-text text-success" style="display: none;">Looks good!</small>
+      </div>
+      <div class="form-group">
+        <label for="email"><small>Email</small></label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+        <small id="email-error" class="form-text text-danger" style="display: none;"></small>
+        <small id="email-success" class="form-text text-success" style="display: none;">Looks good!</small>
+      </div>
+      <div class="form-group password-wrapper">
+        <label for="password"><small>Password</small></label>
+        <div class="input-group">
+          <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+          </div>
+        </div>
+        <small id="password-error" class="form-text text-danger" style="display: none;"></small>
+        <small id="password-success" class="form-text text-success" style="display: none;">Looks good!</small>
+      </div>
+      <div class="form-group password-wrapper">
+        <label for="confirmPassword"><small>Confirm Password</small></label>
+        <div class="input-group">
+          <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required>
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+          </div>
+        </div>
+        <small id="confirm-password-error" class="form-text text-danger" style="display: none;"></small>
+        <small id="confirm-password-success" class="form-text text-success" style="display: none;">Looks good!</small>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block rounded-pill hello mt-4">Signup</button>
+    </form>
+
+    <!-- Loading Spinner -->
+    <div id="loading" style="display: none;" class="text-center mt-4">
+      <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      <p>Sending your request...</p>
+    </div>
+
+    <!-- OTP Section -->
+    <div id="otp-section" style="display: none;">
+      <h3 class="text-center mt-4">Verify Your Email</h3>
+      <div class="otp-inputs text-center">
+        <div class="otp-box" id="otp-box-1" contenteditable="true"></div>
+        <div class="otp-box" id="otp-box-2" contenteditable="true"></div>
+        <div class="otp-box" id="otp-box-3" contenteditable="true"></div>
+        <div class="otp-box" id="otp-box-4" contenteditable="true"></div>
+        <div class="otp-box" id="otp-box-5" contenteditable="true"></div>
+        <div class="otp-box" id="otp-box-6" contenteditable="true"></div>
+      </div>
+      <small id="timer-message" class="text-danger text-center pt-2 pb-2" style="display: none;">OTP valid for 00:60</small>
+      <button id="verify-otp" class="btn btn-success btn-block rounded-pill mt-2">Verify OTP</button>
+      <!-- Resend OTP Button -->
+      <button id="resend-otp" class="btn btn-secondary btn-block rounded-pill mt-2" style="display: none;">Resend OTP</button>
+
+      <!-- Loading Spinner for Resend OTP -->
+      <div id="resend-loading" style="display: none;" class="text-center mt-2">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Resending OTP...</span>
+        </div>
+        <p>Resending OTP...</p>
+      </div>
+    </div>
+
+    <p class="text-center or">or</p>
+    <a style="color: rgb(255, 255, 255);" href="/auth/google" id="googleSignIn" class="btn btn-primary btn-block rounded-pill hai">
+      <img src="/images/google_icon.svg" alt="Google Icon" /> Signup with Google
+    </a>
+    <p class="text-center mt-3"><small>Already have an account? </small><a href="/user/login"><small>Login here</small></a></p>
+  </div>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    let otpTimeout;
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const firstname = document.getElementById('firstname').value;
+      const lastname = document.getElementById('lastname').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      const data = {
+        firstname,
+        lastname,
+        email,
+        password,
+        confirmPassword
+      };
+
+      // Show loading spinner
+      document.getElementById('loading').style.display = 'block';
+
+      const response = await fetch('/user/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      // Hide loading spinner
+      document.getElementById('loading').style.display = 'none';
+
+      if (response.ok) {
+        document.getElementById('otp-section').style.display = 'block'; // Show OTP section
+        document.getElementById('signupForm').style.display = 'none'; // Hide signup form
+        startOtpTimer(); // Start the timer
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Error registering user',
+        });
+      }
+    });
+
+    function startOtpTimer() {
+      const timerMessage = document.getElementById('timer-message');
+      const resendButton = document.getElementById('resend-otp');
+      let timeLeft = 60; // 60 seconds
+
+      timerMessage.style.display = 'block'; // Show timer message
+      timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
+      resendButton.style.display = 'none'; // Hide resend button initially
+
+      otpTimeout = setInterval(() => {
+        timeLeft--;
+        timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
+
+        if (timeLeft <= 0) {
+          clearInterval(otpTimeout);
+          timerMessage.innerText = 'You can now resend the OTP.';
+          resendButton.style.display = 'block'; // Show resend button
+        }
+      }, 1000);
+    }
+
+    const otpBoxes = document.querySelectorAll('.otp-box');
+
+    otpBoxes.forEach((box, index) => {
+      box.addEventListener('input', (e) => {
+        if (e.inputType === "insertText" && e.data) {
+          box.textContent = e.data; // Set box content
+          box.nextElementSibling?.focus(); // Move to the next box
+        }
+      });
+
+      box.addEventListener('keydown', (e) => {
+        if (e.key === "Backspace") {
+          if (box.textContent === '') {
+            const previousBox = box.previousElementSibling;
+            if (previousBox) {
+              previousBox.focus(); // Focus on the previous box
+              setTimeout(() => {
+                previousBox.textContent = ''; // Clear the previous box content
+              }, 0);
+            }
+          }
+        }
+      });
+    });
+
+    document.getElementById('verify-otp').addEventListener('click', async () => {
+      const otp = Array.from(otpBoxes).map(box => box.textContent).join('');
+      const email = document.querySelector('input[name="email"]').value;
+
+      const response = await fetch('/user/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          otp
+        })
+      });
+
+      if (response.ok) {
+        clearInterval(otpTimeout); // Clear the timer on successful verification
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'OTP verified successfully!',
+        }).then(() => {
+          window.location.href = '/user/login'; // Redirect to login after verification
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Invalid OTP',
+        });
+      }
+    });
+
+    document.getElementById('resend-otp').addEventListener('click', async () => {
+      const email = document.querySelector('input[name="email"]').value;
+
+
+      // Show loading spinner
+      document.getElementById('resend-loading').style.display = 'block';
+      document.getElementById('resend-otp').style.display = 'none'; // Hide resend button
+
+      const response = await fetch('/user/resend-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email
+        })
+      });
+
+
+
+      // Hide loading spinner
+      document.getElementById('resend-loading').style.display = 'none';
+
+      if (response.ok) {
+        Swal.fire({
+          icon: 'success',
+          title: 'OTP Resent',
+          text: 'OTP has been resent to your email.',
+        });
+        otpBoxes.forEach(box => box.textContent = ''); // Clear OTP inputs
+        otpBoxes[0].focus(); // Focus on the first box
+        startOtpTimer(); // Restart the timer
+      } else {
+        const errorData = await response.json(); // Get error message
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: `Error resending OTP: ${errorData.message || 'Unknown error'}`,
+        });
+        console.error('Error resending OTP:', errorData); // Log error data to console
+      }
+    });
+
+    // Input validation
+    function validateInput(input, regex, errorId, successId, errorMessage) {
+      const errorElement = document.getElementById(errorId);
+      const successElement = document.getElementById(successId);
+
+      if (!regex.test(input.value)) {
+        errorElement.textContent = errorMessage;
+        errorElement.style.display = 'block';
+        successElement.style.display = 'none';
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        return false;
+      } else {
+        errorElement.style.display = 'none';
+        successElement.style.display = 'block';
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        return true;
+      }
+    }
+
+    // Firstname validation
+    document.getElementById('firstname').addEventListener('input', function() {
+      validateInput(
+        this,
+        /^[a-zA-Z]{4,}$/,
+        'firstname-error',
+        'firstname-success',
+        'At least 4 characters, no spaces, numbers, or special characters'
+      );
+    });
+
+    // Lastname validation
+    document.getElementById('lastname').addEventListener('input', function() {
+      validateInput(
+        this,
+        /^[a-zA-Z]+$/,
+        'lastname-error',
+        'lastname-success',
+        'No spaces, numbers, or special characters'
+      );
+    });
+
+    // Email validation
+    document.getElementById('email').addEventListener('input', function() {
+      validateInput(
+        this,
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        'email-error',
+        'email-success',
+        'Invalid email format'
+      );
+    });
+
+    // Password validation
+    document.getElementById('password').addEventListener('input', function() {
+      validateInput(
+        this,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/,
+        'password-error',
+        'password-success',
+        'At least 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character, no spaces'
+      );
+    });
+
+    // Confirm Password validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      const password = document.getElementById('password').value;
+      if (this.value !== password) {
+        document.getElementById('confirm-password-error').textContent = 'Passwords do not match';
+        document.getElementById('confirm-password-error').style.display = 'block';
+        document.getElementById('confirm-password-success').style.display = 'none';
+        this.classList.add('is-invalid');
+        this.classList.remove('is-valid');
+      } else {
+        document.getElementById('confirm-password-error').style.display = 'none';
+        document.getElementById('confirm-password-success').style.display = 'block';
+        this.classList.remove('is-invalid');
+        this.classList.add('is-valid');
+      }
+    });
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+      button.addEventListener('click', function() {
+        const input = this.closest('.input-group').querySelector('input');
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+    });
+  </script>
+</body>
+
+</html>

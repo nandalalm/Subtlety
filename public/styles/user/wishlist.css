@@ -1,0 +1,171 @@
+.card-div{
+  height: 100% !important;
+  transition: transform 0.2s;
+ }
+ .card-div:hover{
+   transform: scale(1.05);
+  }
+ 
+ .card-img-half {
+   height: 70% !important;
+   width: auto;
+   border: none; /* Remove border */
+   transition: transform 0.2s;
+ }
+ 
+ .card-img-half img{
+     width: 100%; /* Make the image take the full width */
+     height: auto; /* Maintain aspect ratio */
+     object-fit: cover;
+ }
+ 
+ .card-body-half{
+   width: auto;
+   height: 30% !important;
+   padding: 0px !important;
+ }
+ 
+ .card:hover {
+   transform: scale(1.05); /* Slight zoom effect */
+ }
+ 
+ .star-rating {
+   color: #F5BF25; /* Gold color for stars */
+ }
+ 
+ .price {
+   font-weight: bold;
+   color: #000;
+ }
+ 
+ .card-link {
+  text-decoration: none !important; /* Remove underline */
+  color: inherit !important; /* Inherit text color */
+}
+
+.card-link:hover {
+  color: #9135ED !important; /* Change color on hover */
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between; /* Ensure buttons are spaced out evenly */
+  align-items: center; /* Center items vertically */
+  margin-top: 10px;
+  width: 100%; /* Make sure the container is full width */
+}
+
+.btn {
+  flex: 1; /* Allow buttons to take equal width */
+  padding: 10px; /* Adjust padding for uniformity */
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  margin: 0 5px; /* Add side margin for spacing */
+}
+
+.btn-add-to-cart, .btn-buy-now {
+  background-color: black; /* Black background for both buttons */
+  border: none;
+}
+.btn-add-to-cart:hover{
+  background-color: #9135ED !important;
+  border: none;
+}
+
+.btn-danger{
+  margin: 0px !important;
+}
+
+.view-more-btn{
+  background-color: #9135ED !important;
+  color: white !important;
+}
+
+.btn-remove-from-wishlist:hover{
+  background-color: #e42b2b !important;
+  border: none !important;
+}
+
+.card-body-half p{
+  font-size:15px;
+  margin: 0px !important;
+  padding: 0px !important;
+}
+
+@media(max-width:930px){
+  .search-bar input {
+    width: 150px; /* Set width as needed */
+  }
+  .hero-section h1 {
+    font-size: 6vw;
+  }
+  .hero-section h4 {
+    font-size: 4vw;
+  }
+  .search-bar input {
+    padding: 8px;
+  }
+  
+  .search-bar button {
+    padding: 8px;
+  }
+}
+
+@media(max-width:1405px){
+  .button-container a{
+    font-size: 12px;
+  }
+}
+
+@media(max-width:581px){
+  .category-container{
+    width: 80% !important;
+  }
+  .new-arrival-container{
+    width: 80% !important;
+  }
+  .top-selling-container{
+    width: 80% !important;
+  }
+}
+
+@media(max-width:450px){
+  .category-container{
+    width: 80% !important;
+  }
+  .new-arrival-container{
+    width: 80% !important;
+  }
+  .top-selling-container{
+    width: 80% !important;
+  }
+}
+
+@media(max-width:370px){
+  .hero-section h1 {
+    font-size: 8vw;
+  }
+  .hero-section h4 {
+    font-size: 6vw;
+  }
+  .search-bar input {
+    padding: 5px;
+  }
+  
+  .search-bar button {
+    padding: 5px;
+  }
+}
+
+@media(max-width:350px){
+  .category-container{
+    width: 96% !important;
+  }
+  .new-arrival-container{
+    width: 96% !important;
+  }
+  .top-selling-container{
+    width: 96% !important;
+  }
+}

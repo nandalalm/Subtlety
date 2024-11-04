@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - SUBTLETY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/admin/products.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+</head>
+
+<body class="bg-light text-dark">
+  <div class="d-flex" id="wrapper">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header text-center mt-4 mb-3">
+        <h3 class="text-dark">Admin Panel</h3>
+      </div>
+      <ul class="list-unstyled components">
+        <li><a href="/admin/dashboard" class="sidebar-item "><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="/admin/users" class="sidebar-item"><i class="fas fa-users"></i> Users</a></li>
+        <li><a href="/admin/products" class="sidebar-item active"><i class="fas fa-box"></i> Products</a></li>
+        <li><a href="/admin/categories" class="sidebar-item "><i class="fas fa-th"></i> Category</a></li>
+        <li><a href="/admin/orderList" class="sidebar-item"><i class="fas fa-list"></i> Order List</a></li>
+        <li><a href="/admin/offer" class="sidebar-item"><i class="fas fa-tags"></i> Offers</a></li>
+        <li><a href="/admin/coupons" class="sidebar-item"><i class="fas fa-ticket-alt"></i> Coupons</a></li>
+        <li><a href="/admin/salesReport" class="sidebar-item "><i class="fas fa-chart-line"></i> Sales Report</a></li>
+        <li><a href="#settings" class="sidebar-item"><i class="fas fa-cog"></i> Settings</a></li>
+        <li>
+          <form action="/admin/logout" method="POST" style="display: inline;">
+            <button type="submit" class="sidebar-item bg-transparent border-0">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+
+    <div id="page-content-wrapper">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+        <button class="btn btn-primary btn-sm" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-brand d-flex align-items-center ml-auto">
+          <img src="/images/IMG_0986[1].JPG" alt="Admin Profile" class="profile-photo">
+          <span class="navbar-text text-dark ml-2">Nandalal</span>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <h2 class="mb-4">Products</h2>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
+            Add New Product
+          </button>
+          <div class="form-inline">
+            <input type="text" id="searchBar" class="form-control" placeholder="Search products..." style="width: 200px;">
+            <button class="btn btn-primary ml-2" id="searchButton">Search</button>
+          </div>
+        </div>
+
+        <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <form action="/admin/products/add" method="POST" enctype="multipart/form-data" id="addProductForm">
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required minlength="3" pattern="^[a-zA-Z]+(?:\s[a-zA-Z]+)*$">
+                    <small class="form-text text-muted">At least 3 characters, no special
+                      characters, numbers, or leading/trailing spaces.</small>
+                    <div class="invalid-feedback">Please enter a valid product name.</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-control" required minlength="10" pattern="^[a-zA-Z]+(?:\s[a-zA-Z]+)*$"></textarea>
+                    <small class="form-text text-muted">At least 10 characters, no special
+                      characters, numbers, or leading/trailing spaces.</small>
+                    <div class="invalid-feedback">Please enter a valid description.</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="form-control" required>
+                      <option value="" disabled selected>Select a category</option>
+                      <% categories.forEach(category=> { %>
+                      <option value="<%= category._id %>">
+                        <%= category.name %>
+                      </option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="number" id="price" name="price" class="form-control" required min="0.01" step="0.01">
+                    <div class="invalid-feedback">Must be a valid price.</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="stock">Stock</label>
+                    <input type="number" id="stock" name="stock" class="form-control" required min="0">
+                    <div class="invalid-feedback">Must be a valid stock.</div>
+                  </div>
+                  <div class="form-row image-div">
+                    <div class="form-group image-div-mini">
+                      <label for="image1">Image 1</label>
+                      <input type="file" id="image1" name="images" class="form-control" accept="image/*" onchange="validateImage(event, 'imagePreview1', 'error1')">
+                      <div class="error-message" id="error1" style="color: red; display: none;">
+                        Please select a valid image file.</div>
+                      <div id="imagePreview1" class="image-preview mt-2" style="display: none;">
+                        <img src="" alt="Image Preview" style="max-width: 100%; height: auto;">
+                        <button type="button" class="crop-button btn btn-primary mt-2" onclick="cropImage('imagePreview1', 'croppedPreview1')">Crop
+                          Image</button>
+                        <img id="croppedPreview1" src="" alt="Cropped Image" style="max-width: 100%; height: auto; display: none;">
+                      </div>
+                    </div>
+
+                    <div class="form-group image-div-mini">
+                      <label for="image2">Image 2</label>
+                      <input type="file" id="image2" name="images" class="form-control" accept="image/*" onchange="validateImage(event, 'imagePreview2', 'error2')">
+                      <div class="error-message" id="error2" style="color: red; display: none;">
+                        Please select a valid image file.</div>
+                      <div id="imagePreview2" class="image-preview mt-2" style="display: none;">
+                        <img src="" alt="Image Preview" style="max-width: 100%; height: auto;">
+                        <button type="button" class="crop-button btn btn-primary mt-2" onclick="cropImage('imagePreview2', 'croppedPreview2')">Crop
+                          Image</button>
+                        <img id="croppedPreview2" src="" alt="Cropped Image" style="max-width: 100%; height: auto; display: none;">
+                      </div>
+                    </div>
+
+                    <div class="form-group image-div-mini">
+                      <label for="image3">Image 3</label>
+                      <input type="file" id="image3" name="images" class="form-control" accept="image/*" onchange="validateImage(event, 'imagePreview3', 'error3')">
+                      <div class="error-message" id="error3" style="color: red; display: none;">
+                        Please select a valid image file.</div>
+                      <div id="imagePreview3" class="image-preview mt-2" style="display: none;">
+                        <img src="" alt="Image Preview" style="max-width: 100%; height: auto;">
+                        <button type="button" class="crop-button btn btn-primary mt-2" onclick="cropImage('imagePreview3', 'croppedPreview3')">Crop
+                          Image</button>
+                        <img id="croppedPreview3" src="" alt="Cropped Image" style="max-width: 100%; height: auto; display: none;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Add Product</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Images</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% products.forEach((product, index)=> { %>
+            <tr>
+              <td>
+                <%= (currentPage - 1) * limit + (index + 1) %>
+              </td>
+              <td>
+                <%= product.name %>
+              </td>
+              <td>
+                <%= product.category ? product.category.name : 'No category' %>
+              </td>
+              <td>₹<%= product.price %>
+              </td>
+              <td>
+                <%= product.stock %>
+              </td>
+              <td>
+                <% if (product.images && product.images.length> 0) { %>
+                <div class="d-flex">
+                  <% product.images.slice(0, 3).forEach(image=> { %>
+                  <img src="/<%= image.split('/').pop() %>" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover; margin-right: 5px;">
+                  <% }) %>
+                </div>
+                <% } else { %>
+                No images
+                <% } %>
+              </td>
+              <td>
+                <button class="btn btn-warning" data-toggle="modal" data-target="#editProductModal<%= product._id %>">
+                  Edit
+                </button>
+
+                <button class="btn <%= product.isListed ? 'btn-secondary' : 'btn-primary' %>" onclick="toggleProductStatus('<%= product._id %>', <%= product.isListed %>)">
+                  <%= product.isListed ? 'Unlist' : 'Relist' %>
+                </button>
+
+                <!-- Edit Product Modal -->
+                <div class="modal fade" id="editProductModal<%= product._id %>" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" id="editProductForm<%= product._id %>">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="editProductModalLabel">Edit Product
+                          </h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <input type="hidden" name="id" value="<%= product._id %>">
+                          <div class="form-group">
+                            <label for="productName">Name</label>
+                            <input type="text" class="form-control" name="name" value="<%= product.name %>" required minlength="3" pattern="^[a-zA-Z]+(?:\s[a-zA-Z]+)*$">
+                            <small class="form-text text-muted">At least 3 characters,
+                              no special characters, numbers, or leading/trailing
+                              spaces.</small>
+                            <div class="invalid-feedback">Please enter a valid product
+                              name.</div>
+                          </div>
+                          <div class="form-group">
+                            <label for="productDescription">Description</label>
+                            <textarea class="form-control" name="description" required minlength="10" pattern="^[a-zA-Z]+(?:\s[a-zA-Z]+)*$"><%= product.description %></textarea>
+                            <small class="form-text text-muted">At least 10 characters,
+                              no special characters, numbers, or leading/trailing
+                              spaces.</small>
+                            <div class="invalid-feedback">Please enter a valid
+                              description.</div>
+                          </div>
+                          <div class="form-group">
+                            <label for="productPrice">Price</label>
+                            <input type="number" class="form-control" name="price" value="<%= product.price %>" required min="0.01" step="0.01">
+                            <div class="invalid-feedback">Must be a valid price.</div>
+                          </div>
+                          <div class="form-group">
+                            <label for="productStock">Stock</label>
+                            <input type="number" class="form-control" name="stock" value="<%= product.stock %>" required min="0">
+                            <div class="invalid-feedback">Must be a valid stock.</div>
+                          </div>
+                          <div class="form-group">
+                            <label for="isListed">Listed</label>
+                            <input type="checkbox" name="isListed" <% if
+                                                                (product.isListed) { %> checked <% } %>>
+                          </div>
+                          <div class="form-group">
+                            <label for="currentImages">Current Images</label>
+                            <div class="d-flex flex-wrap">
+                              <% product.images.forEach(image=> { %>
+                              <div class="position-relative mr-3 mb-3" style="display: flex; align-items: center;">
+                                <img src="/<%= image.split('/').pop() %>" alt="Product Image" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px;">
+                                <label>
+                                  <input type="checkbox" name="deleteImages" value="<%= image %>" style="transform: scale(1.5);"> Delete
+                                </label>
+                              </div>
+                              <% }) %>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label for="newImages">Upload New Image</label>
+                            <input type="file" name="images" accept="image/*" onchange="validateImage(event, 'editImagePreview<%= product._id %>', 'error<%= product._id %>')">
+                            <div class="error-message" id="error<%= product._id %>" style="color: red; display: none;">Please select a valid
+                              image file.</div>
+                            <div id="editImagePreview<%= product._id %>" class="image-preview mt-2" style="display: none;">
+                              <img src="" alt="Image Preview" style="max-width: 20%; height: auto;">
+                              <button type="button" class="crop-button btn btn-primary mt-2" onclick="cropImage('editImagePreview<%= product._id %>', 'editCroppedPreview<%= product._id %>')">Crop
+                                Image</button>
+                              <img id="editCroppedPreview<%= product._id %>" src="" alt="Cropped Image" style="max-width: 20%; height: auto; display: none;">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                          <button type="submit" class="btn btn-primary">Save
+                            changes</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <div class="pagination d-flex justify-content-center mb-4 pt-2">
+          <button class="btn btn-secondary mx-1" <%=currentPage===1 ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage - 1 %>'">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <span class="mx-2"> <strong>
+              <%= currentPage %>
+            </strong> </span>
+
+          <button class="btn btn-secondary mx-1" <%=currentPage===totalPages ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage + 1 %>'">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+  <script>
+    // Sidebar toggle functionality
+    document.getElementById('menuToggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('page-content-wrapper').classList.toggle('toggled');
+    });
+
+    function toggleProductStatus(productId, isListed) {
+      const action = isListed ? 'unlist' : 'relist';
+
+      Swal.fire({
+        title: `Are you sure you want to ${action} this product?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/products/toggle-list/${productId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                isListed
+              }), // Send current state
+            })
+            .then(response => {
+              if (response.ok) {
+                return response.json();
+              }
+              throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+
+              location.reload(); // Refresh the page after update
+            })
+            .catch(err => console.error('Fetch error:', err));
+        }
+      });
+    }
+
+    document.querySelector('#addProductForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (this.checkValidity()) {
+        const formData = new FormData(this);
+
+
+        for (let pair of formData.entries()) {
+
+        }
+
+        fetch('/admin/products/add', {
+          method: 'POST',
+          body: formData,
+        }).then(response => {
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            Toastify({
+              text: "Error adding product",
+              duration: 3000, // duration in milliseconds
+              close: true,
+              gravity: "top", // top or bottom
+              position: 'center', // left, center or right
+              backgroundColor: "linear-gradient(to right, #FF5F6D, #FFC371)",
+            }).showToast();
+          }
+        }).catch(err => {
+          console.error(err);
+          Toastify({
+            text: "Network error. Please try again.",
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: 'center',
+            backgroundColor: "linear-gradient(to right, #FF5F6D, #FFC371)",
+          }).showToast();
+        });
+      } else {
+        this.reportValidity();
+      }
+    });
+
+    // Edit modal
+    document.querySelectorAll('[id^="editProductForm"]').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (this.checkValidity()) {
+          const formData = new FormData(this);
+
+          fetch(`/admin/products/edit/${formData.get('id')}`, {
+            method: 'POST',
+            body: formData,
+          }).then(response => {
+            if (response.ok) {
+              window.location.reload();
+            } else {
+              Toastify({
+                text: "Error updating product",
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: 'center',
+                backgroundColor: "linear-gradient(to right, #FF5F6D, #FFC371)",
+              }).showToast();
+            }
+          }).catch(err => {
+            console.error(err);
+            Toastify({
+              text: "Network error. Please try again.",
+              duration: 3000,
+              close: true,
+              gravity: "top",
+              position: 'center',
+              backgroundColor: "linear-gradient(to right, #FF5F6D, #FFC371)",
+            }).showToast();
+          });
+        } else {
+          this.reportValidity();
+        }
+      });
+    });
+
+    function previewImage(event, previewId) {
+      const file = event.target.files[0];
+      const preview = document.getElementById(previewId);
+      const img = preview.querySelector('img');
+      const cropButton = preview.querySelector('.crop-button');
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          img.src = e.target.result;
+          preview.style.display = 'block';
+
+          // Initialize Cropper
+          if (img.cropper) {
+            img.cropper.destroy();
+          }
+          img.cropper = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+          });
+
+          // Show crop button
+          cropButton.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = 'none';
+      }
+    }
+
+    function cropImage(previewId, croppedPreviewId) {
+      const previewDiv = document.getElementById(previewId);
+      const img = previewDiv.querySelector('img');
+      const croppedImg = document.getElementById(croppedPreviewId);
+      const fileInput = previewDiv.parentElement.querySelector('input[type="file"]');
+
+      // Check if Cropper instance exists
+      if (img.cropper) {
+        // Get the cropped canvas
+        const croppedCanvas = img.cropper.getCroppedCanvas();
+
+        // Set the source of the cropped image preview
+        croppedImg.src = croppedCanvas.toDataURL();
+        croppedImg.style.display = 'block'; // Show the cropped image
+
+        // Hide the original image preview and crop button
+        img.style.display = 'none';
+        previewDiv.querySelector('.crop-button').style.display = 'none';
+
+        // Convert canvas to blob
+        croppedCanvas.toBlob(function(blob) {
+          // Create a new File object
+          let croppedFile = new File([blob], fileInput.files[0].name, {
+            type: 'image/jpeg',
+            lastModified: new Date().getTime()
+          });
+
+          // Create a new FileList object
+          let dataTransfer = new DataTransfer();
+          dataTransfer.items.add(croppedFile);
+          fileInput.files = dataTransfer.files;
+        });
+
+        // Destroy the Cropper instance
+        img.cropper.destroy();
+        img.cropper = null; // Clear the reference to the Cropper
+      }
+    }
+
+    // Real-time validation
+    document.querySelectorAll('input:not([type="file"]), textarea').forEach(input => {
+      input.addEventListener('input', function() {
+        this.checkValidity();
+        if (this.validity.valid) {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+        } else {
+          this.classList.remove('is-valid');
+          this.classList.add('is-invalid');
+        }
+      });
+    });
+
+    function validateImage(event, previewId, errorId) {
+      const file = event.target.files[0];
+      const errorDiv = document.getElementById(errorId);
+      const previewDiv = document.getElementById(previewId);
+      const img = previewDiv.querySelector('img');
+      const cropButton = previewDiv.querySelector('.crop-button');
+
+      // Reset the preview and error message
+      previewDiv.style.display = 'none';
+      errorDiv.style.display = 'none';
+
+      if (file) {
+        const fileType = file.type;
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+
+        if (!validImageTypes.includes(fileType)) {
+          errorDiv.style.display = 'block'; // Show error message
+          return; // Exit if invalid file type
+        } else {
+          errorDiv.style.display = 'none'; // Hide error message
+        }
+
+        // Show image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          img.src = e.target.result;
+          previewDiv.style.display = 'block'; // Show preview
+
+          // Initialize Cropper
+          if (img.cropper) {
+            img.cropper.destroy();
+          }
+          img.cropper = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+          });
+
+          cropButton.style.display = 'block'; // Show crop button
+        };
+        reader.readAsDataURL(file);
+      } else {
+        errorDiv.style.display = 'none'; // Hide error message if no file is selected
+        previewDiv.style.display = 'none'; // Hide preview
+      }
+    }
+  </script>
+
+</body>
+
+</html>

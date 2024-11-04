@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Report - SUBTLETY</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/admin/sales.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    .is-invalid {
+      border-color: #dc3545;
+    }
+
+    .is-valid {
+      border-color: #28a745;
+    }
+
+    .invalid-feedback {
+      display: none;
+      color: #dc3545;
+      font-size: 80%;
+    }
+
+    .summary-box {
+      display: inline-block;
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+      margin-right: 10px;
+      text-align: center;
+    }
+
+    .sales-count {
+      background-color: #4CAF50;
+      /* Green */
+    }
+
+    .order-amount {
+      background-color: #2196F3;
+      /* Blue */
+    }
+
+    .total-discount {
+      background-color: #FF5722;
+      /* Red */
+    }
+  </style>
+</head>
+
+<body class="bg-light text-dark">
+  <div class="d-flex" id="wrapper">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header text-center mt-4 mb-3">
+        <h3 class="text-dark">Admin Panel</h3>
+      </div>
+      <ul class="list-unstyled components">
+        <li><a href="/admin/dashboard" class="sidebar-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="/admin/users" class="sidebar-item"><i class="fas fa-users"></i> Users</a></li>
+        <li><a href="/admin/products" class="sidebar-item"><i class="fas fa-box"></i> Products</a></li>
+        <li><a href="/admin/categories" class="sidebar-item"><i class="fas fa-th"></i> Categories</a></li>
+        <li><a href="/admin/orderList" class="sidebar-item"><i class="fas fa-list"></i> Order List</a></li>
+        <li><a href="/admin/offer" class="sidebar-item"><i class="fas fa-tags"></i> Offers</a></li>
+        <li><a href="/admin/coupons" class="sidebar-item"><i class="fas fa-ticket-alt"></i> Coupons</a></li>
+        <li><a href="/admin/salesReport" class="sidebar-item active"><i class="fas fa-chart-line"></i> Sales Report</a></li>
+        <li><a href="#settings" class="sidebar-item"><i class="fas fa-cog"></i> Settings</a></li>
+        <li>
+          <form action="/admin/logout" method="POST" style="display: inline;">
+            <button type="submit" class="sidebar-item bg-transparent border-0">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+
+    <div id="page-content-wrapper">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+        <button class="btn btn-primary btn-sm" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-brand d-flex align-items-center ml-auto">
+          <img src="/images/IMG_0986[1].JPG" alt="Admin Profile" class="profile-photo">
+          <span class="navbar-text text-dark ml-2">Nandalal</span>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <h2 class="mb-2">Sales Report</h2>
+
+        <div class="d-flex align-items-center justify-content-start">
+          <div class="form-group mr-3 mt-3">
+            <label for="reportType" class="mr-2"> <i class="fas fa-filter"></i> Filter By:</label>
+            <select id="reportType" class="form-control d-inline-block" name="reportType" style="width: auto;">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="custom">Custom Date Range</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="customDateRange" style="display: none;">
+            <input type="date" id="startDate" class="form-control d-inline-block mr-2" name="startDate">
+            <input type="date" id="endDate" class="form-control d-inline-block" name="endDate">
+          </div>
+
+          <button type="submit" class="btn btn-primary  mr-2" id="generateReport">
+            <i class="fas fa-file-alt"></i> Generate Report
+          </button>
+
+          <button id="showAllBtn" onclick="resetFilters()" class="btn btn-secondary ml-2" style="display: none;">
+            <i class="fas fa-sync-alt"></i> Show All
+          </button>
+
+          <button id="downloadPdf" class="btn btn-danger ml-2">
+            <i class="fas fa-file-pdf"></i> Download PDF
+          </button>
+          <button id="downloadExcel" class="btn btn-success ml-2">
+            <i class="fas fa-file-excel"></i> Download Excel
+          </button>
+        </div>
+
+        <div id="reportResults" class="mt-2"></div>
+
+        <!-- Sales Report Table -->
+        <% if (orders.length === 0) { %>
+        <div class="alert alert-info" role="alert">
+          No Sales found.
+        </div>
+        <% } else { %>
+        <table class="table table-striped" id="salesTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Offer Discount</th>
+              <th>Coupon Discount</th>
+              <th>Total Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% orders.forEach((order, index) => { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><%= order._id %></td>
+              <td><%= order.shippingAddress.fullname %></td>
+              <td>₹ <%= order.offerDiscount ? order.offerDiscount : 'N/A' %></td>
+              <td>₹ <%= order.couponDiscount ? order.couponDiscount : 'N/A' %></td>
+              <td>₹ <%= order.totalAmount %></td>
+              <td><%= new Date(order.orderDate).toLocaleDateString('en-GB') %></td>
+              <td><%= order.orderStatus %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+  <script>
+    // Sidebar toggle functionality
+    document.getElementById('menuToggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('page-content-wrapper').classList.toggle('toggled');
+    });
+
+    // Show/hide custom date range inputs
+    document.getElementById('reportType').addEventListener('change', function() {
+      document.getElementById('customDateRange').style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+
+    // Handle report generation
+    document.getElementById('generateReport').addEventListener('click', async function(event) {
+      event.preventDefault();
+      const reportType = document.getElementById('reportType').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      // Disable the existing sales report table
+      document.getElementById('salesTable').style.display = 'none';
+
+      const response = await fetch('/admin/salesReport/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reportType,
+          startDate,
+          endDate
+        }),
+      });
+      const result = await response.json();
+
+      // Display summary boxes
+      document.getElementById('reportResults').innerHTML = `
+                <h4 class="pb-2">Report Summary:</h4>
+                <div class="summary-box sales-count">Total Sales Count: ${result.totalSalesCount}</div>
+                <div class="summary-box order-amount">Total Order Amount: ₹${result.totalOrderAmount}</div>
+                <div class="summary-box total-discount">Total Discount: ₹${result.totalDiscount}</div>
+                
+                <table class="table table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Offer Discount</th>
+                            <th>Coupon Discount</th>
+                            <th>Total Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${result.orders.map((order, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${order._id}</td>
+                                <td>${order.shippingAddress.fullname}</td>
+                                <td>${order.offerDiscount ? order.offerDiscount : 'N/A'}</td>
+                                <td>${order.couponDiscount ? order.couponDiscount : 'N/A'}</td>
+                                <td>₹${order.totalAmount}</td>
+                                <td>${new Date(order.orderDate).toLocaleDateString('en-GB')}</td>
+                                <td>${order.orderStatus}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+      // Show the "Show All" button
+      document.getElementById('showAllBtn').style.display = 'inline-block';
+    });
+
+    // Show all orders
+    function resetFilters() {
+      window.location.href = window.location.pathname; // Reload the page
+    }
+
+    // PDF Download
+    document.getElementById('downloadPdf').addEventListener('click', function() {
+      const reportType = document.getElementById('reportType').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      fetch('/admin/salesReport/download/pdf', {
+          method: 'POST', // Use POST to send the filter criteria
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reportType,
+            startDate,
+            endDate
+          }) // Send filters
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          }
+          throw new Error('Network response was not ok.');
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = 'sales_report.pdf';
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => console.error('There has been a problem with your fetch operation:', error));
+    });
+
+    // Excel Download
+    document.getElementById('downloadExcel').addEventListener('click', function() {
+      const reportType = document.getElementById('reportType').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      fetch('/admin/salesReport/download/excel', {
+          method: 'POST', // Use POST to send the filter criteria
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reportType,
+            startDate,
+            endDate
+          }) // Send filters
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          }
+          throw new Error('Network response was not ok.');
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = 'sales_report.xlsx';
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => console.error('There has been a problem with your fetch operation:', error));
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders - SUBTLETY</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/admin/usersList.css"> <!-- Custom CSS for users list -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <style>
+    .status-box {
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-weight: bold;
+      font-size: 0.9em;
+      display: inline-block;
+      width: 100px;
+      /* Fixed width for all status boxes */
+      text-align: center;
+    }
+
+    .status-pending {
+      background-color: #ffc107;
+      color: #000;
+    }
+
+    .status-shipped {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    .status-delivered {
+      background-color: #28a745;
+      color: #fff;
+    }
+
+    .status-cancelled {
+      background-color: #dc3545;
+      color: #fff;
+    }
+
+    .status-completed {
+      background-color: #28a745;
+      color: #fff;
+    }
+
+    .status-returned {
+      background-color: #8B4513;
+      color: #fff;
+    }
+
+    .status-failed {
+      background-color: #dc3545;
+      color: #fff;
+    }
+
+    .status-successful {
+      background-color: #28a745;
+      color: #fff;
+    }
+
+    .order-id {
+      font-size: 0.9em;
+    }
+
+    .modal-dialog {
+      max-width: 90%;
+      /* Increased width */
+    }
+
+    .product-details {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .product-image {
+      width: 200px;
+      /* Increased width for images in modal */
+      height: auto;
+      object-fit: cover;
+      margin-right: 15px;
+    }
+
+    #wrapper {
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #f8f9fa;
+      min-height: 100vh;
+    }
+
+    #page-content-wrapper {
+      flex: 1;
+    }
+
+    .modal-body {
+      max-height: 70vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .modal-header .close {
+      padding: 1rem;
+      margin: -1rem -1rem -1rem auto;
+    }
+
+    .product-images-wrapper img {
+      width: 40px;
+      /* Keep the orderlist table images small */
+      height: auto;
+    }
+
+    .product-images-wrapper .extra-images {
+      display: inline-block;
+      background-color: #f0f0f0;
+      padding: 2px 5px;
+      border-radius: 10px;
+      font-size: 0.8em;
+      margin-left: 5px;
+    }
+
+    .status-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-body h6 {
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 15px;
+    }
+
+    #orderSummary p,
+    #shippingAddress p {
+      margin-bottom: 5px;
+    }
+
+    .return-reason {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 5px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .return-request-icon {
+      color: #dc3545;
+      margin-left: 5px;
+    }
+  </style>
+</head>
+
+<body class="bg-light text-dark">
+  <div class="d-flex" id="wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header text-center mt-4 mb-3">
+        <h3 class="text-dark">Admin Panel</h3>
+      </div>
+      <ul class="list-unstyled components">
+        <li><a href="/admin/dashboard" class="sidebar-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="/admin/users" class="sidebar-item"><i class="fas fa-users"></i> Users</a></li>
+        <li><a href="/admin/products" class="sidebar-item"><i class="fas fa-box"></i> Products</a></li>
+        <li><a href="/admin/categories" class="sidebar-item"><i class="fas fa-th"></i> Category</a></li>
+        <li><a href="/admin/orderList" class="sidebar-item active"><i class="fas fa-list"></i> Order List</a></li>
+        <li><a href="/admin/offer" class="sidebar-item"><i class="fas fa-tags"></i> Offers</a></li>
+        <li><a href="/admin/coupons" class="sidebar-item"><i class="fas fa-ticket-alt"></i> Coupons</a></li>
+        <li><a href="/admin/salesReport" class="sidebar-item "><i class="fas fa-chart-line"></i> Sales Report</a></li>
+        <li><a href="#settings" class="sidebar-item"><i class="fas fa-cog"></i> Settings</a></li>
+        <li>
+          <form action="/admin/logout" method="POST" style="display: inline;">
+            <button type="submit" class="sidebar-item bg-transparent border-0">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+      <!-- Navbar -->
+      <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+        <button class="btn btn-primary btn-sm" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-brand d-flex align-items-center ml-auto">
+          <img src="/images/IMG_0986[1].JPG" alt="Admin Profile" class="profile-photo">
+          <span class="navbar-text text-dark ml-2">Nandalal</span>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between mb-2">
+          <h2>Orders</h2>
+
+          <!-- Search Bar -->
+          <form class="form-inline">
+            <input class="form-control mr-2" type="search" placeholder="Search orders..." aria-label="Search">
+            <button class="btn btn-primary" type="submit">Search</button>
+          </form>
+        </div>
+        <% if (orders.length === 0) { %>
+        <div class="alert alert-info" role="alert">
+          No orders found.
+        </div>
+        <% } else { %>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>User Email</th>
+              <th>User Phone</th>
+              <th>Date</th>
+              <th>Products</th>
+              <th>Order Status</th>
+              <th>Payment Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% orders.forEach((order, index) => { %>
+            <tr>
+              <td><%= (currentPage - 1) * limit + (index + 1) %></td>
+              <td class="order-id"><%= order.userId.email %></td>
+              <td><%= order.shippingAddress.phone || 'N/A' %></td> <!-- Add user phone number -->
+              <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
+              <td>
+                <div class="product-images-wrapper">
+                  <% order.items.slice(0, 3).forEach((item, idx) => { %>
+                  <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
+                  <img src="/<%= item.productId.images[0].replace(/\\/g, '/') %>" alt="<%= item.productId.name %>" class="product-image" width="40">
+                  <% } else { %>
+                  <span>No image</span>
+                  <% } %>
+                  <% }) %>
+                  <% if (order.items.length > 3) { %>
+                  <span class="extra-images">+<%= order.items.length - 3 %> more</span>
+                  <% } %>
+                </div>
+              </td>
+              <td>
+                <span class="status-box status-<%= order.orderStatus.toLowerCase() %>">
+                  <%= order.orderStatus %>
+                </span>
+                <% if (order.returnRequests && order.returnRequests.some(req => req.status === 'Pending')) { %>
+                <i class="fas fa-bell fa-lg fa-shake return-request-icon" title="Return Request Pending"></i>
+                <% } %>
+              </td>
+              <td>
+                <span class="status-box status-<%= order.paymentStatus.toLowerCase() %>">
+                  <%= order.paymentStatus %>
+                </span>
+              </td>
+              <td>
+                <a href="javascript:void(0);" class="btn btn-primary btn-sm" onclick="viewOrderDetails('<%= order._id %>')">View Details</a>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+
+        <div class="pagination d-flex justify-content-center mb-4">
+          <% if (totalOrders > 0) { %>
+          <button class="btn btn-secondary mx-1" <%=currentPage===1 ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage - 1 %>'">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <span class="mx-2"> <strong>
+              <%= currentPage %>
+            </strong> </span>
+
+          <button class="btn btn-secondary mx-1" <%=currentPage===totalPages ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage + 1 %>'">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="orderDetailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Order Summary</h6>
+              <div id="orderSummary"></div>
+            </div>
+            <div class="col-md-6">
+              <h6>Shipping Address</h6>
+              <div id="shippingAddress"></div>
+            </div>
+          </div>
+          <h6 class="mt-4">Product Details</h6>
+          <div id="productDetails"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    // Sidebar toggle functionality
+    document.getElementById('menuToggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('page-content-wrapper').classList.toggle('toggled');
+    });
+
+    let isStatusChanged = false;
+
+    function viewOrderDetails(orderId) {
+      fetch(`/admin/order/${orderId}/details`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('orderSummary').innerHTML = `
+                        <p><strong>Order ID:</strong> ${data.order._id}</p>
+                        <p><strong>Date:</strong> ${new Date(data.order.orderDate).toLocaleDateString()}</p>
+                        <p><strong>Payment Method:</strong> ${data.order.paymentMethod}</p>
+                        <div class="d-flex">
+                        <p><strong>Order Status:</strong> <span class="status-box status-${data.order.orderStatus.toLowerCase()}">${data.order.orderStatus}</span></p>
+                        <p class="pl-3"><strong>Payment Status:</strong> <span class="status-box status-${data.order.paymentStatus.toLowerCase()}">${data.order.paymentStatus}</span></p>
+                        </div>
+                        <p><strong>Total Price:</strong> ₹${data.order.totalAmount.toFixed(2)}</p>
+                    `;
+
+          document.getElementById('shippingAddress').innerHTML = `
+                        <p><strong>Full Name:</strong> ${data.order.shippingAddress.fullname}</p>
+                        <p><strong>Address:</strong> ${data.order.shippingAddress.address}</p>
+                        <p><strong>Pincode:</strong> ${data.order.shippingAddress.pincode}</p>
+                        <p><strong>Phone:</strong> ${data.order.shippingAddress.phone || 'N/A'}</p>
+                    `;
+
+          updateProductDetails(data.order.items, orderId, data.order.returnRequests, data.order.paymentStatus);
+
+          $('#orderDetailsModal').modal({
+            backdrop: 'static',
+            keyboard: false
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire('Error!', 'An error occurred while fetching order details.', 'error');
+        });
+    }
+
+    function updateProductDetails(items, orderId, returnRequests, paymentStatus) {
+      const productDetailsDiv = document.getElementById('productDetails');
+      productDetailsDiv.innerHTML = '';
+      items.forEach((item, index) => {
+        const isDisabled = item.status === 'Delivered' || item.status === 'Cancelled' || item.status === 'Returned';
+        const returnRequest = returnRequests.find(req => req.productId.toString() === item.productId._id.toString());
+        const isReturnRequested = returnRequest && returnRequest.status === 'Pending';
+        const returnReasonHTML = isReturnRequested ? `
+            <div class="return-reason">
+                <strong>Return Reason:</strong> ${returnRequest.reason}
+            </div>
+        ` : '';
+
+        const productHTML = `
+            <div class="mb-3 product-details">
+                <img src="/${item.productId.images[0].replace(/\\/g, '/')}" alt="${item.productId.name}" class="product-image">
+                <div>
+                    <strong>${index + 1}. ${item.productId.name}</strong><br>
+                    <p>Category: ${item.productId.category.name}</p>
+                    <p>${item.productId.description}</p>
+                    <p><strong>Price:</strong> ₹${item.productId.price} | <strong>Quantity:</strong> ${item.quantity}</p>
+                    <div class="status-actions">
+                        <span id="status-${item.productId._id}" class="status-box status-${item.status.toLowerCase()}">
+                            ${item.status}
+                        </span>
+                        <button class="btn btn-sm btn-secondary" onclick="changeProductStatus('${item.productId._id}', '${orderId}', '${item.status}')" ${isDisabled || paymentStatus === 'Failed' ? 'disabled' : ''}>
+                            Change Status
+                        </button>
+                        ${isReturnRequested && item.status !== 'Returned' ? `
+                            <button class="btn btn-sm btn-danger" onclick="approveReturn('${item.productId._id}', '${orderId}')">
+                                Return Requested
+                            </button>
+                        ` : ''}
+                    </div>
+                    ${item.status !== 'Returned' ? returnReasonHTML : ''}
+                </div>
+            </div>
+        `;
+        productDetailsDiv.innerHTML += productHTML;
+      });
+    }
+
+    function approveReturn(productId, orderId) {
+      Swal.fire({
+        title: 'Return Request',
+        text: 'Choose an action:',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        cancelButtonText: 'Cancel',
+        input: 'select',
+        inputOptions: {
+          'approve': 'Approve Return',
+          'reject': 'Reject Return'
+        },
+        inputPlaceholder: 'Select an action',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You need to select an action!';
+          }
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const action = result.value;
+          fetch('/admin/order/approveReturn', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                orderId,
+                productId,
+                action
+              })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                isStatusChanged = true;
+                Swal.fire({
+                  title: 'Success!',
+                  text: action === 'approve' ? 'Return approved successfully.' : 'Return rejected successfully.',
+                  icon: 'success',
+                  timer: 1000,
+                  showConfirmButton: false
+                });
+
+                // Close the modal
+                $('#orderDetailsModal').modal('hide');
+
+                // Reopen the modal with updated details
+                setTimeout(() => {
+                  viewOrderDetails(orderId);
+                }, 500);
+              } else {
+                Swal.fire('Error!', data.message || 'An error occurred.', 'error');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              Swal.fire('Error!', 'An error occurred while processing your request.', 'error');
+            });
+        }
+      });
+    }
+
+    function changeProductStatus(productId, orderId, currentStatus) {
+      Swal.fire({
+        title: 'Change Product Status',
+        input: 'select',
+        inputOptions: {
+          'Pending': 'Pending',
+          'Shipped': 'Shipped',
+          'Delivered': 'Delivered',
+          'Cancelled': 'Cancelled'
+        },
+        inputValue: currentStatus,
+        showCancelButton: true,
+        confirmButtonText: 'Change Status',
+        showLoaderOnConfirm: true,
+        preConfirm: (newStatus) => {
+          return fetch('/admin/order/changeProductStatus', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                orderId,
+                productId,
+                status: newStatus
+              })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                return data;
+              }
+              throw new Error(data.message || 'Error changing status');
+            })
+            .catch(error => {
+              Swal.showValidationMessage(`Request failed: ${error}`);
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      }).then((result) => {
+        if (result.isConfirmed) {
+          isStatusChanged = true;
+          Swal.fire({
+            title: 'Updated!',
+            text: 'Product status has been changed.',
+            icon: 'success',
+            timer: 1000,
+            showConfirmButton: false
+          });
+
+          // Close the modal
+          $('#orderDetailsModal').modal('hide');
+
+          // Reopen the modal with updated details
+          setTimeout(() => {
+            viewOrderDetails(orderId);
+          }, 500);
+        }
+      });
+    }
+
+    // Refresh page when modal is closed by user, except when status is changed
+    $('#orderDetailsModal').on('hidden.bs.modal', function(e) {
+      if (e.target === this && !e.currentTarget.classList.contains('reopening') && !isStatusChanged) {
+        location.reload();
+      }
+      isStatusChanged = false;
+    });
+  </script>
+</body>
+
+</html>

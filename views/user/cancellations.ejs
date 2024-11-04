@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cancellations - SUBTLETY</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/styles/user/userProfile.css">
+  <style>
+    body {
+      height: 100% !important;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f4f4 !important;
+    }
+
+    .order {
+      padding-top: 100px !important;
+      padding-bottom: 100px !important;
+      height: 100% !important;
+      flex-grow: 1 !important;
+    }
+
+    .container {
+      width: 80% !important;
+    }
+
+    .status-box {
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .status-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .product-image {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      margin-right: 5px;
+    }
+
+    .product-images-wrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    .product-nav-btn {
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+
+    .product-nav-btn:disabled {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .product-images {
+      display: flex;
+      overflow: hidden;
+    }
+
+    .product-image-container {
+      margin-right: 5px;
+    }
+
+    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a {
+      color: black;
+    }
+
+    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:hover {
+      color: #9135ED;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <%- include('partials/navbar') %>
+
+  <section class="profile-section">
+    <div class="container profile">
+      <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs">
+        <div>
+          <a href="/user/home" class="text-decoration-none">Home</a> /
+          <span style="color: #9135ED;" class="text-decoration-none">My Cancellations</span>
+        </div>
+        <div>
+          <h5>Welcome, <span style="color: #9135ED;"><%= user.firstname %>!</span></h5>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Sidebar (30% width) -->
+        <div class="col-lg-3 col-md-3 col-sm-4 col-5">
+          <div class="pt-3 mb-3">
+            <h6>Manage My Account</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/profile" class="text-decoration-none">My Profile</a></li>
+              <li><a href="/user/address" class="text-decoration-none">Address Book</a></li>
+            </ul>
+            <h6>Manage Orders</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/orders" class="text-decoration-none">My Orders</a></li>
+              <li><a href="/user/cancellations" class="text-decoration-none active-link">My Cancellations</a></li>
+            </ul>
+            <h6>My Stuff</h6>
+            <ul class="list-unstyled">
+              <li><a href="#myWallet" class="text-decoration-none">My Wallet</a></li>
+              <li><a href="#myWishlist" class="text-decoration-none">My Wishlist</a></li>
+            </ul>
+
+            <form action="/user/logout" method="POST" style="display: inline;">
+              <button type="submit" id="logout-btn" class="btn btn-sm btn-danger">
+                <i class="fas fa-power-off"></i> Logout
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Main Content: Cancellations Table -->
+        <div class="col-md-9 col-sm-8 col-7 order-table">
+          <h2>Your Cancellations</h2>
+          <% if (cancellations.length === 0) { %>
+          <div class="alert alert-info mt-4">
+            You currently have no cancellations. <a href="/user/home" class="alert-link">Back to Homepage</a>
+          </div>
+          <% } else { %>
+          <table class="table table-bordered mt-4">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Payment Method</th>
+                <th>Products</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% cancellations.forEach((cancellation, index) => { %>
+              <tr>
+                <td><%= index + 1 %></td>
+                <td><%= new Date(cancellation.orderDate).toLocaleDateString() %></td>
+                <td>
+                  <div class="status-box status-cancelled">
+                    <%= cancellation.orderStatus %>
+                  </div>
+                </td>
+                <td><%= cancellation.paymentMethod || 'N/A' %></td>
+                <td>
+                  <div class="product-images-wrapper">
+                    <button class="product-nav-btn prev-btn" data-order-id="<%= cancellation._id %>" <%= cancellation.items.length <= 3 ? 'disabled' : '' %>><i class="fas fa-chevron-left"></i></button>
+                    <div class="product-images" data-order-id="<%= cancellation._id %>">
+                      <% cancellation.items.forEach((item, idx) => { %>
+                      <div class="product-image-container <%= idx >= 3 ? 'd-none' : '' %>">
+                        <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
+                        <img src="/<%= item.productId.images[0].replace(/\\/g, '/') %>" alt="<%= item.productId.name %>" class="product-image">
+                        <% } else { %>
+                        <span>No image</span>
+                        <% } %>
+                      </div>
+                      <% }) %>
+                    </div>
+                    <button class="product-nav-btn next-btn" data-order-id="<%= cancellation._id %>" <%= cancellation.items.length <= 3 ? 'disabled' : '' %>><i class="fas fa-chevron-right"></i></button>
+                  </div>
+                </td>
+                <td><a href="/user/order/<%= cancellation._id %>" class="btn btn-sm btn-primary">View Details</a></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const prevBtns = document.querySelectorAll('.prev-btn');
+      const nextBtns = document.querySelectorAll('.next-btn');
+
+      prevBtns.forEach(btn => btn.addEventListener('click', navigateProducts));
+      nextBtns.forEach(btn => btn.addEventListener('click', navigateProducts));
+
+      function navigateProducts(e) {
+        const orderId = e.target.closest('button').dataset.orderId;
+        const direction = e.target.closest('button').classList.contains('next-btn') ? 1 : -1;
+        const productImagesDiv = document.querySelector(`.product-images[data-order-id="${orderId}"]`);
+        const prevBtn = productImagesDiv.previousElementSibling;
+        const nextBtn = productImagesDiv.nextElementSibling;
+
+        const images = productImagesDiv.querySelectorAll('.product-image-container');
+        const visibleImages = Array.from(images).filter(img => !img.classList.contains('d-none'));
+        let firstVisibleIndex = Array.from(images).indexOf(visibleImages[0]);
+
+        if (direction === 1) {
+          firstVisibleIndex = Math.min(firstVisibleIndex + 1, images.length - 3);
+        } else {
+          firstVisibleIndex = Math.max(firstVisibleIndex - 1, 0);
+        }
+
+        images.forEach((img, idx) => {
+          img.classList.toggle('d-none', idx < firstVisibleIndex || idx >= firstVisibleIndex + 3);
+        });
+
+        prevBtn.disabled = (firstVisibleIndex === 0);
+        nextBtn.disabled = (firstVisibleIndex >= images.length - 3);
+      }
+
+      // Initialize button states
+      document.querySelectorAll('.product-images').forEach(productImagesDiv => {
+        const prevBtn = productImagesDiv.previousElementSibling;
+        const nextBtn = productImagesDiv.nextElementSibling;
+        const images = productImagesDiv.querySelectorAll('.product-image-container');
+
+        if (images.length <= 3) {
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+        } else {
+          prevBtn.disabled = true;
+          nextBtn.disabled = false;
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>

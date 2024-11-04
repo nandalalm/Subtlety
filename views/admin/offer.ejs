@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offers - SUBTLETY</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/admin/offers.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    .modal-body .scrollable-select {
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .is-invalid {
+      border-color: #dc3545;
+    }
+
+    .is-valid {
+      border-color: #28a745;
+    }
+
+    .invalid-feedback {
+      display: none;
+      color: #dc3545;
+      font-size: 80%;
+    }
+
+    /* Remove tick and error marks from select elements */
+    select.form-control {
+      background-image: none !important;
+      padding-right: 0.75rem !important;
+    }
+  </style>
+</head>
+
+<body class="bg-light text-dark">
+  <div class="d-flex" id="wrapper">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header text-center mt-4 mb-3">
+        <h3 class="text-dark">Admin Panel</h3>
+      </div>
+      <ul class="list-unstyled components">
+        <li><a href="/admin/dashboard" class="sidebar-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="/admin/users" class="sidebar-item"><i class="fas fa-users"></i> Users</a></li>
+        <li><a href="/admin/products" class="sidebar-item"><i class="fas fa-box"></i> Products</a></li>
+        <li><a href="/admin/categories" class="sidebar-item"><i class="fas fa-th"></i> Category</a></li>
+        <li><a href="/admin/orderList" class="sidebar-item"><i class="fas fa-list"></i> Order List</a></li>
+        <li><a href="/admin/offer" class="sidebar-item active"><i class="fas fa-tags"></i> Offers</a></li>
+        <li><a href="/admin/coupons" class="sidebar-item"><i class="fas fa-ticket-alt"></i> Coupons</a></li>
+        <li><a href="/admin/salesReport" class="sidebar-item "><i class="fas fa-chart-line"></i> Sales Report</a></li>
+        <li><a href="#settings" class="sidebar-item"><i class="fas fa-cog"></i> Settings</a></li>
+        <li>
+          <form action="/admin/logout" method="POST" style="display: inline;">
+            <button type="submit" class="sidebar-item bg-transparent border-0">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+
+    <div id="page-content-wrapper">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+        <button class="btn btn-primary btn-sm" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-brand d-flex align-items-center ml-auto">
+          <img src="/images/IMG_0986[1].JPG" alt="Admin Profile" class="profile-photo">
+          <span class="navbar-text text-dark ml-2">Nandalal</span>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <h2 class="mb-4">Offers</h2>
+        <div class="d-flex justify-content-between mb-2">
+          <button class="btn btn-primary mb-2" data-toggle="modal" data-target="#addOfferModal">Add Offer</button>
+          <form class="form-inline">
+            <input class="form-control mr-2" type="search" placeholder="Search offers..." aria-label="Search">
+            <button class="btn btn-primary" type="submit">Search</button>
+          </form>
+        </div>
+
+        <!-- Add Offer Modal -->
+        <div class="modal fade" id="addOfferModal" tabindex="-1" role="dialog" aria-labelledby="addOfferModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addOfferModalLabel">Add Offer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form id="offerFormModal" novalidate>
+                  <div class="form-group">
+                    <label for="offerFor">Offer For</label>
+                    <select class="form-control" id="offerFor" required>
+                      <option value="">Select Offer Type</option>
+                      <option value="Product">Product</option>
+                      <option value="Category">Category</option>
+                    </select>
+                    <div class="invalid-feedback">Please select an offer type.</div>
+                  </div>
+                  <div class="form-group" id="productSelectContainer" style="display: none;">
+                    <label for="productSelect">Select Product</label>
+                    <select class="form-control scrollable-select" id="productSelect">
+                      <% products.forEach(product => { %>
+                      <option value="<%= product._id %>"><%= product.name %></option>
+                      <% }) %>
+                    </select>
+                    <div class="invalid-feedback">Please select a product.</div>
+                  </div>
+                  <div class="form-group" id="categorySelectContainer" style="display: none;">
+                    <label for="categorySelect">Select Category</label>
+                    <select class="form-control scrollable-select" id="categorySelect">
+                      <% categories.forEach(category => { %>
+                      <option value="<%= category._id %>"><%= category.name %></option>
+                      <% }) %>
+                    </select>
+                    <div class="invalid-feedback">Please select a category.</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="offerType">Offer Type</label>
+                    <select class="form-control" id="offerType" required>
+                      <option value="">Select Discount Type</option>
+                      <option value="flat">Flat Discount</option>
+                      <option value="percentage">Percentage Discount</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a discount type.</div>
+                  </div>
+                  <div class="form-group" id="minPriceContainer" style="display: none;">
+                    <label for="minProductPrice">Minimum Product Price</label>
+                    <input type="number" class="form-control" id="minProductPrice" min="1" required>
+                    <div class="invalid-feedback">Please enter a valid minimum price (greater than 0).</div>
+                  </div>
+                  <div class="form-group" id="maxDiscountContainer" style="display: none;">
+                    <label for="maxDiscount">Maximum Discount</label>
+                    <input type="number" class="form-control" id="maxDiscount" min="1" required>
+                    <div class="invalid-feedback">Please enter a valid maximum discount (greater than 0).</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="value">Value</label>
+                    <input type="number" class="form-control" id="value" required min="1" max="80">
+                    <div class="invalid-feedback">Please enter a valid value (1-80 for percentage).</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="expiresAt">Expires At</label>
+                    <input type="date" class="form-control" id="expiresAt" required>
+                    <div class="invalid-feedback">Please select an expiration date.</div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Add Offer</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Offer Modal -->
+        <div class="modal fade" id="editOfferModal" tabindex="-1" role="dialog" aria-labelledby="editOfferModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editOfferModalLabel">Edit Offer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form id="editOfferFormModal" novalidate>
+                  <input type="hidden" id="editOfferId">
+                  <div class="form-group">
+                    <label for="editOfferFor">Offer For</label>
+                    <select class="form-control" id="editOfferFor" required>
+                      <option value="">Select Offer Type</option>
+                      <option value="Product">Product</option>
+                      <option value="Category">Category</option>
+                    </select>
+                    <div class="invalid-feedback">Please select an offer type.</div>
+                  </div>
+                  <div class="form-group" id="editProductSelectContainer" style="display: none;">
+                    <label for="editProductSelect">Select Product</label>
+                    <select class="form-control scrollable-select" id="editProductSelect">
+                      <% products.forEach(product => { %>
+                      <option value="<%= product._id %>"><%= product.name %></option>
+                      <% }) %>
+                    </select>
+                    <div class="invalid-feedback">Please select a product.</div>
+                  </div>
+                  <div class="form-group" id="editCategorySelectContainer" style="display: none;">
+                    <label for="editCategorySelect">Select Category</label>
+                    <select class="form-control scrollable-select" id="editCategorySelect">
+                      <% categories.forEach(category => { %>
+                      <option value="<%= category._id %>"><%= category.name %></option>
+                      <% }) %>
+                    </select>
+                    <div class="invalid-feedback">Please select a category.</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="editOfferType">Offer Type</label>
+                    <select class="form-control" id="editOfferType" required>
+                      <option value="">Select Discount Type</option>
+                      <option value="flat">Flat Discount</option>
+                      <option value="percentage">Percentage Discount</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a discount type.</div>
+                  </div>
+                  <div class="form-group" id="editMinPriceContainer" style="display: none;">
+                    <label for="editMinProductPrice">Minimum Product Price</label>
+                    <input type="number" class="form-control" id="editMinProductPrice" min="1" required>
+                    <div class="invalid-feedback">Please enter a valid minimum price (greater than 0).</div>
+                  </div>
+                  <div class="form-group" id="editMaxDiscountContainer" style="display: none;">
+                    <label for="editMaxDiscount">Maximum Discount</label>
+                    <input type="number" class="form-control" id="editMaxDiscount" min="1" required>
+                    <div class="invalid-feedback">Please enter a valid maximum discount (greater than 0).</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="editValue">Value</label>
+                    <input type="number" class="form-control" id="editValue" required min="1" max="80">
+                    <div class="invalid-feedback">Please enter a valid value (1-80 for percentage).</div>
+                  </div>
+                  <div class="form-group">
+                    <label for="editExpiresAt">Expires At</label>
+                    <input type="date" class="form-control" id="editExpiresAt" required>
+                    <div class="invalid-feedback">Please select an expiration date.</div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Update Offer</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <% if (offers.length === 0) { %>
+        <div class="alert alert-info" role="alert">
+          No Offers found.
+        </div>
+        <% } else { %>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Offer For</th>
+              <th>Target</th>
+              <th>Offer Type</th>
+              <th>Value</th>
+              <th>Expires At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% offers.forEach((offer, index) => { %>
+            <tr>
+              <td><%= (currentPage - 1) * limit + index + 1 %></td>
+              <td><%= offer.offerFor %></td>
+              <td>
+                <% if (offer.offerFor === 'Product') { %>
+                <% const product = products.find(product => product._id.toString() === offer.targetId.toString()); %>
+                <%= product ? product.name : 'Unknown Product' %>
+                <% } else if (offer.offerFor === 'Category') { %>
+                <% const category = categories.find(category => category._id.toString() === offer.targetId.toString()); %>
+                <%= category ? category.name : 'Unknown Category' %>
+                <% } %>
+              </td>
+              <td><%= offer.offerType === 'flat' ? 'Flat Discount' : 'Percentage Discount' %></td>
+              <td>
+                <% if (offer.offerType === 'flat') { %>
+                &#8377; <%= offer.value %>
+                <% } else { %>
+                <%= offer.value %>%
+                <% } %>
+              </td>
+              <td><%= new Date(offer.expiresAt).toLocaleDateString() %></td>
+              <td>
+                <button class="btn btn-warning btn-sm" onclick='openEditOfferModal(<%= JSON.stringify(offer) %>)'>Edit</button>
+                <button class="btn btn-sm <%= offer.isActive ? 'btn-secondary' : 'btn-primary' %>" onclick="toggleOfferStatus('<%= offer._id %>', '<%= offer.isActive ? `unlist` : `relist` %>')">
+                  <%= offer.isActive ? 'Unlist' : 'Relist' %>
+                </button>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+
+        <!-- Pagination Section -->
+        <% if (offers.length > 0) { %>
+        <div class="pagination d-flex justify-content-center mb-4">
+          <button class="btn btn-secondary mx-1" <%=currentPage===1 ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage - 1 %>'">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <span class="mx-2"> <strong>
+              <%= currentPage %>
+            </strong> </span>
+
+          <button class="btn btn-secondary mx-1" <%=currentPage===totalPages ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage + 1 %>'">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+  <script>
+    // Sidebar toggle functionality
+    document.getElementById('menuToggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('page-content-wrapper').classList.toggle('toggled');
+    });
+
+    // Show/Hide product/category selection and additional inputs based on selections
+    function updateVisibility() {
+      const offerFor = document.getElementById('offerFor').value;
+      const offerType = document.getElementById('offerType').value;
+
+      // Show/hide product/category selection
+      document.getElementById('productSelectContainer').style.display = offerFor === 'Product' ? 'block' : 'none';
+      document.getElementById('categorySelectContainer').style.display = offerFor === 'Category' ? 'block' : 'none';
+
+      // Clear selections when toggling
+      if (offerFor !== 'Product') {
+        document.getElementById('productSelect').selectedIndex = 0;
+      }
+      if (offerFor !== 'Category') {
+        document.getElementById('categorySelect').selectedIndex = 0;
+      }
+
+      // Show/hide additional inputs based on offer type
+      if (offerFor === 'Category') {
+        document.getElementById('minPriceContainer').style.display = offerType === 'flat' ? 'block' : 'none';
+        document.getElementById('maxDiscountContainer').style.display = offerType === 'percentage' ? 'block' : 'none';
+
+        // Set required attribute based on visibility
+        document.getElementById('minProductPrice').required = offerType === 'flat';
+        document.getElementById('maxDiscount').required = offerType === 'percentage';
+      } else {
+        // Hide additional inputs if not a category
+        document.getElementById('minPriceContainer').style.display = 'none';
+        document.getElementById('maxDiscountContainer').style.display = 'none';
+
+        // Remove required attribute when hidden
+        document.getElementById('minProductPrice').required = false;
+        document.getElementById('maxDiscount').required = false;
+      }
+
+      // Update value input max attribute
+      const valueInput = document.getElementById('value');
+      if (offerType === 'percentage') {
+        valueInput.max = 80;
+      } else {
+        valueInput.removeAttribute('max');
+      }
+    }
+
+    // Event listeners for offer selection
+    document.getElementById('offerFor').addEventListener('change', updateVisibility);
+    document.getElementById('offerType').addEventListener('change', updateVisibility);
+
+    // Initial visibility check in case of pre-filled values
+    updateVisibility();
+
+    // Validation function
+    function validateInput(input) {
+      if (input.validity.valid) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+      } else {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+      }
+    }
+
+    // Add event listeners for real-time validation
+    const inputs = document.querySelectorAll('#offerFormModal input, #offerFormModal select');
+    inputs.forEach(input => {
+      input.addEventListener('input', function() {
+        validateInput(this);
+      });
+    });
+
+    // Form submission logic
+    document.getElementById('offerFormModal').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (this.checkValidity() === false) {
+        e.stopPropagation();
+        this.classList.add('was-validated');
+        return;
+      }
+
+      const offerFor = document.getElementById('offerFor').value;
+      const targetId = offerFor === 'Product' ? document.getElementById('productSelect').value : document.getElementById('categorySelect').value;
+      const offerType = document.getElementById('offerType').value;
+      const value = document.getElementById('value').value;
+      const minProductPrice = document.getElementById('minProductPrice').value;
+      const maxDiscount = document.getElementById('maxDiscount').value;
+      const expiresAt = document.getElementById('expiresAt').value;
+
+      // Additional validation
+      if (offerFor === 'Category' && offerType === 'flat' && parseFloat(value) >= parseFloat(minProductPrice)) {
+        Swal.fire('Error!', 'For category flat discount, value must be less than minimum product price.', 'error');
+        return;
+      }
+
+      if ((offerFor === 'Product' || offerFor === 'Category') && offerType === 'percentage' && parseFloat(value) > 80) {
+        Swal.fire('Error!', 'For percentage discount, value must not be greater than 80%.', 'error');
+        return;
+      }
+
+      fetch('/admin/offers/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            targetId,
+            offerFor,
+            offerType,
+            value,
+            minProductPrice,
+            maxDiscount,
+            expiresAt
+          })
+        })
+        .then(response => {
+          return response.json().then(async data => {
+            if (response.ok) {
+              await Swal.fire('Success!', data.message, 'success');
+              $('#addOfferModal').modal('hide');
+              location.reload();
+            } else {
+              Swal.fire('Error!', data.message, 'error');
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire('Error!', 'An error occurred while adding the offer.', 'error');
+        });
+    });
+
+    function toggleOfferStatus(id, action) {
+      const message = action === 'unlist' ? 'unlist' : 'relist';
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to ${message} this offer?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/offers/toggle-status/${id}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+            })
+            .then(response => {
+              if (response.ok) {
+                location.reload(); // Refresh the page on success
+              } else {
+                Swal.fire('Error', 'Failed to update offer status', 'error');
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              Swal.fire('Error', 'An error occurred', 'error');
+            });
+        }
+      });
+    }
+
+    function openEditOfferModal(offer) {
+      document.getElementById('editOfferId').value = offer._id;
+      document.getElementById('editOfferFor').value = offer.offerFor;
+
+      // Show/hide product/category selection
+      document.getElementById('editProductSelectContainer').style.display = offer.offerFor === 'Product' ? 'block' : 'none';
+      document.getElementById('editCategorySelectContainer').style.display = offer.offerFor === 'Category' ? 'block' : 'none';
+
+      if (offer.offerFor === 'Product') {
+        document.getElementById('editProductSelect').value = offer.targetId;
+      } else {
+        document.getElementById('editCategorySelect').value = offer.targetId;
+      }
+
+      document.getElementById('editOfferType').value = offer.offerType;
+      document.getElementById('editValue').value = offer.value;
+      document.getElementById('editExpiresAt').value = new Date(offer.expiresAt).toISOString().split('T')[0];
+
+      // Show/hide additional inputs based on offer type
+      updateEditVisibility();
+
+      $('#editOfferModal').modal('show');
+    }
+
+    // Update visibility for the edit modal
+    function updateEditVisibility() {
+      const offerFor = document.getElementById('editOfferFor').value;
+      const offerType = document.getElementById('editOfferType').value;
+
+      document.getElementById('editProductSelectContainer').style.display = offerFor === 'Product' ? 'block' : 'none';
+      document.getElementById('editCategorySelectContainer').style.display = offerFor === 'Category' ? 'block' : 'none';
+
+      if (offerFor === 'Category') {
+        document.getElementById('editMinPriceContainer').style.display = offerType === 'flat' ? 'block' : 'none';
+        document.getElementById('editMaxDiscountContainer').style.display = offerType === 'percentage' ? 'block' : 'none';
+
+        // Set required attribute based on visibility
+        document.getElementById('editMinProductPrice').required = offerType === 'flat';
+        document.getElementById('editMaxDiscount').required = offerType === 'percentage';
+      } else {
+        document.getElementById('editMinPriceContainer').style.display = 'none';
+        document.getElementById('editMaxDiscountContainer').style.display = 'none';
+
+        // Remove required attribute when hidden
+        document.getElementById('editMinProductPrice').required = false;
+        document.getElementById('editMaxDiscount').required = false;
+      }
+
+      // Update value input max attribute
+      const valueInput = document.getElementById('editValue');
+      if (offerType === 'percentage') {
+        valueInput.max = 80;
+      } else {
+        valueInput.removeAttribute('max');
+      }
+    }
+
+    // Event listeners for offer selection in the edit modal
+    document.getElementById('editOfferFor').addEventListener('change', updateEditVisibility);
+    document.getElementById('editOfferType').addEventListener('change', updateEditVisibility);
+
+    // Add event listeners for real-time validation in edit modal
+    const editInputs = document.querySelectorAll('#editOfferFormModal input, #editOfferFormModal select');
+    editInputs.forEach(input => {
+      input.addEventListener('input', function() {
+        validateInput(this);
+      });
+    });
+
+    // Edit Offer Form Submission
+    document.getElementById('editOfferFormModal').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (this.checkValidity() === false) {
+        e.stopPropagation();
+        this.classList.add('was-validated');
+        return;
+      }
+
+      const offerId = document.getElementById('editOfferId').value;
+      const offerFor = document.getElementById('editOfferFor').value;
+      const targetId = offerFor === 'Product' ? document.getElementById('editProductSelect').value : document.getElementById('editCategorySelect').value;
+      const offerType = document.getElementById('editOfferType').value;
+      const value = document.getElementById('editValue').value;
+      const minProductPrice = document.getElementById('editMinProductPrice').value;
+      const maxDiscount = document.getElementById('editMaxDiscount').value;
+      const expiresAt = document.getElementById('editExpiresAt').value;
+
+      // Additional validation
+      if (offerFor === 'Category' && offerType === 'flat' && parseFloat(value) >= parseFloat(minProductPrice)) {
+        Swal.fire('Error!', 'For category flat discount, value must be less than minimum product price.', 'error');
+        return;
+      }
+
+      if ((offerFor === 'Product' || offerFor === 'Category') && offerType === 'percentage' && parseFloat(value) > 80) {
+        Swal.fire('Error!', 'For percentage discount, value must not be greater than 80%.', 'error');
+        return;
+      }
+
+      fetch(`/admin/offers/edit/${offerId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            targetId,
+            offerFor,
+            offerType,
+            value,
+            minProductPrice,
+            maxDiscount,
+            expiresAt
+          })
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json().then(async data => {
+              await Swal.fire('Success!', data.message, 'success');
+              $('#editOfferModal').modal('hide');
+              location.reload();
+            });
+          } else {
+            return response.json().then(data => {
+              Swal.fire('Error!', data.message, 'error');
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire('Error!', 'An error occurred while updating the offer.', 'error');
+        });
+    });
+  </script>
+</body>
+
+</html>

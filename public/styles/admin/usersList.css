@@ -1,0 +1,130 @@
+/* Users Page Styles */
+
+/* Sidebar Styles */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    background-color: #ffffff; /* White background */
+    color: #212529; /* Dark text color */
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: width 0.3s; /* Transition only width */
+    border-right: 1px solid #dee2e6; /* Light border for separation */
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+.sidebar.active {
+    width: 0; /* Hide the sidebar */
+}
+
+.sidebar .sidebar-header {
+    background: #ffffff; /* White background */
+}
+
+.sidebar .list-unstyled {
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .list-unstyled li {
+    padding: 10px 15px;
+}
+
+.sidebar .list-unstyled li a {
+    color: #212529; /* Dark text color */
+    display: block;
+    text-decoration: none;
+}
+
+.sidebar .list-unstyled li a:hover {
+    background: #e9ecef; /* Light background on hover */
+    color: #007bff; /* Blue color on hover */
+}
+
+.sidebar .list-unstyled li a.active {
+    background: #007bff; /* Blue background for active item */
+    color: #ffffff; /* White text for active item */
+}
+
+/* Page Content Styles */
+#page-content-wrapper {
+    width: calc(100% - 250px); /* Adjust width based on sidebar width */
+    transition: margin-left 0.3s, width 0.3s; /* Transition both margin-left and width */
+    margin-left: 250px; /* Initial margin-left for sidebar */
+}
+
+#page-content-wrapper.toggled {
+    margin-left: 0; /* Remove margin-left when sidebar is toggled */
+    width: 100%; /* Full width when sidebar is toggled */
+}
+
+/* Navbar Styles */
+.navbar {
+    padding: 10px 19px;
+    background-color: #ffffff; /* White background for navbar */
+    border-radius: 10px;
+}
+
+.navbar .btn-primary {
+    background-color: #007bff; /* Blue button color */
+    border-color: #007bff;
+}
+
+.navbar .btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    border-color: #004085;
+}
+
+.profile-photo {
+    width: 40px; /* Adjust size as needed */
+    height: 40px; /* Ensure it's a square */
+    border-radius: 50%; /* Circular profile photo */
+    object-fit: cover; /* Ensure the photo covers the space without distortion */
+}
+
+/* Table Styles */
+.table {
+    border-radius: 0.25rem; /* Rounded corners for the table */
+}
+
+.table-dark {
+    background-color: #343a40; /* Dark mode background for table */
+}
+
+.table-dark thead th {
+    background-color: #495057; /* Slightly lighter dark mode for table headers */
+}
+
+.table-dark tbody tr:nth-child(odd) {
+    background-color: #495057; /* Darker rows for better readability */
+}
+
+.table-dark tbody tr:nth-child(even) {
+    background-color: #343a40; /* Base dark mode for even rows */
+}
+
+.badge-success {
+    background-color: #28a745; /* Green badge for active users */
+}
+
+.badge-danger {
+    background-color: #dc3545; /* Red badge for blocked users */
+}
+
+/* Button Styles */
+.btn-sm {
+    margin-right: 5px; /* Space between block and unblock buttons */
+}
+
+/* Form Inline Styles */
+.form-inline {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.navbar-text {
+    color: #212529; /* Dark text color */
+    font-weight: bold;
+}

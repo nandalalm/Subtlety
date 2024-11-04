@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - SUBTLETY</title>
+
+  <!-- Stylesheets -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/styles/user/userProfile.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+  <style>
+    /* Custom CSS to remove default focus styles */
+    input:focus {
+      box-shadow: none !important;
+      /* Removes the box shadow */
+    }
+
+    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1) {
+      color: black;
+    }
+
+    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1):hover {
+      color: #9135ED;
+    }
+  </style>
+</head>
+
+<body>
+  <%- include('partials/navBar') %>
+
+  <section class="profile-section">
+    <div class="container profile">
+      <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs">
+        <div>
+          <a href="/user/home" class="text-decoration-none">Home</a> /
+          <span style="color: #9135ED;" class="text-decoration-none">My Profile</span>
+        </div>
+        <div>
+          <h5>Welcome, <span style="color: #9135ED;"><%= user.firstname %>!</span></h5>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Sidebar (30% width) -->
+        <div class="col-lg-3 col-md-3 col-sm-4 col-5">
+          <div class="pt-3 mb-3">
+            <h6>Manage My Account</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/profile" class="text-decoration-none active-link">My Profile</a></li>
+              <li><a href="/user/address" class="text-decoration-none">Address Book</a></li>
+            </ul>
+            <h6>Manage Orders</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/orders" class="text-decoration-none">My Orders</a></li>
+            </ul>
+            <h6>My Stuff</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/wallet" class="text-decoration-none">My Wallet</a></li>
+              <li><a href="/user/wishlist" class="text-decoration-none">My Wishlist</a></li>
+            </ul>
+
+            <form action="/user/logout" method="POST" style="display: inline;">
+              <button type="submit" id="logout-btn" class="btn btn-sm btn-danger">
+                <i class="fas fa-power-off"></i> Logout
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Main Content (70% width) -->
+        <div class="col-lg-9 col-md-9 col-sm-8 col-7">
+          <div id="content">
+            <div id="myProfile" class="content-section">
+              <h4>Username
+                <a id="edit-btn" class="pl-2 text-decoration-none" href="#" style="font-size: 14px;">Edit</a>
+              </h4>
+              <form id="profile-form" method="POST" action="/user/profile/update">
+                <div class="form-group">
+                  <div class="d-flex justify-content-between">
+                    <div class="mr-2" style="flex: 1;">
+                      <label>First Name</label>
+                      <input type="text" name="firstname" id="first-name" value="<%= user.firstname %>" placeholder="First Name" class="form-control" disabled pattern="^[a-zA-Z]{3,}$" title="At least 3 letters, no numbers or special characters" required>
+                      <small id="first-name-error" class="form-text text-danger" style="display: none;">At least 3 letters, no numbers or special characters</small>
+                    </div>
+                    <div style="flex: 1;">
+                      <label>Last Name</label>
+                      <input type="text" name="lastname" id="last-name" value="<%= user.lastname %>" placeholder="Last Name" class="form-control" disabled pattern="^[a-zA-Z]{3,}$" title="At least 3 letters, no numbers or special characters" required>
+                      <small id="last-name-error" class="form-text text-danger" style="display: none;">At least 3 letters, no numbers or special characters</small>
+                    </div>
+                  </div>
+                  <button id="save-btn" class="btn btn-primary mt-2" style="display: none;">Save</button>
+                </div>
+              </form>
+
+              <h4>Phone Number
+                <a id="edit-phone-btn" class="pl-2 text-decoration-none" href="#" style="font-size: 14px;">Edit</a>
+              </h4>
+              <form id="phone-form" method="POST" action="/user/profile/update-phone">
+                <div class="form-group">
+                  <input type="tel" name="phone" id="phone" value="<%= user.phoneNo || '' %>" placeholder="<%= user.phoneNo ? user.phoneNo : 'Update your phone number' %>" class="form-control" disabled pattern="^[0-9]{10}$" title="10 digits, no spaces or special characters" required>
+                  <small id="phone-error" class="form-text text-danger" style="display: none;">Please enter a valid 10-digit phone number</small>
+                </div>
+                <button id="save-phone-btn" class="btn btn-primary" style="display: none;">Save</button>
+              </form>
+
+              <h4>Email Address</h4>
+              <div class="form-group">
+                <input type="email" name="email" id="email" value="<%= user.email %>" placeholder="Email Address" class="form-control" disabled>
+              </div>
+
+              <button class="btn btn-sm btn-primary mt-2" data-toggle="modal" data-target="#changePasswordModal">
+                <i class="fas fa-lock"></i> Change Password
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Change Password Modal -->
+  <div class="modal fade mt-5 pt-5" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="change-password-form">
+            <div class="form-group">
+              <label for="current-password">Current Password</label>
+              <div class="input-group">
+                <input type="password" id="current-password" class="form-control" placeholder="Enter current password" required>
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+                </div>
+              </div>
+              <small id="current-password-error" class="form-text text-danger" style="display: none;"></small>
+            </div>
+            <div class="form-group">
+              <label for="new-password">New Password</label>
+              <div class="input-group">
+                <input type="password" id="new-password" class="form-control" placeholder="Enter new password" required>
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+                </div>
+              </div>
+              <small id="new-password-error" class="form-text text-danger" style="display: none;"></small>
+            </div>
+            <div class="form-group">
+              <label for="confirm-password">Confirm Password</label>
+              <div class="input-group">
+                <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password" required>
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+                </div>
+              </div>
+              <small id="confirm-password-error" class="form-text text-danger" style="display: none;"></small>
+            </div>
+            <button type="submit" class="btn btn-primary">Change Password</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+  <!-- JavaScript -->
+  <script>
+    // Profile editing functionality
+    document.getElementById('edit-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const firstNameInput = document.getElementById('first-name');
+      const lastNameInput = document.getElementById('last-name');
+      const saveBtn = document.getElementById('save-btn');
+
+      if (firstNameInput.disabled) {
+        firstNameInput.disabled = false;
+        lastNameInput.disabled = false;
+        this.textContent = 'Cancel';
+        saveBtn.style.display = 'inline-block';
+      } else {
+        // Refresh the page on Cancel
+        location.reload();
+      }
+    });
+
+    // Real-time validation for first name and last name
+    ['first-name', 'last-name'].forEach(id => {
+      const input = document.getElementById(id);
+      const error = document.getElementById(`${id}-error`);
+
+      input.addEventListener('input', function() {
+        if (this.validity.patternMismatch) {
+          error.style.display = 'block';
+          this.style.borderColor = 'red';
+        } else {
+          error.style.display = 'none';
+          this.style.borderColor = 'green';
+        }
+      });
+    });
+
+    // Save First Name and Last Name
+    document.getElementById('save-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const firstNameInput = document.getElementById('first-name');
+      const lastNameInput = document.getElementById('last-name');
+
+      if (!firstNameInput.checkValidity() || !lastNameInput.checkValidity()) {
+        return;
+      }
+
+      // Submit the form via Fetch API
+      const form = {
+        firstname: firstNameInput.value,
+        lastname: lastNameInput.value
+      };
+
+      fetch(`/user/profile/update`, {
+          method: 'POST',
+          body: JSON.stringify(form),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
+        .then(data => {
+          Swal.fire('Success', data.message, 'success').then(() => {
+            location.reload();
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire('Error', 'Failed to update profile', 'error');
+        });
+    });
+
+    // Phone editing functionality
+    document.getElementById('edit-phone-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const phoneInput = document.getElementById('phone');
+      const savePhoneBtn = document.getElementById('save-phone-btn');
+
+      if (phoneInput.disabled) {
+        phoneInput.disabled = false;
+        this.textContent = 'Cancel';
+        savePhoneBtn.style.display = 'inline-block';
+      } else {
+        // Refresh the page on Cancel
+        location.reload();
+      }
+    });
+
+    // Real-time validation for phone number
+    document.getElementById('phone').addEventListener('input', function() {
+      const phoneError = document.getElementById('phone-error');
+      if (this.validity.patternMismatch) {
+        phoneError.style.display = 'block';
+        this.style.borderColor = 'red';
+      } else {
+        phoneError.style.display = 'none';
+        this.style.borderColor = 'green';
+      }
+    });
+
+    // Save Phone
+    document.getElementById('save-phone-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const phoneInput = document.getElementById('phone');
+
+      if (!phoneInput.checkValidity()) {
+        return;
+      }
+
+      // Submit the form via Fetch API
+      const form = {
+        phone: phoneInput.value,
+      };
+
+      fetch(`/user/profile/update-phone`, {
+          method: 'POST',
+          body: JSON.stringify(form),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
+        .then(data => {
+          Swal.fire('Success', data.message, 'success').then(() => {
+            location.reload();
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire('Error', 'Failed to update phone number', 'error');
+        });
+    });
+
+    // Real-time validation for password fields
+    ['current-password', 'new-password', 'confirm-password'].forEach(id => {
+      const input = document.getElementById(id);
+      const error = document.getElementById(`${id}-error`);
+
+      input.addEventListener('input', function() {
+        if (id === 'current-password') {
+          if (this.value.length < 6 || /\s/.test(this.value)) {
+            error.textContent = 'At least 6 characters, no spaces';
+            error.style.display = 'block';
+            this.style.borderColor = 'red';
+          } else {
+            error.style.display = 'none';
+            this.style.borderColor = 'green';
+          }
+        } else if (id === 'new-password' || id === 'confirm-password') {
+          const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
+          if (!regex.test(this.value)) {
+            error.textContent = 'At least 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character, no spaces';
+            error.style.display = 'block';
+            this.style.borderColor = 'red';
+          } else {
+            error.style.display = 'none';
+            this.style.borderColor = 'green';
+          }
+        }
+
+        if (id === 'confirm-password') {
+          const newPassword = document.getElementById('new-password').value;
+          if (this.value !== newPassword) {
+            error.textContent = 'Passwords do not match';
+            error.style.display = 'block';
+            this.style.borderColor = 'red';
+          }
+        }
+
+        if (id === 'new-password') {
+          const currentPassword = document.getElementById('current-password').value;
+          if (this.value === currentPassword) {
+            error.textContent = 'New password must be different from current password';
+            error.style.display = 'block';
+            this.style.borderColor = 'red';
+          }
+        }
+      });
+    });
+
+    // Change Password Functionality
+    document.getElementById('change-password-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const currentPasswordInput = document.getElementById('current-password');
+      const newPasswordInput = document.getElementById('new-password');
+      const confirmPasswordInput = document.getElementById('confirm-password');
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
+
+      if (currentPasswordInput.value.length < 6 || /\s/.test(currentPasswordInput.value) ||
+        !passwordRegex.test(newPasswordInput.value) ||
+        confirmPasswordInput.value !== newPasswordInput.value ||
+        currentPasswordInput.value === newPasswordInput.value) {
+        return;
+      }
+
+      // Submit the form via Fetch API
+      const form = {
+        currentPassword: currentPasswordInput.value,
+        newPassword: newPasswordInput.value,
+      };
+
+      fetch(`/user/profile/change-password`, {
+          method: 'POST',
+          body: JSON.stringify(form),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+          }
+          return response.json();
+        })
+        .then(data => {
+          $('#changePasswordModal').modal('hide');
+          Swal.fire('Success', 'Password changed successfully', 'success').then(() => {
+            location.reload();
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          if (error.message === 'Current password is incorrect') {
+            Swal.fire('Error', 'Current password is incorrect', 'error');
+            currentPasswordInput.style.borderColor = 'red';
+          } else {
+            Swal.fire('Error', error.message || 'Failed to change password', 'error');
+          }
+        });
+    });
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+      button.addEventListener('click', function() {
+        const input = this.closest('.input-group').querySelector('input');
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+    });
+  </script>
+
+</body>
+
+</html>

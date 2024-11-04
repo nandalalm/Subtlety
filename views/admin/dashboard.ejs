@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - SUBTLETY</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <style>
+    .custom-sales-overview {
+      max-width: 900px !important;
+      /* Adjust the max-width as needed */
+      margin: auto;
+      /* Center the container */
+    }
+  </style>
+</head>
+
+<body class="bg-light text-dark">
+  <script>
+    :", <%- JSON.stringify(salesByMonth) %>);
+    :", <%- JSON.stringify(salesByWeek) %>);
+    :", <%- JSON.stringify(salesByDay) %>);
+    :", <%- JSON.stringify(salesByYear) %>);
+  </script>
+  <div class="d-flex" id="wrapper">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header text-center mt-4 mb-3">
+        <h3 class="text-dark">Admin Panel</h3>
+      </div>
+      <ul class="list-unstyled components">
+        <li><a href="/admin/dashboard" class="sidebar-item active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="/admin/users" class="sidebar-item"><i class="fas fa-users"></i> Users</a></li>
+        <li><a href="/admin/products" class="sidebar-item"><i class="fas fa-box"></i> Products</a></li>
+        <li><a href="/admin/categories" class="sidebar-item"><i class="fas fa-th"></i> Category</a></li>
+        <li><a href="/admin/orderList" class="sidebar-item"><i class="fas fa-list"></i> Order List</a></li>
+        <li><a href="/admin/offer" class="sidebar-item"><i class="fas fa-tags"></i> Offers</a></li>
+        <li><a href="/admin/coupons" class="sidebar-item"><i class="fas fa-ticket-alt"></i> Coupons</a></li>
+        <li><a href="/admin/salesReport" class="sidebar-item"><i class="fas fa-chart-line"></i> Sales Report</a></li>
+        <li><a href="#settings" class="sidebar-item"><i class="fas fa-cog"></i> Settings</a></li>
+        <li>
+          <form action="/admin/logout" method="POST" style="display: inline;">
+            <button type="submit" class="sidebar-item bg-transparent border-0">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+
+    <div id="page-content-wrapper">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+        <button class="btn btn-primary btn-sm" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-brand d-flex align-items-center ml-auto">
+          <img src="/images/IMG_0986[1].JPG" alt="Admin Profile" class="profile-photo">
+          <span class="navbar-text text-dark ml-2">Nandalal</span>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white">
+              <div class="card-body">
+                <h5 class="card-title">Total Users</h5>
+                <p class="card-text"><%= totalUsers %></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white">
+              <div class="card-body">
+                <h5 class="card-title">Total Orders</h5>
+                <p class="card-text"><%= totalOrders %></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white">
+              <div class="card-body">
+                <h5 class="card-title">Total Sales</h5>
+                <p class="card-text">₹ <%= totalOrderAmount %></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-dark">
+              <div class="card-body">
+                <h5 class="card-title">Total Pending</h5>
+                <p class="card-text"><%= totalPending %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 ml-1 pl-0 mb-5">
+          <div class="row pt-4">
+            <div class="col-md-7 col-12 m-0 p-0 pl-3 pr-1">
+              <div class="custom-sales-overview">
+                <h3 class="pb-2">Sales Overview</h3>
+                <select id="timeframeSelect" class="form-control w-25 mb-3">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly" selected>Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+                <canvas id="salesChart"></canvas>
+              </div>
+            </div>
+
+            <div class="col-md-5 col-12 m-0 p-0 pr-3 pl-1">
+              <h3 class="pb-3 pt-1">Best Selling Categories</h3>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">#</th>
+                    <th style="width: 70%;">Category Name</th>
+                    <th style="width: 10%;">Image</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% bestSellingCategories.forEach((category, index) => { %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= category.name %></td>
+                    <td style="text-align: center;">
+                      <% if (category.image) { %>
+                      <img src="/<%= category.image.split('/').pop() %>" alt="Category Image" style="width: 50px; height: 50px;padding-right: 5px;">
+                      <% } else { %>
+                      <span>No Image Available</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="row pt-4">
+            <div class="col-md-12">
+              <h3 class="pb-2">Best Selling Products</h3>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Product Name</th>
+                    <th>Description</th>
+                    <th>Image</th> <!-- Change header to Image -->
+                  </tr>
+                </thead>
+                <tbody>
+                  <% bestSellingProducts.forEach(product => { %>
+                  <tr>
+                    <td><%= product.index %></td>
+                    <td><%= product.name %></td>
+                    <td><%= product.description %></td>
+                    <td>
+                      <% if (product.images.length > 0) { %>
+                      <img src="/<%= product.images[0].split('/').pop() %>" alt="Product Image" style="width: 50px; height: 50px;">
+                      <% } else { %>
+                      <span>No Image Available</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Sidebar toggle functionality
+    document.getElementById('menuToggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('page-content-wrapper').classList.toggle('toggled');
+    });
+
+    async function fetchSalesData() {
+      return {
+        daily: <%- JSON.stringify(salesByDay) %>,
+        weekly: <%- JSON.stringify(salesByWeek) %>,
+        monthly: <%- JSON.stringify(salesByMonth) %>,
+        yearly: <%- JSON.stringify(salesByYear) %>
+      };
+    }
+
+    async function renderChart(timeframe = 'monthly') {
+      const salesData = await fetchSalesData();
+
+
+      if (!salesData || !salesData[timeframe]) {
+        console.error('No sales data available.');
+        return;
+      }
+
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      let labels;
+      let data;
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      if (timeframe === 'monthly') {
+        labels = monthNames; // Use month names instead of numbers
+        data = salesData[timeframe].map(monthData => monthData.sales); // Get sales amounts
+      } else {
+        labels = Object.keys(salesData[timeframe]);
+        data = Object.values(salesData[timeframe]);
+      }
+
+      // Clear previous chart if it exists
+      if (window.salesChart instanceof Chart) {
+        window.salesChart.destroy();
+      }
+
+      // Initialize new chart
+      window.salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Sales',
+            data: data,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    document.getElementById('timeframeSelect').addEventListener('change', (event) => {
+      const selectedTimeframe = event.target.value;
+      renderChart(selectedTimeframe);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderChart(); // Default to monthly
+    });
+  </script>
+
+</body>
+
+</html>

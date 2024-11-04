@@ -1,0 +1,217 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f4f4 !important;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.single-product-section {
+  background-color: #f4f4f4;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.thumbnail {
+  width: 11.7vw; /* Adjust size of thumbnails */
+  height: auto;               
+  object-fit: cover;           
+  cursor: pointer;
+}
+
+.main-image {
+  width: 100%;
+  padding-right: 10px;
+}
+
+.product-image {
+  width: 100%; 
+  height: auto; 
+  object-fit: cover;
+}
+
+.price {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.description {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.line {
+  border-top: 1px solid #ccc;
+  margin: 15px 0;
+}
+
+.in-stock {
+  color: green;
+  font-weight: bold;
+}
+
+.reviews {
+  margin-top: 20px;
+}
+
+.view-more-btn {
+  background-color: #9135ED !important;
+  color: white !important;
+}
+
+.image-view{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.thumbnails{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-add-to-wishlist {
+  background-color:transparent!important;
+  color: rgb(0, 0, 0) !important;
+  border: 0.5px solid rgb(170, 170, 170) !important;
+}
+
+.btn-add-to-wishlist:hover {
+  background-color: #b4b4b4 !important;
+  color: rgb(0, 0, 0) !important;
+}
+
+.heart{
+  color: rgb(255, 113, 113) !important;
+}
+
+.card-div{
+  height: 100% !important;
+  transition: transform 0.2s;
+ }
+ .card-div:hover{
+   transform: scale(1.05);
+  }
+ 
+ .card-img-half {
+   height: 70% !important;
+   width: auto;
+   border: none; /* Remove border */
+   transition: transform 0.2s;
+ }
+ 
+ .card-img-half img{
+     width: 100%; /* Make the image take the full width */
+     height: auto; /* Maintain aspect ratio */
+     object-fit: cover;
+ }
+ 
+ .card-body-half{
+   width: auto;
+   height: 30% !important;
+   padding: 0px !important;
+ }
+ 
+ .card:hover {
+   transform: scale(1.05); /* Slight zoom effect */
+ }
+ 
+ .star-rating {
+   color: #F5BF25; /* Gold color for stars */
+ }
+ 
+ .price {
+   font-weight: bold;
+   color: #000;
+ }
+
+.button-container {
+  display: flex;
+  justify-content: space-between; /* Ensure buttons are spaced out evenly */
+  align-items: center; /* Center items vertically */
+  margin-top: 10px;
+  width: 100%; /* Make sure the container is full width */
+}
+
+.view-more-btn{
+  background-color: #9135ED;
+  color: white;
+}
+
+.view-more-btn :hover{
+  background-color: #ffffff;
+  color: #742bbd;
+  padding: 5px;
+}
+
+.card-link {
+  text-decoration: none !important; /* Remove underline */
+  color: inherit !important; /* Inherit text color */
+}
+
+.card-link:hover {
+  color: #9135ED !important; /* Change color on hover */
+}
+
+.some {
+  flex: 1; /* Allow buttons to take equal width */
+  padding: 10px; /* Adjust padding for uniformity */
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  margin: 0 5px; /* Add side margin for spacing */
+}
+
+
+.this-month {
+  display: flex;
+  flex-direction: column;
+  align-items:flex-start;
+  
+  margin: 1rem 0;
+}
+.this-month-square {
+  width: 20px;
+  height: 25px;
+  background-color: #9135ED; /* Adjust color as needed */
+  margin-right: 10px;
+  border-radius: 5px;
+}
+.this-month-box{
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+}
+
+.btn-add-to-carts:hover{
+  background-color: #9135ED !important;
+  border: none;
+}
+
+.star-rating i{
+  display: inline;
+}
+
+.star-rating p{
+  display: inline;
+}
+
+.cart-cart:hover{
+  background-color: #454242 !important;
+}
+.buy-buy:hover{
+  background-color: #742cbb !important;
+}
+
+/* Responsive styles */
+@media(max-width: 990px) {
+  .left-side-div {
+    margin-bottom: 30px;
+  }
+}
+@media(max-width: 770px) {
+  .button-container a {
+    font-size: 12px;
+  }
+}

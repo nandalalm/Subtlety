@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product View - SUBTLETY</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/styles/user/single-product.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <style>
+    body>section.single-product-section>div>div:nth-child(1)>a {
+      color: black !important;
+    }
+
+    body>section.single-product-section>div>div:nth-child(1)>a:hover {
+      color: #9135ED !important;
+    }
+
+    .out-of-stock {
+      opacity: 0.5;
+    }
+
+    .out-of-stock-label {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(255, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      z-index: 1;
+    }
+
+    .img-magnifier-container {
+      position: relative;
+      cursor: none;
+      /* Hide cursor when over the container */
+    }
+
+    .img-magnifier-glass {
+      position: absolute;
+      border: 3px solid #000;
+      border-radius: 50%;
+      cursor: none;
+      /* Hide cursor when over the magnifier glass */
+      width: 150px;
+      height: 150px;
+      display: none;
+      /* Initially hidden */
+      border: none;
+    }
+
+    #mainImage {
+      cursor: none;
+      /* Hide cursor when over the main image */
+    }
+  </style>
+</head>
+
+<body>
+
+  <%- include('partials/navBar') %>
+  <section class="single-product-section">
+    <div class="container mt-5">
+      <% if (!product.isListed) { %>
+      <div class="alert alert-warning" role="alert">
+        The product you are looking for is currently unavailable.
+      </div>
+      <% } else { %>
+      <div>
+        <a href="/user/home" class="text-decoration-none">Home</a> /
+        <a href="#" class="text-decoration-none"><%= categoryName %></a> /
+        <span style="color: #9135ED;" class="text-decoration-none"><%= product.name %></span>
+      </div>
+
+      <div class="row mt-4">
+        <!-- Image Column -->
+        <div class="col-md-7 image-view">
+          <div class="main-image">
+            <img id="mainImage" src="/<%= product.images[0].replace(/\\/g, '/') %>" class="product-image" alt="Product Image">
+          </div>
+          <div class="thumbnails">
+            <% product.images.forEach((image, index) => { %>
+            <img src="/<%= image.replace(/\\/g, '/') %>" class="thumbnail" alt="Thumbnail <%= index + 1 %>" onclick="changeMainImage('/<%= image.replace(/\\/g, '/') %>')">
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Details Column -->
+        <div style="display: flex; flex-direction: column; justify-content: start;" class="col-md-5">
+          <h5 class="card-title"><%= product.name %></h5>
+          <div>
+            <span class="text-warning">★★★★☆ (4.0)</span>
+          </div>
+          <p class="price">
+            <% if (bestOffer) { %>
+            <span style="text-decoration: line-through; ">₹ <%= product.price %></span>
+            <span class="" style="margin-right: 10px;">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
+            <span class="text-success">
+              <% if (bestOffer.offerType === 'percentage') { %>
+              (<%= bestOffer.value %>% off)
+              <% } else if (bestOffer.offerType === 'flat') { %>
+              (₹ <%= bestOffer.value %> off)
+              <% } %>
+            </span>
+            <% } else { %>
+            <span>₹ <%= product.price %></span>
+            <% } %>
+          </p>
+          <div class="line"></div>
+
+          <div>
+            <% if (product.stock > 0) { %>
+            <span class="in-stock">In Stock</span>
+            <% } else { %>
+            <span class="text-danger">Out of Stock</span>
+            <% } %>
+          </div>
+
+          <div class="line"></div>
+          <p class="description" style="font-size: 1.1em;"><%= product.description %></p>
+
+          <div class="line"></div>
+          <div class="">
+            <a style="font-size: small;" href="#" class="btn btn-dark btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)">
+              <i class="fas fa-heart"></i> Add to Wishlist
+            </a>
+          </div>
+
+          <div class="line"></div>
+          <p class="offer">Offers and Coupons Available:</p>
+          <p class="offer-detail">Offer: 10% off on first purchase!</p>
+          <p class="offer-detail">Coupon: SAVE10</p>
+
+          <div class="line"></div>
+          <div class="">
+            <button style="background-color: #9135ED; color: white;" class="btn btn buy-buy <%= product.stock === 0 ? 'disabled' : '' %>"><i class="fa-solid fa-bolt" style="color: #ffffff;"></i> Buy Now</button>
+            <button style="margin-left: 2px;" class="btn btn-dark cart-cart btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart "></i> Add To Cart</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="mt-5">
+        <div class="reviews mt-4 d-flex justify-content-between">
+          <h6>Reviews:</h6>
+        </div>
+        <div class="review-list mt-3">
+          <div class="review-item" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+            <strong>User 1:</strong>
+            <p>This product exceeded my expectations! Highly recommend.</p>
+          </div>
+          <div class="review-item" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+            <strong>User 2:</strong>
+            <p>Great quality for the price. Will definitely buy again!</p>
+          </div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- RELATED PRODUCTS Section -->
+  <section class="related-products">
+    <div class="container">
+      <div class="this-month">
+        <div class="this-month-box ml-3">
+          <div class="this-month-square"></div>
+          <span style="color: #9135ED;">Related Products</span>
+        </div>
+        <h2 class="text-left mt-3 ml-3 pb-3">SHOP BY RELATED PRODUCTS</h2>
+      </div>
+      <div class="row g-5">
+        <% 
+                const listedRelatedProducts = relatedProductsWithOffers.filter(item => item.product.isListed);
+                if (listedRelatedProducts.length > 0) { 
+                %>
+        <% listedRelatedProducts.forEach(({ product, bestOffer }) => { %>
+        <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
+          <a href="/user/single-product/<%= product._id %>" class="card-link">
+            <div class="card-img-half position-relative">
+              <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
+              <% if (product.stock === 0) { %>
+              <span class="out-of-stock-label">Out of Stock</span>
+              <% } %>
+            </div>
+            <div class="card-body-half">
+              <div class="product-details">
+                <h5 class="card-title text-center"><%= product.name %></h5>
+                <div class="star-rating text-center">
+                  <p class="price text-center">
+                    <% if (bestOffer) { %>
+                    <span style="text-decoration: line-through;">₹ <%= product.price %></span>
+                    <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
+                    <% } else { %>
+                    <span>₹ <%= product.price %></span>
+                    <% } %>
+                  </p>
+                  <% if (bestOffer) { %>
+                  <% if (bestOffer.offerType === 'percentage') { %>
+                  <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
+                  <% } else if (bestOffer.offerType === 'flat') { %>
+                  <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
+                  <% } %>
+                  <% } %>
+                </div>
+                <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
+                  <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                  <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <% }) %>
+        <% } else { %>
+        <div class="col-12 mb-5 pb-5">
+          <p class="text-center">No related products available.</p>
+        </div>
+        <% } %>
+      </div>
+      <% if (listedRelatedProducts.length > 0) { %>
+      <div class="text-center my-4 mt-5 pt-3 pb-5">
+        <a href="#" class="btn btn-secondary view-more-btn">View More</a>
+      </div>
+      <% } %>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <script>
+    function changeMainImage(imageUrl) {
+      const mainImage = document.getElementById('mainImage');
+      mainImage.src = imageUrl;
+      // Remove existing magnifier glass
+      const existingGlass = document.querySelector('.img-magnifier-glass');
+      if (existingGlass) {
+        existingGlass.remove();
+      }
+      // Re-initialize magnifier with new image
+      magnify("mainImage", 3);
+    }
+
+    function magnify(imgID, zoom) {
+      var img, glass, w, h, bw;
+      img = document.getElementById(imgID);
+
+      /* Create magnifier glass: */
+      glass = document.createElement("DIV");
+      glass.setAttribute("class", "img-magnifier-glass");
+
+      /* Insert magnifier glass: */
+      img.parentElement.insertBefore(glass, img);
+
+      /* Set background properties for the magnifier glass: */
+      glass.style.backgroundImage = "url('" + img.src + "')";
+      glass.style.backgroundRepeat = "no-repeat";
+      glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
+      bw = 3;
+      w = glass.offsetWidth / 2;
+      h = glass.offsetHeight / 2;
+
+      /* Show the magnifier when hovering over the image */
+      img.addEventListener("mouseenter", () => {
+        glass.style.display = "block"; // Show magnifier on mouse enter
+      });
+      img.addEventListener("mouseleave", () => {
+        glass.style.display = "none"; // Hide magnifier on mouse leave
+      });
+
+      /* Execute a function when someone moves the magnifier glass over the image: */
+      glass.addEventListener("mousemove", moveMagnifier);
+      img.addEventListener("mousemove", moveMagnifier);
+
+      /* And also for touch screens: */
+      glass.addEventListener("touchmove", moveMagnifier);
+      img.addEventListener("touchmove", moveMagnifier);
+
+      function moveMagnifier(e) {
+        var pos, x, y;
+        /* Prevent any other actions that may occur when moving over the image */
+        e.preventDefault();
+        /* Get the cursor's x and y positions: */
+        pos = getCursorPos(e);
+        x = pos.x;
+        y = pos.y;
+
+        /* Prevent the magnifier glass from being positioned outside the image: */
+        if (x > img.width - (w / zoom)) {
+          x = img.width - (w / zoom);
+        }
+        if (x < w / zoom) {
+          x = w / zoom;
+        }
+        if (y > img.height - (h / zoom)) {
+          y = img.height - (h / zoom);
+        }
+        if (y < h / zoom) {
+          y = h / zoom;
+        }
+
+        /* Set the position of the magnifier glass to center it over the cursor: */
+        glass.style.left = (x - w) + "px";
+        glass.style.top = (y - h) + "px";
+
+        /* Display what the magnifier glass "sees": */
+        glass.style.backgroundPosition = "-" + ((x * zoom) - w) + "px -" + ((y * zoom) - h) + "px";
+      }
+
+      function getCursorPos(e) {
+        var a, x = 0,
+          y = 0;
+        e = e || window.event;
+        /* Get the x and y positions of the image: */
+        a = img.getBoundingClientRect();
+        /* Calculate the cursor's x and y coordinates, relative to the image: */
+        x = e.pageX - a.left;
+        y = e.pageY - a.top;
+        /* Consider any page scrolling: */
+        x = x - window.pageXOffset;
+        y = y - window.pageYOffset;
+        return {
+          x: x,
+          y: y
+        };
+      }
+    }
+
+
+    function setupWishlistButtons() {
+      document.querySelectorAll('.btn-add-to-wishlists').forEach(button => {
+        button.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const productId = button.getAttribute('data-product-id');
+          const userId = '<%= user ? user._id : null %>'; // Ensure this correctly captures the user ID
+
+          if (!userId) {
+            Toastify({
+              text: "Please log in to add items to your wishlist",
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+            return;
+          }
+
+          try {
+            const response = await fetch('/user/add-to-wishlist', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId,
+                productId
+              }),
+            });
+
+            const result = await response.json();
+            Toastify({
+              text: result.message,
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: response.ok ? "linear-gradient(to right, #3097ff, #4d64f9)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+          } catch (error) {
+            console.error('Error adding to wishlist:', error);
+            Toastify({
+              text: "Error adding item to wishlist",
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      magnify("mainImage", 3);
+      setupWishlistButtons(); // Attach listeners for initial buttons
+    });
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const addToCartButtons = document.querySelectorAll('.btn-add-to-cart');
+
+      addToCartButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const productId = button.getAttribute('data-product-id');
+          const userId = '<%= user ? user._id : null %>'; // Check user ID
+
+          if (!userId) {
+            Toastify({
+              text: "Please log in to add items to your cart",
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+            return; // Exit if user ID is not available
+          }
+
+          try {
+            const response = await fetch('/user/cart/add', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                user: userId,
+                productId,
+                quantity: 1
+              })
+            });
+
+            const result = await response.json();
+            Toastify({
+              text: result.message,
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+            }).showToast();
+          } catch (error) {
+            console.error('Error adding to cart:', error);
+            Toastify({
+              text: "Error adding item to cart",
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll('.btn-add-to-wishlist').forEach(button => {
+      button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const productId = button.getAttribute('data-product-id');
+        const userId = '<%= user ? user._id : null %>'; // Check user ID
+
+        if (!userId) {
+          Toastify({
+            text: "Please log in to add items to your wishlist",
+            duration: 2000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+          return;
+        }
+
+        try {
+          const response = await fetch('/user/add-to-wishlist', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId,
+              productId
+            }),
+          });
+
+          const result = await response.json();
+          Toastify({
+            text: result.message,
+            duration: 2000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: response.ok ? "linear-gradient(to right, #3097ff, #4d64f9,#3097ff)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+        } catch (error) {
+          console.error('Error adding to wishlist:', error);
+          Toastify({
+            text: "Error adding item to wishlist",
+            duration: 2000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>

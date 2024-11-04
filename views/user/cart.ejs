@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart - SUBTLETY</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <style>
+    body {
+      height: 100% !important;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif !important;
+      /* Apply Poppins font globally */
+      background-color: #f4f4f4 !important;
+    }
+
+    .cart {
+      padding-top: 100px !important;
+      padding-bottom: 100px !important;
+      height: 100% !important;
+      flex-grow: 1 !important;
+    }
+
+    .container {
+      width: 80% !important;
+    }
+
+    .product-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      height: 100px;
+    }
+
+    .product-info {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      margin-right: 20px;
+    }
+
+    .product-info img {
+      width: 75px;
+      border-radius: 10px;
+      margin-right: 20px;
+    }
+
+    .product-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-details p {
+      margin: 0;
+    }
+
+    .delete-icon {
+      cursor: pointer;
+      color: #ff0000;
+      font-size: 1em;
+      margin-left: 10px;
+    }
+
+    .input-group {
+      width: 30px;
+      /* Reduced width for the input group */
+      margin-right: 10px;
+    }
+
+    .quantity-input {
+      height: 30px;
+      width: 40px !important;
+      /* Reduced width for input */
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      /* Center the input text */
+    }
+
+    .input-group button {
+      height: 30px;
+      /* Match button height to input */
+      width: 30px;
+      /* Fixed width for buttons */
+      background-color: white;
+      /* Set background color to white */
+      color: #000;
+      /* Set text color to black for better visibility */
+      border: 1px solid #ced4da;
+      /* Add a border to match the input */
+    }
+
+    body>section>div>div.mb-4>a {
+      color: black !important;
+    }
+
+    body>section>div>div.mb-4>a:hover {
+      color: #9135ED !important;
+      /* Change color on hover */
+    }
+
+    .out-of-stock-text {
+      color: red;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .low-stock-text {
+      color: orange;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .unavailable-text {
+      color: red;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    /* Hide the default arrows in number input */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <%- include('partials/navbar') %>
+
+  <section class="cart">
+    <div class="container">
+      <div class="mb-4">
+        <a href="/user/home" class="text-decoration-none">Home</a> /
+        <a href="/user/cart" class="text-decoration-none">My Cart</a>
+      </div>
+      <h1>Your Cart</h1>
+      <div class="row">
+        <% let subtotal = 0; %>
+        <% if (cart && cart.products && cart.products.length > 0) { %>
+        <div class="col-md-8 mt-3">
+          <h4>Products</h4>
+          <% cart.products.forEach(cartItem => { %>
+          <div class="product-card">
+            <div class="product-info">
+              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="Product Image">
+              <div class="product-details">
+                <p class="font-weight-bold"><%= cartItem.productId.name %></p>
+                <p>₹ <%= cartItem.discountedPrice || cartItem.productId.price %></p>
+              </div>
+              <% if (!cartItem.productId.isListed) { %>
+              <p class="unavailable-text">Product no longer available, Please remove from cart</p>
+              <% } else if (cartItem.productId.stock === 0) { %>
+              <p class="out-of-stock-text">Product Out of Stock, Please remove from cart</p>
+              <% } else if (cartItem.productId.stock < cartItem.quantity) { %>
+              <p class="low-stock-text">Currently only <%= cartItem.productId.stock %> in stock</p>
+              <% } %>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <div class="input-group">
+                <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity(this)">-</button>
+                <input type="number" value="<%= cartItem.quantity %>" min="1" max="<%= cartItem.productId.stock %>" class="form-control quantity-input" oninput="debounceUpdateQuantity('<%= cartItem.productId._id %>', this.value, <%= cartItem.productId.stock %>)">
+                <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity(this)">+</button>
+              </div>
+              <span class="delete-icon" onclick="confirmRemoveProduct('<%= cartItem.productId._id %>')">
+                <i class="fas fa-trash"></i>
+              </span>
+            </div>
+          </div>
+          <% if (cartItem.productId.isListed && cartItem.productId.stock > 0) { %>
+          <% subtotal += (cartItem.discountedPrice || cartItem.productId.price) * Math.min(cartItem.quantity, cartItem.productId.stock); %>
+          <% } %>
+          <% }); %>
+        </div>
+        <% } else { %>
+        <p class="text-center">There are no items in your cart. <a href="/user/home">Back to Home</a></p>
+        <% } %>
+
+        <% if (cart && cart.products && cart.products.length > 0) { %>
+        <div class="col-md-4 mt-3">
+          <h4>Cart Summary</h4>
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Subtotal:</span>
+              <span>₹ <span id="subtotal"><%= subtotal %></span></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Discount:</span>
+              <span>₹ 0</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Delivery Fee:</span>
+              <span>₹ 50</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <strong>Total:</strong>
+              <strong>₹ <span id="total"><%= subtotal + 50 %></span></strong>
+            </li>
+          </ul>
+          <div class="text-center mt-4">
+            <a href="#" onclick="checkoutHandler(event)" class="btn btn-success">Go to Checkout <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    function confirmRemoveProduct(productId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          removeProduct(productId);
+        }
+      });
+    }
+
+    function removeProduct(productId) {
+      fetch(`/user/cart/remove`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            productId
+          })
+        })
+        .then(response => {
+          if (response.ok) {
+            location.reload(); // Reload after 3 seconds
+          } else {
+            return response.json().then(data => {
+              console.error('Failed to remove product:', data.message || response.statusText);
+            });
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err);
+        });
+    }
+
+    let debounceTimer;
+
+    function debounceUpdateQuantity(productId, newQuantity, maxStock) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        updateQuantity(productId, newQuantity, maxStock);
+      }, 500);
+    }
+
+    function updateQuantity(productId, newQuantity, maxStock) {
+      if (newQuantity < 1) {
+        Toastify({
+          text: "Quantity cannot be less than 1",
+          duration: 2000,
+          close: false,
+          gravity: "bottom",
+          position: 'center',
+          backgroundColor: "#f44336",
+        }).showToast();
+        setTimeout(() => location.reload(), 2000);
+        return;
+      }
+
+      if (newQuantity > maxStock) {
+        Toastify({
+          text: `Only ${maxStock} items available in stock`,
+          duration: 2000,
+          close: false,
+          gravity: "bottom",
+          position: 'center',
+          backgroundColor: "#f44336",
+        }).showToast();
+        setTimeout(() => location.reload(), 2000);
+        return;
+      }
+
+      const data = {
+        productId,
+        quantity: newQuantity
+      };
+
+      fetch(`/user/cart/update`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(data => {
+              throw new Error(data.message || 'Network response was not ok');
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.message) {
+            Toastify({
+              text: data.message,
+              duration: 2000,
+              gravity: "bottom",
+              position: 'center',
+              backgroundColor: "#4CAF50",
+            }).showToast();
+          }
+          updateOrderSummary();
+          setTimeout(() => location.reload(), 2000);
+        })
+        .catch(error => {
+          Toastify({
+            text: 'Error updating quantity: ' + error.message,
+            duration: 2000,
+            close: false,
+            gravity: "bottom",
+            position: 'center',
+            backgroundColor: "#f44336",
+          }).showToast();
+          setTimeout(() => location.reload(), 2000);
+          console.error("Error:", error);
+        });
+    }
+
+    function updateOrderSummary() {
+      let subtotal = 0;
+
+      document.querySelectorAll('.product-card').forEach(productCard => {
+        const priceElement = productCard.querySelector('.product-details p:nth-of-type(2)');
+        const quantityElement = productCard.querySelector('.quantity-input');
+        const price = parseFloat(priceElement.innerText.replace('₹', '').trim());
+        const quantity = parseInt(quantityElement.value);
+        const maxStock = parseInt(quantityElement.getAttribute('max'));
+        subtotal += price * Math.min(quantity, maxStock);
+      });
+
+      document.getElementById('subtotal').innerText = subtotal.toFixed(2);
+      document.getElementById('total').innerText = subtotal.toFixed(2);
+    }
+
+    function checkoutHandler(event) {
+      event.preventDefault();
+      let outOfStockProducts = document.querySelectorAll('.product-card .out-of-stock-text');
+      let lowStockProducts = document.querySelectorAll('.product-card .low-stock-text');
+
+      if (outOfStockProducts.length > 0 || lowStockProducts.length > 0) {
+        Swal.fire({
+          title: 'Stock Issues',
+          text: 'Some products in your cart are out of stock or have insufficient stock. Please adjust quantities or remove these items to proceed.',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+      } else {
+        fetch('/user/checkout', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json' // Specify that we expect JSON
+            }
+          })
+          .then(response => {
+            if (!response.ok) {
+              return response.json().then(data => {
+                throw new Error(data.message || 'An error occurred');
+              });
+            }
+            return response.json(); // Handle the response as JSON
+          })
+          .then(data => {
+            // If you get a success response, redirect to the checkout page
+            window.location.href = '/user/checkout';
+          })
+          .catch(error => {
+            Swal.fire({
+              title: 'Error',
+              text: error.message,
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          });
+      }
+    }
+
+
+    function increaseQuantity(button) {
+      const input = button.previousElementSibling;
+      const maxStock = parseInt(input.getAttribute('max'));
+      const currentValue = parseInt(input.value);
+      if (currentValue < maxStock) {
+        input.value = currentValue + 1;
+        input.dispatchEvent(new Event('input'));
+      } else {
+        Toastify({
+          text: `Only ${maxStock} items available in stock`,
+          duration: 2000,
+          close: false,
+          gravity: "bottom",
+          position: 'center',
+          backgroundColor: "#f44336",
+        }).showToast();
+      }
+    }
+
+    function decreaseQuantity(button) {
+      const input = button.nextElementSibling;
+      const currentValue = parseInt(input.value);
+      if (currentValue > 1) {
+        input.value = currentValue - 1;
+        input.dispatchEvent(new Event('input'));
+      } else {
+        Toastify({
+          text: "Quantity cannot be less than 1",
+          duration: 2000,
+          close: false,
+          gravity: "bottom",
+          position: 'center',
+          backgroundColor: "#f44336",
+        }).showToast();
+      }
+    }
+  </script>
+
+</body>
+
+</html>

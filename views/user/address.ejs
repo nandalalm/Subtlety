@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Address - SUBTLETY</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/styles/user/userProfile.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .is-valid {
+      border-color: #28a745 !important;
+    }
+
+    .is-invalid {
+      border-color: #dc3545 !important;
+    }
+
+    .validation-message {
+      font-size: 0.875em;
+      margin-top: 0.25rem;
+    }
+
+    .validation-message.valid {
+      color: #28a745;
+    }
+
+    .validation-message.invalid {
+      color: #dc3545;
+    }
+
+    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1) {
+      color: black;
+    }
+
+    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1):hover {
+      color: #9135ED;
+    }
+  </style>
+</head>
+
+<body>
+  <%- include('partials/navBar') %>
+
+  <section class="profile-section">
+    <div class="container profile">
+      <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs">
+        <div>
+          <a href="/user/home" class="text-decoration-none">Home</a> /
+          <span style="color: #9135ED;" class="text-decoration-none">Address Book</span>
+        </div>
+        <div>
+          <h5>Welcome, <span style="color: #9135ED;"><%= user.firstname %>!</span></h5>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Sidebar (30% width) -->
+        <div class="col-lg-3 col-md-3 col-sm-4 col-5">
+          <div class="pt-3 mb-3">
+            <h6>Manage My Account</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/profile" class="text-decoration-none">My Profile</a></li>
+              <li><a href="/user/address" class="text-decoration-none active-link">Address Book</a></li>
+            </ul>
+            <h6>Manage Orders</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/orders" class="text-decoration-none">My Orders</a></li>
+            </ul>
+            <h6>My Stuff</h6>
+            <ul class="list-unstyled">
+              <li><a href="/user/wallet" class="text-decoration-none">My Wallet</a></li>
+              <li><a href="/user/wishlist" class="text-decoration-none">My Wishlist</a></li>
+            </ul>
+
+            <form action="/user/logout" method="POST" style="display: inline;">
+              <button type="submit" id="logout-btn" class="btn btn-sm btn-danger">
+                <i class="fas fa-power-off"></i> Logout
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Main Content (70% width) -->
+        <div class="col-lg-9 col-md-9 col-sm-8 col-7">
+          <div id="addressBook" class="content-section">
+            <h4>Manage Addresses</h4>
+            <div class="mb-3">
+              <button class="btn btn-sm btn-primary mt-2 mb-2" data-toggle="modal" data-target="#addAddressModal">
+                <span style="margin-right: 8px; color: white;">+</span><span style="color: white;">Add Address</span>
+              </button>
+            </div>
+            <div id="address-list">
+              <% addresses.forEach(function(address) { %>
+              <div class="address-item mb-3 p-3 border rounded">
+                <h5 style="color: rgb(123, 123, 123) !important;">
+                  <%= address.addressType.charAt(0).toUpperCase() + address.addressType.slice(1) %>
+                </h5>
+                <div class="d-flex pt-2">
+                  <p><strong>Name:</strong> <%= address.username %></p>
+                  <p style="margin-left: 10px;"><strong>Phone:</strong> <%= address.phoneNo %></p>
+                </div>
+                <p>
+                  <strong>Address:</strong> Building No. <%= address.houseFlatNo %>, <%= address.address %>, <%= address.district %>, <%= address.state %>, <%= address.country %>
+                </p>
+                <p><strong>Pincode:</strong> <%= address.pincode %></p>
+                <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editAddressModal" data-id="<%= address._id %>" data-username="<%= address.username %>" data-phone="<%= address.phoneNo %>" data-address="<%= address.address %>" data-country="<%= address.country %>" data-state="<%= address.state %>" data-district="<%= address.district %>" data-pincode="<%= address.pincode %>" data-house-flat-no="<%= address.houseFlatNo %>" data-address-type="<%= address.addressType %>">Edit</button>
+                <button class="btn btn-sm btn-danger delete-address" data-id="<%= address._id %>">Delete</button>
+              </div>
+              <% }) %>
+            </div>
+
+            <!-- Modal Structure for adding a new address -->
+            <div class="modal fade mt-5 pt-4" id="addAddressModal" tabindex="-1" role="dialog" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="addAddressModalLabel">Add New Address</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <form id="add-address-form">
+                    <div class="modal-body">
+                      <div class="form-row">
+                        <div class="form-group col-6">
+                          <label for="username">Username</label>
+                          <input type="text" class="form-control" id="username" name="username" placeholder="Ex: Nandalal" required>
+                          <div class="validation-message" id="username-validation"></div>
+                        </div>
+                        <div class="form-group col-6">
+                          <label for="phoneNo">Phone No</label>
+                          <input type="text" class="form-control" id="phoneNo" name="phoneNo" placeholder="Ex: 9207402085" required>
+                          <div class="validation-message" id="phoneNo-validation"></div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label for="address">Address</label>
+                        <input type="text" class="form-control" id="address" name="address" placeholder="Ex: Harinandanam,Ettukandamnilam,CottonmillRoadThiruvannur" required>
+                        <div class="validation-message" id="address-validation"></div>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group col-4">
+                          <label for="country">Country</label>
+                          <input type="text" class="form-control" id="country" name="country" placeholder="Ex: India" required>
+                          <div class="validation-message" id="country-validation"></div>
+                        </div>
+                        <div class="form-group col-4">
+                          <label for="state">State</label>
+                          <input type="text" class="form-control" id="state" name="state" placeholder="Ex: Kerala" required>
+                          <div class="validation-message" id="state-validation"></div>
+                        </div>
+                        <div class="form-group col-4">
+                          <label for="district">District</label>
+                          <input type="text" class="form-control" id="district" name="district" placeholder="Ex: Calicut" required>
+                          <div class="validation-message" id="district-validation"></div>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group col-md-4 col-sm-4 col-6">
+                          <label for="pincode">Pincode</label>
+                          <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Ex: 673029" required>
+                          <div class="validation-message" id="pincode-validation"></div>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-4 col-6">
+                          <label for="houseFlatNo">House/Flat No</label>
+                          <input type="text" class="form-control" id="houseFlatNo" name="houseFlatNo" placeholder="Ex: 3H">
+                          <div class="validation-message" id="houseFlatNo-validation"></div>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-4 col-12">
+                          <label>Address Type</label><br>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="addressType" id="addressTypeHome" value="home" required>
+                            <label class="form-check-label" for="addressTypeHome">Home</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="addressType" id="addressTypeWork" value="work" required>
+                            <label class="form-check-label" for="addressTypeWork">Work</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary">Add Address</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Structure for editing an address -->
+            <div class="modal fade mt-5 pt-4" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <form id="edit-address-form">
+                    <input type="hidden" id="edit-address-id">
+                    <div class="modal-body">
+                      <div class="form-row">
+                        <div class="form-group col-6">
+                          <label for="edit-username">Username</label>
+                          <input type="text" class="form-control" id="edit-username" name="edit-username" placeholder="Ex: Nandalal" required>
+                          <div class="validation-message" id="edit-username-validation"></div>
+                        </div>
+                        <div class="form-group col-6">
+                          <label for="edit-phoneNo">Phone No</label>
+                          <input type="text" class="form-control" id="edit-phoneNo" name="edit-phoneNo" placeholder="Ex: 9207402085" required>
+                          <div class="validation-message" id="edit-phoneNo-validation"></div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label for="edit-address">Address</label>
+                        <input type="text" class="form-control" id="edit-address" name="edit-address" placeholder="Ex: Harinandanam,Ettukandamnilam,CottonmillRoadThiruvannur" required>
+                        <div class="validation-message" id="edit-address-validation"></div>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group col-4">
+                          <label for="edit-country">Country</label>
+                          <input type="text" class="form-control" id="edit-country" name="edit-country" placeholder="Ex: India" required>
+                          <div class="validation-message" id="edit-country-validation"></div>
+                        </div>
+                        <div class="form-group col-4">
+                          <label for="edit-state">State</label>
+                          <input type="text" class="form-control" id="edit-state" name="edit-state" placeholder="Ex: Kerala" required>
+                          <div class="validation-message" id="edit-state-validation"></div>
+                        </div>
+                        <div class="form-group col-4">
+                          <label for="edit-district">District</label>
+                          <input type="text" class="form-control" id="edit-district" name="edit-district" placeholder="Ex: Calicut" required>
+                          <div class="validation-message" id="edit-district-validation"></div>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group col-md-4 col-sm-4 col-6">
+                          <label for="edit-pincode">Pincode</label>
+                          <input type="text" class="form-control" id="edit-pincode" name="edit-pincode" placeholder="Ex: 673029" required>
+                          <div class="validation-message" id="edit-pincode-validation"></div>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-4 col-6">
+                          <label for="edit-houseFlatNo">House/Flat No</label>
+                          <input type="text" class="form-control" id="edit-houseFlatNo" name="edit-houseFlatNo" placeholder="Ex: 3H">
+                          <div class="validation-message" id="edit-houseFlatNo-validation"></div>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-4 col-12">
+                          <label>Address Type</label><br>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="edit-addressType" id="edit-addressTypeHome" value="home" required>
+                            <label class="form-check-label" for="edit-addressTypeHome">Home</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="edit-addressType" id="edit-addressTypeWork" value="work" required>
+                            <label class="form-check-label" for="edit-addressTypeWork">Work</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary">Update Address</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function validateInput(input, validationId, regex, minLength, maxLength, errorMessage) {
+      const value = input.value;
+      const validationElement = document.getElementById(validationId);
+
+      if (regex.test(value) && value.length >= minLength && value.length <= maxLength) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        validationElement.textContent = 'Valid input';
+        validationElement.classList.remove('invalid');
+        validationElement.classList.add('valid');
+        return true;
+      } else {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        validationElement.textContent = errorMessage;
+        validationElement.classList.remove('valid');
+        validationElement.classList.add('invalid');
+        return false;
+      }
+    }
+
+    function setupValidation(inputId, validationId, regex, minLength, maxLength, errorMessage) {
+      const input = document.getElementById(inputId);
+      input.addEventListener('input', () => {
+        validateInput(input, validationId, regex, minLength, maxLength, errorMessage);
+      });
+    }
+
+    // Setup validation for add address form
+    setupValidation('username', 'username-validation', /^[a-zA-Z]+$/, 3, Infinity, 'Username should be at least 3 characters long with no spaces, special characters, or numbers.');
+    setupValidation('phoneNo', 'phoneNo-validation', /^\d+$/, 10, 10, 'Phone number should be exactly 10 digits.');
+    setupValidation('address', 'address-validation', /^[a-zA-Z0-9,]+$/, 10, Infinity, 'Address should be at least 10 characters long, with no spaces and only commas allowed as special characters.');
+    setupValidation('country', 'country-validation', /^[a-zA-Z]+$/, 4, Infinity, 'Country should contain at least 4 alphabets.');
+    setupValidation('state', 'state-validation', /^[a-zA-Z]+$/, 4, Infinity, 'State should contain at least 4 alphabets.');
+    setupValidation('district', 'district-validation', /^[a-zA-Z]+$/, 4, Infinity, 'District should contain at least 4 alphabets.');
+    setupValidation('pincode', 'pincode-validation', /^\d+$/, 6, 6, 'Pincode should be exactly 6 digits.');
+    setupValidation('houseFlatNo', 'houseFlatNo-validation', /^[a-zA-Z0-9]+$/, 1, Infinity, 'House/Flat No. should contain only alphabets and numbers.');
+
+    // Setup validation for edit address form
+    setupValidation('edit-username', 'edit-username-validation', /^[a-zA-Z]+$/, 3, Infinity, 'Username should be at least 3 characters long with no spaces, special characters, or numbers.');
+    setupValidation('edit-phoneNo', 'edit-phoneNo-validation', /^\d+$/, 10, 10, 'Phone number should be exactly 10 digits.');
+    setupValidation('edit-address', 'edit-address-validation', /^[a-zA-Z0-9,]+$/, 10, Infinity, 'Address should be at least 10 characters long, with no spaces and only commas allowed as special characters.');
+    setupValidation('edit-country', 'edit-country-validation', /^[a-zA-Z]+$/, 4, Infinity, 'Country should contain at least 4 alphabets.');
+    setupValidation('edit-state', 'edit-state-validation', /^[a-zA-Z]+$/, 4, Infinity, 'State should contain at least 4 alphabets.');
+    setupValidation('edit-district', 'edit-district-validation', /^[a-zA-Z]+$/, 4, Infinity, 'District should contain at least 4 alphabets.');
+    setupValidation('edit-pincode', 'edit-pincode-validation', /^\d+$/, 6, 6, 'Pincode should be exactly 6 digits.');
+    setupValidation('edit-houseFlatNo', 'edit-houseFlatNo-validation', /^[a-zA-Z0-9]+$/, 1, Infinity, 'House/Flat No. should contain only alphabets and numbers.');
+
+    // Handle the add address form submission
+    document.getElementById('add-address-form').addEventListener('submit', function(e) {
+      e.preventDefault(); // Prevent the default form submission
+
+      const form = {
+        username: document.getElementById('username').value,
+        phoneNo: document.getElementById('phoneNo').value,
+        address: document.getElementById('address').value,
+        country: document.getElementById('country').value,
+        state: document.getElementById('state').value,
+        district: document.getElementById('district').value,
+        pincode: document.getElementById('pincode').value,
+        houseFlatNo: document.getElementById('houseFlatNo').value,
+        addressType: document.querySelector('input[name="addressType"]:checked').value
+      };
+
+      fetch('/user/address/add', {
+          method: 'POST',
+          body: JSON.stringify(form),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error('Network response was not ok');
+        })
+        .then(data => {
+
+          $('#addAddressModal').modal('hide');
+          Swal.fire({
+            title: 'Success!',
+            text: 'Address added successfully',
+            icon: 'success',
+            confirmButtonText: 'OK'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+    });
+
+    // Pre-fill edit modal with existing address data
+    $('#editAddressModal').on('show.bs.modal', function(event) {
+      const button = $(event.relatedTarget);
+      const id = button.data('id');
+      const username = button.data('username');
+      const phone = button.data('phone');
+      const address = button.data('address');
+      const country = button.data('country');
+      const state = button.data('state');
+      const district = button.data('district');
+      const pincode = button.data('pincode');
+      const houseFlatNo = button.data('house-flat-no');
+      const addressType = button.data('address-type');
+
+      const modal = $(this);
+      modal.find('#edit-address-id').val(id);
+      modal.find('#edit-username').val(username);
+      modal.find('#edit-phoneNo').val(phone);
+      modal.find('#edit-address').val(address);
+      modal.find('#edit-country').val(country);
+      modal.find('#edit-state').val(state);
+      modal.find('#edit-district').val(district);
+      modal.find('#edit-pincode').val(pincode);
+      modal.find('#edit-houseFlatNo').val(houseFlatNo);
+      modal.find(`input[name="edit-addressType"][value="${addressType}"]`).prop('checked', true);
+    });
+
+    // Handle the edit address form submission
+    document.getElementById('edit-address-form').addEventListener('submit', function(e) {
+      e.preventDefault(); // Prevent the default form submission
+
+      const id = document.getElementById('edit-address-id').value;
+      const form = {
+        username: document.getElementById('edit-username').value,
+        phoneNo: document.getElementById('edit-phoneNo').value,
+        address: document.getElementById('edit-address').value,
+        country: document.getElementById('edit-country').value,
+        state: document.getElementById('edit-state').value,
+        district: document.getElementById('edit-district').value,
+        pincode: document.getElementById('edit-pincode').value,
+        houseFlatNo: document.getElementById('edit-houseFlatNo').value,
+        addressType: document.querySelector('input[name="edit-addressType"]:checked').value
+      };
+
+      fetch(`/user/address/edit/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(form),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error('Network response was not ok');
+        })
+        .then(data => {
+
+          $('#editAddressModal').modal('hide');
+          Swal.fire({
+            title: 'Success!',
+            text: 'Address updated successfully',
+            icon: 'success',
+            confirmButtonText: 'OK'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+    });
+
+    // Handle delete functionality
+    document.querySelectorAll('.delete-address').forEach(button => {
+      button.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You won't be able to revert this!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch(`/user/address/delete/${id}`, {
+                method: 'DELETE',
+              })
+              .then(response => {
+                if (response.ok) {
+                  return response.json();
+                }
+                throw new Error('Network response was not ok');
+              })
+              .then(data => {
+
+                Swal.fire(
+                  'Deleted!',
+                  'Your address has been deleted.',
+                  'success'
+                ).then(() => {
+                  location.reload();
+                });
+              })
+              .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                Swal.fire(
+                  'Error!',
+                  'There was a problem deleting the address.',
+                  'error'
+                );
+              });
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

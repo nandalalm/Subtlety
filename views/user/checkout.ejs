@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout - SUBTLETY</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+
+  <style>
+    body {
+      height: 100% !important;
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif !important;
+      /* Apply Poppins font globally */
+      background-color: #f4f4f4 !important;
+    }
+
+    .checkout {
+      padding-top: 100px !important;
+      padding-bottom: 100px !important;
+      height: 100% !important;
+      flex-grow: 1 !important;
+    }
+
+    .container {
+      width: 95% !important;
+    }
+
+    .summary-card {
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .address-field {
+      margin-bottom: 15px;
+    }
+
+    .product-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .product-summary img {
+      width: 50px;
+      margin-right: 20px;
+      border-radius: 7px;
+    }
+
+    .product-details {
+      text-align: left;
+      flex-grow: 1;
+      width: 50%;
+    }
+
+    .product-price {
+      text-align: right;
+      width: 80px;
+    }
+
+    .pricing-summary {
+      margin-top: 10px;
+    }
+
+    .quantity-details {
+      text-align: center;
+      width: 50px;
+    }
+
+    .list-group-item {
+      padding: 2px 10px;
+      border: none;
+      background: transparent;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 0.9em;
+    }
+
+    body>section>div>div.mb-5>a {
+      color: black !important;
+    }
+
+    body>section>div>div.mb-5>a:hover {
+      color: #9135ed !important;
+      /* Change color on hover */
+    }
+
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+
+    .form-control.is-valid {
+      border-color: #28a745;
+    }
+
+    .product-unavailable {
+      background-color: #ffeeee;
+      color: #ff0000;
+    }
+
+    .coupon-flex {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      /* Space between elements */
+    }
+
+    input#couponCode {
+      flex: 1;
+      /* Allow input to take the remaining space */
+      padding: 10px;
+      /* Add some padding */
+      border: 1px solid #ccc;
+      /* Border style */
+      border-radius: 4px;
+      /* Rounded corners */
+    }
+
+    .apply-btn {
+      padding: 10px 15px;
+      /* Vertical and horizontal padding */
+      background-color: #28a745;
+      /* Green background */
+      color: white;
+      /* Text color */
+      border: none;
+      /* Remove border */
+      border-radius: 4px;
+      /* Rounded corners */
+      cursor: pointer;
+      /* Pointer cursor on hover */
+      transition: background-color 0.3s;
+      /* Smooth transition */
+    }
+
+    .apply-btn:hover {
+      background-color: #218838;
+      /* Darker green on hover */
+    }
+
+    .removeCouponButton {
+      cursor: pointer;
+      /* Pointer cursor on hover */
+    }
+
+    .remove-coupon-btn {
+      padding: 10px 15px;
+      /* Same padding as apply button */
+      background-color: #dc3545;
+      /* Red background to indicate removal */
+      color: white;
+      /* Text color */
+      border: none;
+      /* Remove border */
+      border-radius: 4px;
+      /* Rounded corners */
+      cursor: pointer;
+      /* Pointer cursor on hover */
+      transition: background-color 0.3s;
+      /* Smooth transition */
+      display: inline-flex;
+      /* Align icon and text */
+      align-items: center;
+      /* Center icon and text vertically */
+    }
+
+    .remove-coupon-btn:hover {
+      background-color: #c82333;
+      /* Darker red on hover */
+    }
+
+    .remove-coupon-btn i {
+      margin-right: 5px;
+      /* Space between icon and text */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <%- include('partials/navbar') %>
+
+  <section class="checkout">
+    <div class="container mt-2 checkout-container">
+      <div class="mb-5">
+        <a href="/user/home" class="text-decoration-none">Home</a> /
+        <a href="/user/cart" class="text-decoration-none">Cart</a> /
+        <a href="/user/checkout" class="text-decoration-none">Checkout</a>
+      </div>
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <h5>Select Saved Address</h5>
+          <select class="form-control" id="addressSelect" onchange="populateAddress()">
+            <option value="">Select an address</option>
+            <% if(address){ %> <% address.forEach(address =>{ %>
+            <option value="<%= address.username %>" data-email="<%= address.email %>" data-address="<%= address.houseFlatNo %>,<%= address.address %>,<%= address.district %>,<%= address.state %>,<%= address.country %>" data-pincode="<%= address.pincode %>" data-phone="<%= address.phoneNo %>">
+              <%= address.username %>
+            </option>
+            <% }) %> <% } %>
+          </select>
+
+          <h5 class="mt-4">Shipping Information</h5>
+          <form id="shippingForm">
+            <div class="form-group">
+              <label for="fullName">Username</label>
+              <input type="text" class="form-control address-field" id="fullName" placeholder="Ex: Nandalal" required oninput="validateFullName()" />
+              <div class="error-message" id="fullNameError"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="address">Address</label>
+              <textarea class="form-control address-field" id="address" placeholder="Ex: 3H,Harinandanam,Ettukandamnilam,Cottonmill-Road,Thiruvannur,Calicut,Kerala,India" rows="3" required oninput="validateAddress()"></textarea>
+              <div class="error-message" id="addressError"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="pincode">Pincode</label>
+              <input type="text" class="form-control address-field" id="pincode" placeholder="Ex: 673029" required oninput="validatePincode()" />
+              <div class="error-message" id="pincodeError"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="phoneNo">Phone No</label>
+              <input type="text" class="form-control address-field" id="phoneNo" placeholder="Ex: 9207402085" required oninput="validatePhone()" />
+              <div class="error-message" id="phoneError"></div>
+            </div>
+          </form>
+        </div>
+
+        <div class="col-md-6">
+          <h5>Cart Summary</h5>
+          <div class="summary-card">
+            <% let subtotal = 0 %> <% let hasUnlistedProduct = false %> <% let
+              hasOutOfStockProduct = false %> <% if(cart) { %>
+            <div id="cartData" data-cart="<%= JSON.stringify(cart) %>"></div>
+            <% cart.products.forEach(cartItem => { %> <% if
+              (cartItem.productId.isListed && cartItem.productId.stock > 0) { %>
+            <% const price = cartItem.discountedPrice ||
+              cartItem.productId.price %> <% subtotal += price *
+              cartItem.quantity %>
+            <div class="product-summary">
+              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="product img" width="50" />
+              <div class="product-details">
+                <strong><%= cartItem.productId.name %></strong><br />
+              </div>
+              <div class="quantity-details">
+                <span>x <%= cartItem.quantity %></span>
+              </div>
+              <div class="product-price">
+                <span>₹ <%= price * cartItem.quantity %></span>
+              </div>
+            </div>
+            <% } else if (!cartItem.productId.isListed) { %> <%
+              hasUnlistedProduct = true %>
+            <div class="product-summary product-unavailable">
+              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="product img" width="50" />
+              <div class="product-details">
+                <strong><%= cartItem.productId.name %></strong><br />
+                <span>Product no longer available</span>
+              </div>
+            </div>
+            <% } else if (cartItem.productId.stock < 1) { %> <%
+              hasOutOfStockProduct = true %>
+            <div class="product-summary product-unavailable">
+              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="product img" width="50" />
+              <div class="product-details">
+                <strong><%= cartItem.productId.name %></strong><br />
+                <span>Product out of stock</span>
+              </div>
+            </div>
+            <% } %> <% }); %> <% } %>
+
+            <div class="pricing-summary">
+              <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Subtotal:</span>
+                  <span id="subtotal">₹ <%= subtotal %></span>
+                  <!-- Add an ID here -->
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Discount:</span>
+                  <span id="discountAmount">₹ 0</span>
+                  <!-- Update this to show the discount -->
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Delivery Fee:</span>
+                  <span>₹ 50</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <strong>Total:</strong>
+                  <strong id="totalAmount">₹ <%= subtotal + 50 %></strong>
+                  <!-- Update this to reflect the new total -->
+                </li>
+              </ul>
+
+              <div class="coupon-container mt-2">
+                <div class="coupon-flex">
+                  <input type="text" id="couponCode" placeholder="Enter coupon code" />
+                  <button id="applyCouponButton" class="apply-btn">Apply Coupon</button>
+                  <button id="removeCouponButton" class="remove-coupon-btn" style="display: none;">
+                    <i class="fa-solid fa-trash"></i> Remove Coupon
+                  </button>
+                </div>
+                <div id="couponMessage" class="error-message"></div>
+              </div>
+
+              <div class="mt-3">
+                <h5 class="mt-3">Payment Method</h5>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="CashOnDelivery" checked />
+                  <label class="form-check-label" for="cod">
+                    Cash on Delivery
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="Razorpay" />
+                  <label class="form-check-label" for="razorpay">
+                    Pay with Razorpay
+                  </label>
+                </div>
+              </div>
+              <div class="text-left mt-3">
+                <% if (hasUnlistedProduct || hasOutOfStockProduct) { %>
+                <div class="alert alert-danger" role="alert">
+                  Some of the products are no longer available or out of
+                  stock. Please remove them from your cart before placing the
+                  order.
+                </div>
+                <button id="placeOrderButton" class="btn btn-success" disabled>
+                  Place Order <i class="fas fa-arrow-right"></i>
+                </button>
+                <% } else { %>
+                <button id="placeOrderButton" class="btn btn-success" disabled>
+                  Place Order <i class="fas fa-arrow-right"></i>
+                </button>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%-include('partials/footer')%>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const placeOrderButton = document.getElementById("placeOrderButton");
+
+    function checkFormValidity() {
+      const fullName = document.getElementById("fullName").value;
+      const address = document.getElementById("address").value;
+      const pincode = document.getElementById("pincode").value;
+      const phoneNo = document.getElementById("phoneNo").value;
+      const paymentMethod = document.querySelector(
+        'input[name="paymentMethod"]:checked'
+      );
+
+      const isFullNameValid = /^[a-zA-Z]{3,}$/.test(fullName);
+      const isAddressValid = /^[a-zA-Z0-9,]{10,}$/.test(address);
+      const isPincodeValid = /^\d{6}$/.test(pincode);
+      const isPhoneValid = /^\d{10}$/.test(phoneNo);
+      const isPaymentMethodSelected = paymentMethod !== null;
+
+      placeOrderButton.disabled = !(
+        isFullNameValid &&
+        isAddressValid &&
+        isPincodeValid &&
+        isPhoneValid &&
+        isPaymentMethodSelected
+      );
+    }
+
+    function validateField(inputId, regex, errorMessage) {
+      const input = document.getElementById(inputId);
+      const errorElement = document.getElementById(`${inputId}Error`);
+
+      if (!regex.test(input.value)) {
+        input.classList.add("is-invalid");
+        input.classList.remove("is-valid");
+        errorElement.textContent = errorMessage;
+      } else {
+        input.classList.add("is-valid");
+        input.classList.remove("is-invalid");
+        errorElement.textContent = "";
+      }
+      checkFormValidity();
+    }
+
+    function populateAddress() {
+      const addressSelect = document.getElementById("addressSelect");
+      const fullnameInput = document.getElementById("fullName");
+      const addressInput = document.getElementById("address");
+      const pincodeInput = document.getElementById("pincode");
+      const phoneInput = document.getElementById("phoneNo");
+
+      const selectedOption =
+        addressSelect.options[addressSelect.selectedIndex];
+
+      if (selectedOption.value) {
+        fullnameInput.value = selectedOption.value;
+        addressInput.value = selectedOption.getAttribute("data-address");
+        pincodeInput.value = selectedOption.getAttribute("data-pincode");
+        phoneInput.value = selectedOption.getAttribute("data-phone");
+
+        validateField(
+          "fullName",
+          /^[a-zA-Z]{3,}$/,
+          "Full name must be at least 3 characters long and contain only letters."
+        );
+        validateField(
+          "address",
+          /^[a-zA-Z0-9,]{10,}$/,
+          "Address must be at least 10 characters long and contain letters, numbers, and commas."
+        );
+        validateField(
+          "pincode",
+          /^\d{6}$/,
+          "Pincode must be exactly 6 digits."
+        );
+        validateField(
+          "phoneNo",
+          /^\d{10}$/,
+          "Phone number must be exactly 10 digits."
+        );
+      } else {
+        fullnameInput.value = "";
+        addressInput.value = "";
+        pincodeInput.value = "";
+        phoneInput.value = "";
+
+        [fullnameInput, addressInput, pincodeInput, phoneInput].forEach(
+          (input) => {
+            input.classList.remove("is-valid", "is-invalid");
+          }
+        );
+        document
+          .querySelectorAll(".error-message")
+          .forEach((el) => (el.textContent = ""));
+      }
+
+      checkFormValidity();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      let discount = 0;
+      let appliedCouponCode = ""; // Ensure this is defined and used correctly
+
+      const couponCodeInput = document.getElementById("couponCode");
+      const applyCouponButton = document.getElementById("applyCouponButton");
+      const discountAmountDisplay = document.getElementById("discountAmount");
+      const couponMessage = document.getElementById("couponMessage");
+      const subtotalElement = document.getElementById("subtotal");
+      const removeCouponButton = document.getElementById("removeCouponButton");
+
+      if (!subtotalElement) {
+        console.error("Subtotal element not found!");
+        return;
+      }
+
+      applyCouponButton.addEventListener("click", async () => {
+        const couponCode = couponCodeInput.value;
+        const subtotal = parseFloat(
+          subtotalElement.textContent.replace("₹ ", "")
+        );
+
+        try {
+          const response = await fetch("/user/checkout/apply-coupon", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              couponCode,
+              totalAmount: subtotal + 50
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            discount = data.discount;
+            appliedCouponCode = couponCode; // Set the applied coupon code
+            discountAmountDisplay.textContent = `₹ ${discount}`;
+            const newTotal = subtotal + 50 - discount;
+            document.getElementById("totalAmount").textContent = `₹ ${newTotal}`;
+            couponMessage.textContent = "Coupon applied successfully!";
+            couponMessage.classList.remove("error-message");
+            // Show the remove coupon button when a coupon is applied
+            removeCouponButton.style.display = 'inline-block';
+          } else {
+            couponMessage.textContent = data.message;
+            couponMessage.classList.add("error-message");
+          }
+        } catch (error) {
+          couponMessage.textContent = "Error applying coupon. Please try again.";
+          couponMessage.classList.add("error-message");
+        }
+      });
+
+      // Add event listener for the remove coupon button
+      removeCouponButton.addEventListener("click", () => {
+        discount = 0;
+        appliedCouponCode = "";
+        discountAmountDisplay.textContent = `₹ ${discount}`;
+
+        const subtotal = parseFloat(subtotalElement.textContent.replace("₹ ", ""));
+        const newTotal = subtotal + 50; // Recalculate total without discount
+        document.getElementById("totalAmount").textContent = `₹ ${newTotal}`;
+
+        // Hide the remove coupon button
+        removeCouponButton.style.display = 'none';
+        couponMessage.textContent = "Coupon removed successfully!";
+        couponMessage.classList.remove("error-message");
+      });
+
+      async function placeOrder() {
+        const fullName = document.getElementById("fullName").value;
+        const address = document.getElementById("address").value;
+        const pincode = document.getElementById("pincode").value;
+        const phoneNumber = document.getElementById("phoneNo").value;
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+        if (!paymentMethod) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Please select a payment method.",
+          });
+          return;
+        }
+
+        const cartElement = document.getElementById("cartData");
+        const cart = JSON.parse(cartElement.getAttribute("data-cart"));
+
+        const items = cart.products.map((item) => ({
+          productId: item.productId._id,
+          quantity: item.quantity,
+          price: item.discountedPrice || item.productId.price,
+        }));
+
+        const subtotal = cart.products.reduce(
+          (acc, item) => acc + (item.discountedPrice || item.productId.price) * item.quantity,
+          0
+        );
+        const deliveryCharge = 50;
+        const totalAmount = subtotal + deliveryCharge; // Total amount before discount and payment status
+
+        const shippingAddress = {
+          fullname: fullName,
+          address,
+          pincode,
+          phone: phoneNumber,
+        };
+
+        const totalAmountAfterDiscount = subtotal + deliveryCharge - discount;
+
+        const orderData = {
+          items,
+          totalAmount: totalAmountAfterDiscount,
+          shippingAddress,
+          paymentMethod: paymentMethod.value,
+          couponCode: appliedCouponCode,
+          status: "pending", // Initial status before payment confirmation
+        };
+
+        // Step 1: Create order in the database
+        const orderResponse = await fetch("/user/checkout/confirm-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderData),
+        });
+
+        if (orderResponse.ok) {
+          const order = await orderResponse.json();
+          const orderId = order.orderId; // Get the created order ID
+
+          // Check if the payment method is Razorpay
+          if (paymentMethod.value === 'Razorpay') {
+            // Step 2: Create Razorpay order
+            const razorpayResponse = await fetch("/user/create-razorpay-order", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                totalAmount,
+                orderId
+              }), // Send order ID to associate with Razorpay
+            });
+
+            if (razorpayResponse.ok) {
+              const razorpayData = await razorpayResponse.json();
+              const options = {
+                key: "rzp_test_KZK1gW6B1A7B5s",
+                amount: razorpayData.amount,
+                currency: "INR",
+                name: "Subtlety",
+                description: "Order Payment",
+                order_id: razorpayData.id,
+                handler: async function(response) {
+                  try {
+                    // Step 3: Confirm payment and update order status
+                    const paymentConfirmationResponse = await fetch("/user/razorpay-confirm", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        orderId,
+                        paymentResponse: response,
+                      }),
+                    });
+
+                    if (paymentConfirmationResponse.ok) {
+                      const data = await paymentConfirmationResponse.json();
+                      Swal.fire({
+                        icon: "success",
+                        title: "Success!",
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1000,
+                      }).then(() => {
+                        window.location.href = `/user/order-success?orderId=${orderId}`;
+                      });
+                    } else {
+                      const errorData = await paymentConfirmationResponse.json();
+                      await Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: `Error confirming payment: ${errorData.message}`,
+                      });
+                    }
+                  } catch (error) {
+                    await Swal.fire({
+                      icon: "error",
+                      title: "Oops...",
+                      text: "An unexpected error occurred while confirming the payment.",
+                    });
+                  }
+                },
+              };
+
+              const razorpay = new Razorpay(options);
+              razorpay.on("payment.failed", async (res) => {
+                // Create a new Promise to wait for the Razorpay modal to close
+                await new Promise((resolve) => {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Payment Failed",
+                    text: "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank.",
+                    willClose: () => resolve(), // Resolve the promise when the alert is closed
+                  });
+                });
+
+                // Redirect to home after the alert is closed
+                window.location.href = "/user/home";
+              });
+
+              // Open the Razorpay payment gateway
+              razorpay.open();
+            } else {
+              const errorData = await razorpayResponse.json();
+              await Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: `Error creating Razorpay order: ${errorData.message}`,
+              });
+            }
+          } else {
+            // If Cash on Delivery is selected, simply show success message and redirect
+            Swal.fire({
+              icon: "success",
+              title: "Success!",
+              text: "Your order has been placed successfully!",
+              showConfirmButton: false,
+              timer: 1000,
+            }).then(() => {
+              window.location.href = `/user/order-success?orderId=${orderId}`;
+            });
+          }
+        } else {
+          const errorData = await orderResponse.json();
+          await Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: `Error creating order: ${errorData.message}`,
+          });
+        }
+      }
+
+      // Add event listener for placing the order
+      placeOrderButton.addEventListener("click", function(e) {
+        e.preventDefault();
+        placeOrder();
+      });
+
+      // Add event listeners for payment method changes
+      document
+        .querySelectorAll('input[name="paymentMethod"]')
+        .forEach((radio) => {
+          radio.addEventListener("change", checkFormValidity);
+        });
+    });
+  </script>
+</body>
+
+</html>

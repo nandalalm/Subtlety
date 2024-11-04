@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 Internal Server Error</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 64px;
+      /* Increased font size */
+      font-weight: bold;
+      /* Bold text */
+      color: #e74c3c;
+      /* Red color for error indication */
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 24px;
+      /* Increased font size */
+      margin-bottom: 40px;
+      color: #777;
+      /* Softer grey for the message */
+    }
+
+    a {
+      text-decoration: none;
+      color: #0073e6;
+      /* Amazon-like blue color */
+      font-size: 18px;
+      padding: 10px 20px;
+      border: 2px solid #0073e6;
+      border-radius: 5px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    a:hover {
+      background-color: #0073e6;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <h1>500 - Internal Server Error</h1>
+    <p><%= message %></p>
+    <a href="/">Go to Home</a>
+  </div>
+</body>
+
+</html>

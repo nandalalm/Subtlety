@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SUBTLETY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/user/login.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    .otp-inputs {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .otp-box {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #9135ED;
+      margin: 0 5px;
+      text-align: center;
+      font-size: 24px;
+      color: #9135ED;
+      outline: none;
+      cursor: text;
+      border-radius: 5px;
+    }
+
+    .otp-box:focus {
+      border: 2px solid #4CAF50;
+      /* Green border on focus */
+    }
+
+
+    /* Input focus styles */
+    .form-control:focus {
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    /* Custom styles for valid/invalid inputs */
+    .form-control.is-valid {
+      border-color: #28a745;
+    }
+
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <h2 style="color: #9135ED;" class="text-center">SUBTLETY</h2>
+
+    <!-- Error message placeholder -->
+    <% if (errorMessage) { %>
+    <div class="alert alert-danger" role="alert" id="errorAlert">
+      <%= errorMessage %>
+    </div>
+    <% } %>
+
+    <form id="loginForm" action="/user/login" method="post">
+      <div class="form-group">
+        <label for="usermail"><small>Email</small></label>
+        <input type="email" class="form-control rounded-pill" id="email" name="email" placeholder="Enter email" required>
+        <div class="invalid-feedback"><small>Please enter a valid email address.</small></div>
+      </div>
+      <div class="form-group password-wrapper">
+        <label for="password"><small>Password</small></label>
+        <input type="password" class="form-control rounded-pill" id="password" name="password" placeholder="Enter password" required>
+        <i class="fa-regular fa-eye" id="togglePassword"></i>
+        <div class="invalid-feedback"><small>Password must be at least 6 characters long.</small></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block rounded-pill hello mt-4">Login</button>
+    </form>
+
+    <p class="text-center">or</p>
+    <a href='/auth/google' class="btn btn-primary btn-block rounded-pill hai">
+      <img src="/images/google_icon.svg" alt="Google Icon" /> Login with Google
+    </a>
+
+    <p class="text-center mt-3"><small>Already have an account? </small><a href="/user/signup"><small>Signup here</small></a></p>
+
+    <div class="mt-3" style="display: flex;justify-content: center;align-items: center;flex-direction: column;">
+      <a style="text-decoration: none;cursor: pointer;" id="forgotPasswordButton" class="mb-1 btn-link">Forgot Password?</a>
+    </div>
+
+    <div id="forgotPasswordForm" style="display: none;">
+      <input type="email" id="resetEmail" placeholder="Enter registered email" required style="width: 220px;margin-left: 5px;"> <!-- Increased width slightly -->
+      <button id="sendOtpButton" class="btn btn-sm btn-primary">Send OTP</button>
+      <div id="loader" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <span id="loaderText">Sending OTP...</span>
+      </div>
+
+      <!-- OTP Section -->
+      <div id="otpSection" style="display: none;">
+        <h3 class="text-center">Enter OTP</h3>
+        <div class="otp-inputs text-center">
+          <div class="otp-box" id="otp-box-1" contenteditable="true"></div>
+          <div class="otp-box" id="otp-box-2" contenteditable="true"></div>
+          <div class="otp-box" id="otp-box-3" contenteditable="true"></div>
+          <div class="otp-box" id="otp-box-4" contenteditable="true"></div>
+          <div class="otp-box" id="otp-box-5" contenteditable="true"></div>
+          <div class="otp-box" id="otp-box-6" contenteditable="true"></div>
+        </div>
+        <small id="timer-message" class="text-danger text-center pt-2 pb-2" style="display: none;"></small>
+        <button id="verifyOtpButton" class="btn btn-success btn-block rounded-pill mt-2">Verify OTP</button>
+        <button id="resendOtpButton" class="btn btn-secondary btn-block rounded-pill mt-2" style="display: none;">Resend OTP</button>
+      </div>
+    </div>
+
+    <div id="changePasswordSection" style="display: none;">
+      <label for="newPassword"><small>Enter new password</small></label>
+      <input type="password" id="newPassword" placeholder="New Password" required style="width: 310px;margin-left: 5px;">
+      <label for="confirmNewPassword"><small>Confirm new password</small></label>
+      <input type="password" id="confirmNewPassword" placeholder="Confirm Password" required style="width: 310px;margin-left: 5px;">
+      <button id="changePasswordButton" class="btn btn-primary mt-3" style="width: 310px;margin-left: 5px;">Change Password</button>
+    </div>
+
+    <script src="/js/login.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      // Show the forgot password form
+      document.getElementById('forgotPasswordButton').onclick = function() {
+        document.getElementById('email').disabled = true;
+        document.getElementById('password').disabled = true;
+        document.getElementById('forgotPasswordForm').style.display = 'block';
+      };
+
+      // Send OTP for password reset
+      document.getElementById('sendOtpButton').onclick = async function() {
+        const email = document.getElementById('resetEmail').value;
+
+        // Show loader and change button text
+        document.getElementById('sendOtpButton').style.display = 'none';
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('loaderText').innerText = 'Sending OTP...';
+
+        const response = await fetch('/user/send-otp-password-reset', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email
+          })
+        });
+
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'OTP sent to your email. Please check your inbox.',
+          });
+          document.getElementById('otpSection').style.display = 'block';
+          startOtpTimer(); // Start the timer
+          document.getElementById('resetEmail').style.display = 'none'; // Hide the email input
+          document.getElementById('sendOtpButton').style.display = 'none'; // Hide the send OTP button
+        } else {
+          const errorText = await response.text();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: `Error sending OTP: ${errorText}`,
+          });
+        }
+
+        // Hide loader and change button text back
+        document.getElementById('sendOtpButton').style.display = 'none';
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('loaderText').innerText = 'Sending OTP...';
+      };
+
+      function startOtpTimer() {
+        const timerMessage = document.getElementById('timer-message');
+        const resendButton = document.getElementById('resendOtpButton');
+        let timeLeft = 60; // 60 seconds
+
+        timerMessage.style.display = 'block';
+        timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
+        resendButton.style.display = 'none';
+
+        const otpTimeout = setInterval(() => {
+          timeLeft--;
+          timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
+
+          if (timeLeft <= 0) {
+            clearInterval(otpTimeout);
+            timerMessage.innerText = 'You can now resend the OTP.';
+            resendButton.style.display = 'block'; // Show resend button
+          }
+        }, 1000);
+      }
+
+      // Handle OTP input and verification
+      const otpBoxes = document.querySelectorAll('.otp-box');
+
+      otpBoxes.forEach((box, index) => {
+        box.addEventListener('input', (e) => {
+          if (e.inputType === "insertText" && e.data) {
+            box.textContent = e.data; // Set box content
+            box.nextElementSibling?.focus(); // Move to the next box
+          }
+        });
+
+        box.addEventListener('keydown', (e) => {
+          if (e.key === "Backspace") {
+            if (box.textContent === '') {
+              const previousBox = box.previousElementSibling;
+              if (previousBox) {
+                previousBox.focus(); // Focus on the previous box
+                setTimeout(() => {
+                  previousBox.textContent = ''; // Clear the previous box content
+                }, 0);
+              }
+            }
+          }
+        });
+      });
+
+      document.getElementById('verifyOtpButton').addEventListener('click', async () => {
+        const otp = Array.from(otpBoxes).map(box => box.textContent).join('');
+        const email = document.getElementById('resetEmail').value;
+
+        const response = await fetch('/user/verify-otp-password-reset', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email,
+            otp
+          })
+        });
+
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'OTP verified successfully. Please set your new password.',
+          });
+
+          // Show the change password section
+          document.getElementById('changePasswordSection').style.display = 'block';
+          // Optionally hide the OTP section
+          document.getElementById('otpSection').style.display = 'none';
+        } else {
+          const errorText = await response.text();
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid OTP!',
+            text: `The OTP you entered is invalid: ${errorText}`,
+          });
+        }
+      });
+
+      // Change password
+      document.getElementById('changePasswordButton').onclick = async function() {
+        const email = document.getElementById('resetEmail').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+        // Check if passwords match
+        if (newPassword !== confirmNewPassword) {
+          alert('New passwords do not match');
+          return;
+        }
+
+        const response = await fetch('/user/reset-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email,
+            newPassword
+          })
+        });
+
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Password changed successfully.',
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload(); // Refresh the page
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Error changing password: ' + (await response.text()),
+          });
+        }
+      };
+
+      document.getElementById('resendOtpButton').addEventListener('click', async () => {
+        const email = document.getElementById('resetEmail').value;
+
+        // Show loader and change button text
+        document.getElementById('resendOtpButton').style.display = 'none';
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('loaderText').innerText = 'Resending OTP...';
+
+        const response = await fetch('/user/resend-otp-password-reset', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email
+          })
+        });
+
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'OTP has been resent to your email.',
+          });
+          startOtpTimer(); // Restart the timer
+        } else {
+          const errorText = await response.text();
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: `Error resending OTP: ${errorText}`,
+          });
+        }
+
+        // Hide loader and change button text back
+        document.getElementById('resendOtpButton').style.display = 'none';
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('loaderText').innerText = 'Resending OTP...';
+      });
+    </script>
+</body>
+
+</html>

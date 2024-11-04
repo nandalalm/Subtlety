@@ -1,0 +1,355 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif; /* Apply Poppins font globally */
+}
+
+body {
+  background-color: #f4f4f4 !important;
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: #000000; /* Set to white */
+  display: flex;
+  align-items: center;
+  height: 55vh;
+  flex-grow: 1;
+}
+
+.search-bar {
+  margin-top: 20px; /* Space above the search bar */
+}
+
+.search-bar input {
+  padding: 10px;
+  background: transparent;
+  color: white;
+  border-radius: 5px 0 0 5px; /* Rounded corners */
+  border-color: white;
+  width: 200px; /* Set width as needed */
+}
+
+.search-bar button {
+  padding: 10px;
+  border-radius: 0 5px 5px 0; /* Rounded corners */
+  background-color: #9135ED; /* Matching button color */
+  border-color: #9135ED;
+  color: white; /* Button text color */
+  cursor: pointer; /* Pointer on hover */
+}
+
+.search-bar input::placeholder {
+  color: #ffffff; /* Placeholder text color */
+}
+
+.hero-section h1 {
+  font-size: 4vw;
+  background: linear-gradient(90deg,#9135ED,white); /* Gradient from white to #9135ED */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; /* Makes the text transparent */
+}
+
+.hero-section h4 {
+  font-size: 2vw;
+  background: linear-gradient(90deg,#9135ED,white); /* Same gradient */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; /* Makes the text transparent */
+}
+/* Statistics */
+.stat-number {
+  font-weight: bold;
+  font-size: 1.8em;
+  color: #000;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: #555;
+}
+
+.new-arrivals {
+  padding-top: 50px;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.card-div{
+ height: 100% !important;
+ transition: transform 0.2s;
+}
+.card-div:hover{
+  transform: scale(1.05);
+ }
+
+.card-img-half {
+  height: 70% !important;
+  width: auto;
+  border: none; /* Remove border */
+  transition: transform 0.2s;
+}
+
+.card-img-half img{
+    width: 100%; /* Make the image take the full width */
+    height: auto; /* Maintain aspect ratio */
+    object-fit: cover;
+}
+
+.card-body-half{
+  width: auto;
+  height: 30% !important;
+  padding: 0px !important;
+}
+
+.card:hover {
+  transform: scale(1.05); /* Slight zoom effect */
+}
+
+.star-rating {
+  color: #F5BF25; /* Gold color for stars */
+}
+
+.price {
+  font-weight: bold;
+  color: #000;
+}
+
+.top-selling {
+  padding: 50px 0;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.star-rating {
+  color: #F5BF25; /* Gold color for stars */
+}
+
+.star-rating i{
+  display: inline;
+}
+
+.star-rating p{
+  display: inline;
+}
+
+.price {
+  font-weight: bold;
+  color: #000;
+}
+
+.categories {
+  padding: 50px 0;
+}
+
+.categories h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.categories h5 {
+  text-align: center;
+  color: #9135ED;
+}
+
+.category-card {
+  text-align: center;
+  border: 1px solid #ddd; /* Light border */
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40vh;
+  transition: transform 0.2s;
+}
+
+.category-card:hover{
+  transform: scale(1.05);
+}
+
+.category-img {
+  width: 210px;
+  object-fit:cover; 
+  color: #000; /* Changed text color to black */
+  position: relative; /* Allow positioning below image */
+}
+
+
+.stars {
+  color: #F5BF25; /* Yellow color for stars */
+  font-size: 20px;
+}
+
+.copyright {
+  text-align: center;
+  font-size: 14px; /* Adjust font size */
+  color: #555;
+}
+
+.fixed-height {
+  height: 200px; /* Set your desired height */
+  object-fit: cover; /* This maintains the aspect ratio */
+  width: 100%; /* Ensure it takes the full width of the card */
+}
+
+.this-month {
+  display: flex;
+  flex-direction: column;
+  align-items:flex-start;
+  
+  margin: 1rem 0;
+}
+.this-month-square {
+  width: 20px;
+  height: 25px;
+  background-color: #9135ED; /* Adjust color as needed */
+  margin-right: 10px;
+  border-radius: 5px;
+}
+.this-month-box{
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+}
+
+.view-more-btn{
+  background-color: #9135ED;
+  color: white;
+}
+
+.view-more-btn :hover{
+  background-color: #ffffff;
+  color: #9135ED;
+  padding: 5px;
+}
+
+.card-link {
+  text-decoration: none !important; /* Remove underline */
+  color: inherit !important; /* Inherit text color */
+}
+
+.card-link:hover {
+  color: #9135ED !important; /* Change color on hover */
+}
+
+.card-links{
+  text-decoration: none !important; /* Remove underline */
+  color: #9135ED;
+}
+.card-links:hover{
+  color: #000 !important;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between; /* Ensure buttons are spaced out evenly */
+  align-items: center; /* Center items vertically */
+  margin-top: 10px;
+  width: 100%; /* Make sure the container is full width */
+}
+
+.btn {
+  flex: 1; /* Allow buttons to take equal width */
+  padding: 10px; /* Adjust padding for uniformity */
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  margin: 0 5px; /* Add side margin for spacing */
+}
+
+.btn-add-to-cart, .btn-buy-now {
+  background-color: black; /* Black background for both buttons */
+  border: none;
+}
+
+/* Optional: Add hover effect */
+.btn:hover {
+  background-color: #9135ED !important; /* Change to your desired color on hover */
+  border: none !important;
+}
+
+.view-more-btn{
+  background-color: #9135ED !important;
+  color: white !important;
+}
+
+
+@media(max-width:930px){
+  .search-bar input {
+    width: 150px; /* Set width as needed */
+  }
+  .hero-section h1 {
+    font-size: 6vw;
+  }
+  .hero-section h4 {
+    font-size: 4vw;
+  }
+  .search-bar input {
+    padding: 8px;
+  }
+  
+  .search-bar button {
+    padding: 8px;
+  }
+}
+
+@media(max-width:1405px){
+  .button-container a{
+    font-size: 12px;
+  }
+}
+
+@media(max-width:581px){
+  .category-container{
+    width: 80% !important;
+  }
+  .new-arrival-container{
+    width: 80% !important;
+  }
+  .top-selling-container{
+    width: 80% !important;
+  }
+}
+
+@media(max-width:450px){
+  .category-container{
+    width: 80% !important;
+  }
+  .new-arrival-container{
+    width: 80% !important;
+  }
+  .top-selling-container{
+    width: 80% !important;
+  }
+}
+
+@media(max-width:370px){
+  .hero-section h1 {
+    font-size: 8vw;
+  }
+  .hero-section h4 {
+    font-size: 6vw;
+  }
+  .search-bar input {
+    padding: 5px;
+  }
+  
+  .search-bar button {
+    padding: 5px;
+  }
+}
+
+@media(max-width:350px){
+  .category-container{
+    width: 96% !important;
+  }
+  .new-arrival-container{
+    width: 96% !important;
+  }
+  .top-selling-container{
+    width: 96% !important;
+  }
+}
