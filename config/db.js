@@ -9,8 +9,6 @@ console.log(dbURI);
 const connectDB = async () => {
     try {
         await mongoose.connect(dbURI, {
-          
-           
         });
         
     } catch (error) {
