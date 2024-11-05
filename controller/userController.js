@@ -1055,69 +1055,66 @@ async function confirmOrder(req, res) {
       }
     }
 
-    // Recheck offers and calculate total
-    let recalculatedTotal = 0;
-    let totalOfferDiscount = 0;
-    for (const item of items) {
-      const product = await Product.findById(item.productId);
-      const bestOffer = await getBestOffer(product);
-      const price =
-        bestOffer && bestOffer.isActive
-          ? bestOffer.discountedPrice
-          : product.price;
-      recalculatedTotal += price * item.quantity;
 
-      if (bestOffer && bestOffer.isActive) {
-        totalOfferDiscount +=
-          (product.price - bestOffer.discountedPrice) * item.quantity;
-      }
-    }
+let recalculatedTotal = 0;
+let totalOfferDiscount = 0;
 
-    // Initialize discount
-    let discount = 0;
+for (const item of items) {
+  const product = await Product.findById(item.productId);
+  const bestOffer = await getBestOffer(product);
+  const price =
+    bestOffer && bestOffer.isActive
+      ? bestOffer.discountedPrice
+      : product.price;
+  recalculatedTotal += price * item.quantity;
 
-    // Apply coupon code if provided
-    if (couponCode) {
-      // Find the coupon in the database
-      const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
+  if (bestOffer && bestOffer.isActive) {
+    totalOfferDiscount +=
+      (product.price - bestOffer.discountedPrice) * item.quantity;
+  }
+}
 
-      if (!coupon) {
-        return res
-          .status(400)
-          .json({ message: "Invalid or inactive coupon code" });
-      }
+recalculatedTotal += 50;
 
-      // Check if the coupon has expired
-      if (new Date() > coupon.expiresAt) {
-        return res.status(400).json({ message: "This coupon has expired" });
-      }
+let discount = 0;
+if (couponCode) {
+  const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
 
-      // Check usage limits
-      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-        return res
-          .status(400)
-          .json({ message: "This coupon has reached its usage limit" });
-      }
+  if (!coupon) {
+    return res
+      .status(400)
+      .json({ message: "Invalid or inactive coupon code" });
+  }
 
-      const deliveryCharge = 50;
-      recalculatedTotal+=deliveryCharge;
+  if (new Date() > coupon.expiresAt) {
+    return res.status(400).json({ message: "This coupon has expired" });
+  }
 
-      // Calculate discount
-      discount =
-        coupon.discountType === "flat"
-          ? coupon.discountAmount
-          : (coupon.discountAmount / 100) * recalculatedTotal;
+  if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+    return res
+      .status(400)
+      .json({ message: "This coupon has reached its usage limit" });
+  }
 
-      // Ensure discount does not exceed maxDiscount
-      if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-        discount = coupon.maxDiscount;
-      }
-    }
+  // Calculate discount
+  discount =
+    coupon.discountType === "flat"
+      ? coupon.discountAmount
+      : (coupon.discountAmount / 100) * recalculatedTotal;
 
-    const finalTotalAmount = recalculatedTotal - discount;
+  // Ensure discount does not exceed maxDiscount
+  if (coupon.maxDiscount && discount > coupon.maxDiscount) {
+    discount = coupon.maxDiscount;
+  }
+}
 
-    
-    
+const finalTotalAmount = recalculatedTotal - discount;
+
+if (Math.abs(finalTotalAmount - totalAmount) > 0.01) {
+  return res.status(400).json({
+    message: "The order total has changed. Please review your cart and try again.",
+  });
+}
 
     // Check if the total has changed
     if (Math.abs(finalTotalAmount - totalAmount) > 0.01) {
@@ -1127,8 +1124,8 @@ async function confirmOrder(req, res) {
       });
     }
 
-    const paymentStatus =
-      paymentMethod === "Razorpay" ? "Failed" : "Successful";
+    const paymentStatus = 
+    paymentMethod === "Razorpay" || paymentMethod === "Wallet" ? "Failed" : "Successful";  
 
     // Create a new order
     const newOrder = new Order({
@@ -1266,6 +1263,86 @@ async function confirmRazorpayPayment(req, res) {
       .json({ message: "Error processing payment", error: error.message });
   }
 }
+
+// Function to get the wallet balance of the user
+const getWalletBalance = async (req, res) => {
+  try {
+    const userId = req.session.user._id; // Get the user ID from session or JWT
+
+    // Find the wallet associated with the user
+    let wallet = await Wallet.findOne({ userId });
+
+    // If the wallet doesn't exist, create a new one (this is optional depending on your app's behavior)
+    if (!wallet) {
+      wallet = new Wallet({ userId, balance: 0 }); // Create a new wallet with an initial balance of 0
+      await wallet.save();
+    }
+
+    // Return the wallet balance
+    return res.status(200).json({ balance: wallet.balance });
+  } catch (error) {
+    console.error("Error fetching wallet balance:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Function to deduct amount from the user's wallet
+const deductWalletAmount = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { orderId, amount } = req.body; // Amount to deduct from the wallet
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get the user's wallet
+    const wallet = await Wallet.findOne({ userId: user._id });
+    if (!wallet) {
+      return res.status(404).json({ message: "Wallet not found" });
+    }
+
+    // Check if the wallet has sufficient balance
+    if (wallet.balance < amount) {
+      return res.status(400).json({ message: "Insufficient wallet balance" });
+    }
+
+    // Deduct the amount from the wallet balance
+    wallet.balance -= amount;
+
+    // Log the wallet transaction as a debit
+    wallet.transactions.push({
+      amount: amount,
+      type: "debit",
+      orderId: orderId,
+      description: "Payment for order",
+    });
+
+    // Save the updated wallet information
+    await wallet.save();
+
+    // Update the order status to "Successful"
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.paymentStatus = "Successful"; // Mark as successful payment
+    await order.save();
+
+    // Respond with success message and remaining balance
+    return res.status(200).json({
+      message: "Wallet payment successful",
+      remainingBalance: wallet.balance,
+    });
+  } catch (error) {
+    console.error("Error deducting wallet amount:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 async function getOrderSuccessPage(req, res) {
   const { orderId } = req.query;
@@ -1467,7 +1544,7 @@ async function cancelProduct(req, res) {
     }
 
     // If payment method is Razorpay, add the price back to wallet
-    if (order.paymentMethod === "Razorpay") {
+    if (order.paymentMethod === "Razorpay"||order.paymentMethod === "Wallet") {
       const wallet = await Wallet.findOne({ userId: order.userId });
       if (wallet) {
         const refundAmount = item.price * item.quantity;
@@ -1830,6 +1907,8 @@ module.exports = {
   confirmOrder,
   createRazorpayOrder,
   confirmRazorpayPayment,
+  getWalletBalance,
+  deductWalletAmount,
   getUserOrders,
   getOrderDetails,
   downloadInvoice,

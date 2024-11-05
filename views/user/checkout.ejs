@@ -336,6 +336,12 @@
                     Pay with Razorpay
                   </label>
                 </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet" />
+                  <label class="form-check-label" for="wallet">
+                    Pay with Wallet
+                  </label>
+                </div>
               </div>
               <div class="text-left mt-3">
                 <% if (hasUnlistedProduct || hasOutOfStockProduct) { %>
@@ -603,8 +609,62 @@
           const order = await orderResponse.json();
           const orderId = order.orderId; // Get the created order ID
 
+
+          // Check if the payment method is Wallet
+          if (paymentMethod.value === 'Wallet') {
+            // Step 2: Check Wallet Balance
+            const walletBalanceResponse = await fetch("/user/get-wallet-balance", {
+              method: "GET",
+            });
+
+            const walletData = await walletBalanceResponse.json();
+
+            if (walletData.balance >= totalAmountAfterDiscount) {
+              // Deduct the amount from the user's wallet
+              const walletDeductResponse = await fetch("/user/deduct-wallet-amount", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  orderId,
+                  amount: totalAmountAfterDiscount,
+                }),
+              });
+              
+
+              if (walletDeductResponse.ok) {
+                Swal.fire({
+                  icon: "success",
+                  title: "Success!",
+                  text: "Your order has been placed successfully using your wallet balance.",
+                  showConfirmButton: false,
+                  timer: 1000,
+                }).then(() => {
+                  window.location.href = `/user/order-success?orderId=${orderId}`;
+                });
+              } else {
+                const errorData = await walletDeductResponse.json();
+                await Swal.fire({
+                  icon: "error",
+                  title: "Wallet Error",
+                  text: `Error deducting wallet balance: ${errorData.message}`,
+                }).then(() => {
+                  window.location.href = "/user/home"; // Redirect to home after closing the error alert
+                });
+              }
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Insufficient Wallet Balance",
+                text: "You do not have enough balance in your wallet to complete this transaction.",
+              }).then(() => {
+                window.location.href = "/user/home"; // Redirect to home after closing the error alert
+              });
+            }
+          }
           // Check if the payment method is Razorpay
-          if (paymentMethod.value === 'Razorpay') {
+          else if (paymentMethod.value === 'Razorpay') {
             // Step 2: Create Razorpay order
             const razorpayResponse = await fetch("/user/create-razorpay-order", {
               method: "POST",
@@ -657,6 +717,8 @@
                         icon: "error",
                         title: "Oops...",
                         text: `Error confirming payment: ${errorData.message}`,
+                      }).then(() => {
+                        window.location.href = "/user/home"; // Redirect to home after closing the error alert
                       });
                     }
                   } catch (error) {
@@ -664,6 +726,8 @@
                       icon: "error",
                       title: "Oops...",
                       text: "An unexpected error occurred while confirming the payment.",
+                    }).then(() => {
+                      window.location.href = "/user/home"; // Redirect to home after closing the error alert
                     });
                   }
                 },
@@ -693,6 +757,8 @@
                 icon: "error",
                 title: "Oops...",
                 text: `Error creating Razorpay order: ${errorData.message}`,
+              }).then(() => {
+                window.location.href = "/user/home"; // Redirect to home after closing the error alert
               });
             }
           } else {
@@ -713,6 +779,8 @@
             icon: "error",
             title: "Oops...",
             text: `Error creating order: ${errorData.message}`,
+          }).then(() => {
+            window.location.href = "/user/home"; // Redirect to home after closing the error alert
           });
         }
       }
