@@ -172,12 +172,17 @@
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
 
+      // Capture the referral ID from the URL query params (if any)
+      const urlParams = new URLSearchParams(window.location.search);
+      const referral = urlParams.get('referral'); // Get the referral ID
+
       const data = {
         firstname,
         lastname,
         email,
         password,
-        confirmPassword
+        confirmPassword,
+        referral
       };
 
       // Show loading spinner
@@ -201,8 +206,8 @@
       } else {
         Swal.fire({
           icon: 'error',
-          title: 'Oops...',
-          text: 'Error registering user',
+          title: 'Error',
+          text: 'User Aldredy Present',
         });
       }
     });
@@ -257,6 +262,10 @@
       const otp = Array.from(otpBoxes).map(box => box.textContent).join('');
       const email = document.querySelector('input[name="email"]').value;
 
+      // Get the referral ID from the URL or form (if any)
+      const urlParams = new URLSearchParams(window.location.search);
+      const referral = urlParams.get('referral'); // Get the referral ID from query params
+
       const response = await fetch('/user/verify-otp', {
         method: 'POST',
         headers: {
@@ -264,7 +273,8 @@
         },
         body: JSON.stringify({
           email,
-          otp
+          otp,
+          referral
         })
       });
 

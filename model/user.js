@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema(
       ref: "Product",
       default: [],
     },
+    referralCreditsClaimed: { 
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

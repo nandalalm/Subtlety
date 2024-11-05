@@ -22,12 +22,13 @@ function getLogin(req, res) {
   res.render("user/login", { errorMessage });
 }
 
-function getSignup(req, res) {
+async function getSignup(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
   res.render("user/signup");
 }
+
 
 async function sendOtpEmail(email, otp) {
   const transporter = nodemailer.createTransport({
@@ -50,7 +51,7 @@ async function sendOtpEmail(email, otp) {
 
 // Add user and send OTP
 async function addUser(req, res) {
-  const { firstname, lastname, email, password } = req.body;
+  const { firstname, lastname, email, password, referral } = req.body;
 
   try {
     // Check if the user already exists
@@ -61,7 +62,6 @@ async function addUser(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = String(crypto.randomInt(100000, 999999)); // Generate a 6-digit OTP
-
     const otpTimestamp = Date.now(); // Get the current timestamp
 
     // Store user data temporarily in the session
@@ -73,6 +73,11 @@ async function addUser(req, res) {
       otp,
       otpTimestamp, // Store the timestamp
     };
+
+    // Store referral user ID (if any) in the session
+    if (referral) {
+      req.session.referralUserId = referral; // Store the referring user's ID
+    }
 
     // Send OTP to email
     await sendOtpEmail(email, otp);
@@ -87,7 +92,7 @@ async function addUser(req, res) {
 
 // Verify OTP
 async function verifyOtp(req, res) {
-  const { email, otp } = req.body;
+  const { email, otp, referral } = req.body;  // Destructure referral from the request body
 
   try {
     // Check if user data is in the session
@@ -107,7 +112,7 @@ async function verifyOtp(req, res) {
       return res.status(400).send("OTP has expired. Please request a new one.");
     }
 
-    // Create a new user instance and save to database
+    // Create a new user instance and save to the database
     const newUser = new User({
       firstname: tempUser.firstname,
       lastname: tempUser.lastname,
@@ -121,6 +126,46 @@ async function verifyOtp(req, res) {
     // Clear the tempUser from the session
     req.session.tempUser = null;
 
+    // Check if there's a referral ID sent from the frontend
+if (referral) {
+  const referralUser = await User.findById(referral); // Get the referral user by ID
+
+  // Check if the referral user exists and hasn't already been credited
+  if (referralUser && !referralUser.referralCreditsClaimed) {
+    // Credit the referring user with 600 rupees to their wallet
+    const wallet = await Wallet.findOne({ userId: referralUser });
+
+    if (wallet) {
+      // If the wallet exists, add 600 rupees to the balance
+      wallet.balance += 600;
+      wallet.transactions.push({
+        amount: 600,
+        type: "credit",
+        description: "Referral bonus credited for referring a new user",
+      });
+      await wallet.save();  // Save the updated wallet
+    } else {
+      // If the wallet does not exist, create a new one for the referral user
+      const newWallet = new Wallet({
+        userId: referralUser._id,  // Set the referral user's ID
+        balance: 600,  // Initial balance credited with 600
+        transactions: [
+          {
+            amount: 600,
+            type: "credit",
+            description: "Referral bonus credited for referring a new user",
+          },
+        ],
+      });
+      await newWallet.save();  // Save the newly created wallet
+    }
+
+    // Mark the referral user as credited
+    referralUser.referralCreditsClaimed = true; // Mark as credited
+    await referralUser.save(); // Save the changes to the referral user
+  }
+}
+
     // Log the user in
     req.session.user = newUser; // Store user info in session
     res.status(200).redirect("/user/home"); // Redirect to home page
@@ -129,6 +174,7 @@ async function verifyOtp(req, res) {
     res.status(500).send("Error verifying OTP");
   }
 }
+
 
 async function resendOtp(req, res) {
   const { email } = req.body;

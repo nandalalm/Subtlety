@@ -7,6 +7,8 @@
   <title>Wallet - SUBTLETY</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/styles/user/userProfile.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Font Awesome CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
   <style>
     body {
       background-color: #f4f4f4;
@@ -42,6 +44,50 @@
 
     body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:hover {
       color: #9135ED;
+    }
+    .referral-section {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .referral-link {
+      background-color: #9135ED;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .referral-link:hover {
+      background-color: #7a2a9b;
+    }
+
+    .referral-note {
+      font-size: 14px;
+      margin-top: 10px;
+      color: #6c757d;
+    }
+
+    /* Style for copy button */
+    .copy-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .copy-btn:hover {
+      background-color: #218838;
+    }
+    .copy-btn i {
+      font-size: 20px; /* Adjust size of the icon */
     }
   </style>
 </head>
@@ -90,6 +136,17 @@
 
         <!-- Main Content (70% width) -->
         <div class="col-lg-9 col-md-9 col-sm-8 col-7">
+            <!-- Referral Section -->
+            <div class="referral-section">
+              <h4>Refer a Friend and Earn ₹600!</h4>
+              <p>
+                Share your referral link with your friends. If they sign up using this link, you will earn a ₹600 reward in your wallet. This offer is valid only once per user.
+              </p>
+              <div class="d-flex align-items-center">
+                <input type="text" id="referral-link" class="form-control" value="https://subtlety.sytes.net/user/signup?referral=<%= user._id %>" readonly>
+                <button class="copy-btn" onclick="copyReferralLink()"><i class="fa-regular fa-copy"></i></button> <!-- Font Awesome copy icon -->
+              </div>
+            </div>
           <div class="wallet-card">
             <h2>Wallet Balance: ₹<%= wallet.balance.toFixed(2) %></h2>
             <h4>Transaction History</h4>
@@ -131,6 +188,48 @@
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
 </body>
+
+<script>
+function copyReferralLink() {
+  const referralLink = document.getElementById('referral-link');
+  const linkUrl = referralLink.value;
+
+  // Use the Clipboard API to copy the plain text link URL
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(linkUrl).then(function() {
+      // Show Toastify notification
+      Toastify({
+        text: "Referral link copied to clipboard!",
+        duration: 3000, // Duration in milliseconds
+        close: true,
+        gravity: "top", // Positioning: top or bottom
+        position: "right", // Positioning: left, center, right
+        backgroundColor: "#28a745",
+        stopOnFocus: true, // Stops the toast on hover
+      }).showToast();
+    }).catch(function(err) {
+      console.error('Unable to copy link to clipboard', err);
+    });
+  } else {
+    // Fallback for older browsers using document.execCommand
+    referralLink.select();
+    referralLink.setSelectionRange(0, 99999); // For mobile devices
+    document.execCommand('copy');
+
+    // Show Toastify notification for fallback method
+    Toastify({
+      text: "Referral link copied to clipboard!",
+      duration: 3000, // Duration in milliseconds
+      close: true,
+      gravity: "top", // Positioning: top or bottom
+      position: "right", // Positioning: left, center, right
+      backgroundColor: "#28a745",
+      stopOnFocus: true, // Stops the toast on hover
+    }).showToast();
+  }
+}
+</script>
 
 </html>
