@@ -506,7 +506,50 @@ async function getSingleProduct(req, res) {
       discountedPrice = bestOffer.discountedPrice;
     }
 
-    // Render the single product view with populated product and related products
+    // Fetch active coupons for the product
+    const currentDate = new Date();
+    const activeCoupons = await Coupon.find({
+      isActive: true,
+      expiresAt: { $gte: currentDate },  // Only active coupons that have not expired
+    });
+
+    // Filter coupons:
+    const validCoupons = activeCoupons.filter(coupon => {
+      // For percentage discounts, show them regardless of price
+      if (coupon.discountType === 'percentage') {
+        return true; // Always show percentage coupons
+      }
+      // For flat discounts, check if product price meets the min order value
+      if (coupon.discountType === 'flat' && product.price >= (coupon.minOrderValue || 0)) {
+        return true;
+      }
+      return false;
+    });
+
+    // Calculate the effective discount for each valid coupon
+    const couponsWithEffectiveDiscount = validCoupons.map(coupon => {
+      let effectiveDiscount = 0;
+
+      if (coupon.discountType === 'flat') {
+        effectiveDiscount = coupon.discountAmount; // Flat discount
+      } else if (coupon.discountType === 'percentage') {
+        effectiveDiscount = (product.price * coupon.discountAmount) / 100; // Percentage discount based on product price
+        // Ensure that the discount does not exceed the maxDiscount (if applicable)
+        if (coupon.maxDiscount) {
+          effectiveDiscount = Math.min(effectiveDiscount, coupon.maxDiscount);
+        }
+      }
+
+      return { coupon, effectiveDiscount };
+    });
+
+    // Sort the coupons by the effective discount (in descending order)
+    const sortedCoupons = couponsWithEffectiveDiscount.sort((a, b) => b.effectiveDiscount - a.effectiveDiscount);
+
+    // Select top 2 best coupons
+    const topCoupons = sortedCoupons.slice(0, 2).map(item => item.coupon);
+
+    // Render the single product view with populated product, related products, and top coupons
     res.render("user/single-product", {
       user,
       product,
@@ -515,12 +558,14 @@ async function getSingleProduct(req, res) {
       categoryName,
       categories,
       relatedProductsWithOffers,
+      activeCoupons: topCoupons, // Send only top 2 best coupons
     });
   } catch (error) {
     console.error("Error fetching product:", error);
     res.status(500).send("Error loading product");
   }
 }
+
 
 async function getUserProfile(req, res) {
   try {

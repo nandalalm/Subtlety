@@ -1037,12 +1037,11 @@ async function addCoupon(req, res) {
 
   const expirationDate = new Date(expiresAt);
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to the start of the day
 
-  if (expirationDate < today) {
+  if (expirationDate <= today) {
     return res
       .status(400)
-      .json({ message: "Expiration date must be today or later." });
+      .json({ message: "Expiration date must be a future date." });
   }
 
   // Validate discountAmount if discountType is percentage
@@ -1103,10 +1102,10 @@ async function editCoupon(req, res) {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set to the start of the day
 
-    if (expiresAt && expirationDate < today) {
+    if (expiresAt && expirationDate <= today) {
       return res
         .status(400)
-        .json({ message: "Expiration date must be today or later." });
+        .json({ message: "Expiration date must be in the future." });
     }
 
     // Check if the new code already exists (excluding the current coupon)

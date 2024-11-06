@@ -428,6 +428,10 @@
         return;
       }
 
+      if( new Date(expiresAt) < new Date()){
+        return Swal.fire('Error!','Must be a future date', 'error');
+      }
+
       const body = {
         code,
         discountAmount,
@@ -495,6 +499,11 @@
         expiresAt: document.getElementById('editExpiresAt').value,
         usageLimit: document.getElementById('editUsageLimit').value
       };
+
+      if( new Date(body.expiresAt) < new Date()){
+        return Swal.fire('Error!','Must be a future date', 'error');
+      }
+      
 
       fetch(`/admin/coupons/${couponId}`, {
           method: 'PUT',

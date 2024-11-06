@@ -406,6 +406,11 @@
       const maxDiscount = document.getElementById('maxDiscount').value;
       const expiresAt = document.getElementById('expiresAt').value;
 
+      if (new Date(expiresAt) < new Date()) {
+        return Swal.fire('Error!', 'Must be a future date', 'error');
+      }
+
+
       // Additional validation
       if (offerFor === 'Category' && offerType === 'flat' && parseFloat(value) >= parseFloat(minProductPrice)) {
         Swal.fire('Error!', 'For category flat discount, value must be less than minimum product price.', 'error');
@@ -501,13 +506,24 @@
       document.getElementById('editValue').value = offer.value;
       document.getElementById('editExpiresAt').value = new Date(offer.expiresAt).toISOString().split('T')[0];
 
+      // Prefill minPrice and maxDiscount based on offerType
+      if (offer.offerType === 'flat') {
+        document.getElementById('editMinProductPrice').value = offer.minProductPrice || '';
+        document.getElementById('editMaxDiscountContainer').style.display = 'none'; // Hide max discount for flat
+        document.getElementById('editMinPriceContainer').style.display = 'block'; // Show min price for flat
+      } else if (offer.offerType === 'percentage') {
+        document.getElementById('editMaxDiscount').value = offer.maxDiscount || '';
+        document.getElementById('editMinPriceContainer').style.display = 'none'; // Hide min price for percentage
+        document.getElementById('editMaxDiscountContainer').style.display = 'block'; // Show max discount for percentage
+      }
+
       // Show/hide additional inputs based on offer type
       updateEditVisibility();
 
       $('#editOfferModal').modal('show');
     }
 
-    // Update visibility for the edit modal
+
     function updateEditVisibility() {
       const offerFor = document.getElementById('editOfferFor').value;
       const offerType = document.getElementById('editOfferType').value;
@@ -569,6 +585,11 @@
       const minProductPrice = document.getElementById('editMinProductPrice').value;
       const maxDiscount = document.getElementById('editMaxDiscount').value;
       const expiresAt = document.getElementById('editExpiresAt').value;
+
+      if (new Date(expiresAt) < new Date()) {
+        return Swal.fire('Error!', 'Must be a future date', 'error');
+      }
+
 
       // Additional validation
       if (offerFor === 'Category' && offerType === 'flat' && parseFloat(value) >= parseFloat(minProductPrice)) {

@@ -58,6 +58,34 @@
       cursor: none;
       /* Hide cursor when over the main image */
     }
+    /* Styling for the coupon list */
+.list-group-item {
+  display: flex;
+  justify-content: space-between; /* Space out the items */
+  align-items: center;
+  padding: 10px 15px;
+}
+
+/* Ensure the items are evenly spaced and fill the container */
+.list-group-item .d-flex {
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* Optional: Style the coupon code and discount */
+.coupon-code {
+  font-weight: bold;
+}
+
+.discount {
+  color: #28a745; /* Green color for discounts */
+}
+
+.expiry-date {
+  font-size: 0.9rem;
+  color: #999; /* Light grey color for expiry */
+}
+
   </style>
 </head>
 
@@ -132,9 +160,34 @@
           </div>
 
           <div class="line"></div>
-          <p class="offer">Offers and Coupons Available:</p>
-          <p class="offer-detail">Offer: 10% off on first purchase!</p>
-          <p class="offer-detail">Coupon: SAVE10</p>
+          <p class="offer" style="font-weight: bold;">Top Coupons Available for This Product:</p>
+          <% if (activeCoupons.length > 0) { %>
+            <ul class="list-group">
+              <% activeCoupons.forEach(coupon => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <!-- Horizontal layout with space between coupon info -->
+                  <div class="d-flex justify-content-between w-100">
+                    <!-- Coupon Code -->
+                    <span class="coupon-code"><%= coupon.code %></span>
+          
+                    <!-- Discount Amount and Max Discount for percentage type -->
+                    <span class="discount">
+                      <% if (coupon.discountType === 'flat') { %>
+                        ₹ <%= coupon.discountAmount %> off
+                      <% } else if (coupon.discountType === 'percentage') { %>
+                        <%= coupon.discountAmount %>% off (Upto ₹<%= coupon.maxDiscount %>)
+                      <% } %>
+                    </span>
+          
+                    <!-- Expiry Date -->
+                    <span class="expiry-date">Expires on: <%= new Date(coupon.expiresAt).toLocaleDateString() %></span>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p>No active coupons available for this product.</p>
+          <% } %>          
 
           <div class="line"></div>
           <div class="">
@@ -451,61 +504,61 @@
       });
 
       const buyNowButton = document.querySelector('.btn.buy-buy');
-  if (buyNowButton) {
-    buyNowButton.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const productId = buyNowButton.getAttribute('data-product-id');
-      const userId = '<%= user ? user._id : null %>'; // Ensure this captures the user ID
+      if (buyNowButton) {
+        buyNowButton.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const productId = buyNowButton.getAttribute('data-product-id');
+          const userId = '<%= user ? user._id : null %>'; // Ensure this captures the user ID
 
-      if (!userId) {
-        Toastify({
-          text: "Please log in to proceed with the purchase",
-          duration: 3000,
-          gravity: "top",
-          position: "center",
-          backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-        }).showToast();
-        return; // Exit if user ID is not available
-      }
+          if (!userId) {
+            Toastify({
+              text: "Please log in to proceed with the purchase",
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+            return; // Exit if user ID is not available
+          }
 
-      try {
-        const response = await fetch('/user/cart/add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            user: userId,
-            productId,
-            quantity: 1
-          })
+          try {
+            const response = await fetch('/user/cart/add', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                user: userId,
+                productId,
+                quantity: 1
+              })
+            });
+
+            const result = await response.json();
+            Toastify({
+              text: result.message,
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: response.ok ? "linear-gradient(to right, #00b09b, #96c93d)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+
+            if (response.ok) {
+              // Redirect to cart page if the product was added successfully
+              window.location.href = '/user/cart';
+            }
+          } catch (error) {
+            console.error('Error adding to cart:', error);
+            Toastify({
+              text: "Error adding item to cart",
+              duration: 3000,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+            }).showToast();
+          }
         });
-
-        const result = await response.json();
-        Toastify({
-          text: result.message,
-          duration: 3000,
-          gravity: "top",
-          position: "center",
-          backgroundColor: response.ok ? "linear-gradient(to right, #00b09b, #96c93d)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
-        }).showToast();
-
-        if (response.ok) {
-          // Redirect to cart page if the product was added successfully
-          window.location.href = '/user/cart';
-        }
-      } catch (error) {
-        console.error('Error adding to cart:', error);
-        Toastify({
-          text: "Error adding item to cart",
-          duration: 3000,
-          gravity: "top",
-          position: "center",
-          backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-        }).showToast();
       }
-    });
-  }
     });
 
     document.querySelectorAll('.btn-add-to-wishlist').forEach(button => {
