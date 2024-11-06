@@ -29,7 +29,6 @@ async function getSignup(req, res) {
   res.render("user/signup");
 }
 
-
 async function sendOtpEmail(email, otp) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -92,7 +91,7 @@ async function addUser(req, res) {
 
 // Verify OTP
 async function verifyOtp(req, res) {
-  const { email, otp, referral } = req.body;  // Destructure referral from the request body
+  const { email, otp, referral } = req.body; // Destructure referral from the request body
 
   try {
     // Check if user data is in the session
@@ -127,44 +126,44 @@ async function verifyOtp(req, res) {
     req.session.tempUser = null;
 
     // Check if there's a referral ID sent from the frontend
-if (referral) {
-  const referralUser = await User.findById(referral); // Get the referral user by ID
+    if (referral) {
+      const referralUser = await User.findById(referral); // Get the referral user by ID
 
-  // Check if the referral user exists and hasn't already been credited
-  if (referralUser && !referralUser.referralCreditsClaimed) {
-    // Credit the referring user with 600 rupees to their wallet
-    const wallet = await Wallet.findOne({ userId: referralUser });
+      // Check if the referral user exists and hasn't already been credited
+      if (referralUser && !referralUser.referralCreditsClaimed) {
+        // Credit the referring user with 600 rupees to their wallet
+        const wallet = await Wallet.findOne({ userId: referralUser });
 
-    if (wallet) {
-      // If the wallet exists, add 600 rupees to the balance
-      wallet.balance += 600;
-      wallet.transactions.push({
-        amount: 600,
-        type: "credit",
-        description: "Referral bonus credited for referring a new user",
-      });
-      await wallet.save();  // Save the updated wallet
-    } else {
-      // If the wallet does not exist, create a new one for the referral user
-      const newWallet = new Wallet({
-        userId: referralUser._id,  // Set the referral user's ID
-        balance: 600,  // Initial balance credited with 600
-        transactions: [
-          {
+        if (wallet) {
+          // If the wallet exists, add 600 rupees to the balance
+          wallet.balance += 600;
+          wallet.transactions.push({
             amount: 600,
             type: "credit",
             description: "Referral bonus credited for referring a new user",
-          },
-        ],
-      });
-      await newWallet.save();  // Save the newly created wallet
-    }
+          });
+          await wallet.save(); // Save the updated wallet
+        } else {
+          // If the wallet does not exist, create a new one for the referral user
+          const newWallet = new Wallet({
+            userId: referralUser._id, // Set the referral user's ID
+            balance: 600, // Initial balance credited with 600
+            transactions: [
+              {
+                amount: 600,
+                type: "credit",
+                description: "Referral bonus credited for referring a new user",
+              },
+            ],
+          });
+          await newWallet.save(); // Save the newly created wallet
+        }
 
-    // Mark the referral user as credited
-    referralUser.referralCreditsClaimed = true; // Mark as credited
-    await referralUser.save(); // Save the changes to the referral user
-  }
-}
+        // Mark the referral user as credited
+        referralUser.referralCreditsClaimed = true; // Mark as credited
+        await referralUser.save(); // Save the changes to the referral user
+      }
+    }
 
     // Log the user in
     req.session.user = newUser; // Store user info in session
@@ -174,7 +173,6 @@ if (referral) {
     res.status(500).send("Error verifying OTP");
   }
 }
-
 
 async function resendOtp(req, res) {
   const { email } = req.body;
@@ -240,7 +238,8 @@ const OFFER_FOR = {
 
 async function getHome(req, res) {
   try {
-    const products = await Product.find({});
+    // Fetch all products and categories
+    const products = await Product.find({ isListed: true });
     const categories = await Category.find({});
     const user = req.session.user;
 
@@ -252,13 +251,105 @@ async function getHome(req, res) {
       })
     );
 
-    res.render("user/home", { user, productsWithOffers, categories });
+    // Fetch the top 4 best-selling products based on order frequency, but only consider delivered products
+    const bestSellingProducts = await aggregateProductFrequency();
+
+    let bestSellingProductsWithOffers = [];
+
+    if (bestSellingProducts.length > 0) {
+      // If we have best-selling products, get their details
+      const bestSellingProductIds = bestSellingProducts
+        .slice(0, 4) // Only take the top 4 best-selling products
+        .map((item) => item._id);
+      const bestSellingProductDetails = await Product.find({
+        _id: { $in: bestSellingProductIds },
+      });
+
+      // Fetch best offers for the top-selling products
+      bestSellingProductsWithOffers = await Promise.all(
+        bestSellingProductDetails.map(async (product) => {
+          const bestOffer = await getBestOffer(product);
+          return { product, bestOffer };
+        })
+      );
+
+      // Sort the best-selling products by frequency count
+      bestSellingProductsWithOffers = bestSellingProductsWithOffers
+        .map(({ product, bestOffer }) => {
+          const count = bestSellingProducts.find(
+            (f) => f._id.toString() === product._id.toString()
+          ).count;
+          return { product, bestOffer, count };
+        })
+        .sort((a, b) => b.count - a.count); // Sort by frequency (descending)
+    }
+    // Fetch the latest 4 products sorted by creation date first, then alphabetically
+    const latestProductsWithOffers = await Product.find({})
+      .sort({ createdAt: -1 }) // Sort by creation date descending first
+      .collation({ locale: "en", strength: 2 }) // Ensure case-insensitive sorting
+      .limit(4); // Limit to 4 products
+
+    // Sort them alphabetically (A-Z) within the same createdAt order
+    latestProductsWithOffers.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Fetch offers for the latest products
+    const latestProductsWithOffersAndDetails = await Promise.all(
+      latestProductsWithOffers.map(async (product) => {
+        const bestOffer = await getBestOffer(product);
+        return { product, bestOffer };
+      })
+    );
+
+   // Fallback to first 4 products if no best-selling products are available
+   const fallbackBestSellingProducts = products.slice(0, 4);
+
+   // Fetch best offers for the fallback products
+   const fallbackProductsWithOffers = await Promise.all(
+     fallbackBestSellingProducts.map(async (product) => {
+       const bestOffer = await getBestOffer(product);
+       return { product, bestOffer };
+     })
+   );
+
+    // Send the response with both latest products and best-selling products (only 4 each)
+    res.render("user/home", {
+      user,
+      productsWithOffers,
+      categories,
+      bestSellingProducts: bestSellingProductsWithOffers.slice(0, 4),
+      fallbackProducts: fallbackProductsWithOffers, // Send fallback products separately
+      latestProducts: latestProductsWithOffersAndDetails, // Latest products (4)
+    });
   } catch (error) {
     console.error("Error fetching products or categories:", error);
     res.status(500).send("Error loading home page");
   }
 }
 
+// Aggregating the product frequency across all orders
+const aggregateProductFrequency = async () => {
+  const productFrequency = await Order.aggregate([
+    { $unwind: "$items" }, // Unwind the order items to separate each productId
+    {
+      $match: {
+        "items.status": "Delivered", // Only consider products that are delivered
+      },
+    },
+    {
+      $group: {
+        _id: "$items.productId", // Group by productId
+        count: { $sum: 1 }, // Count the number of times this product appears
+      },
+    },
+    { $sort: { count: -1 } }, // Sort by the count in descending order
+    { $limit: 6 }, // Limit to the top 6 most frequent products
+  ]);
+
+  return productFrequency;
+};
+
+
+// Your existing getBestOffer function
 async function getBestOffer(product) {
   const offers = await Offer.find({
     $or: [
@@ -275,7 +366,6 @@ async function getBestOffer(product) {
   let bestDiscountedPrice = product.price;
 
   offers.forEach((offer) => {
-    // Check if the offer has expired
     if (offer.expiresAt && new Date(offer.expiresAt) > new Date()) {
       const discountedPrice = calculateDiscountedPrice(offer, product);
       if (discountedPrice < bestDiscountedPrice) {
@@ -285,9 +375,8 @@ async function getBestOffer(product) {
     }
   });
 
-  // Attach discountedPrice to bestOffer if it's found
   if (bestOffer) {
-    bestOffer.discountedPrice = bestDiscountedPrice; // Ensure this is set correctly
+    bestOffer.discountedPrice = bestDiscountedPrice;
   }
 
   return bestOffer;
@@ -1048,7 +1137,7 @@ async function applyCoupon(req, res) {
   if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
     discountAmount = coupon.maxDiscount;
   }
-  
+
   return res.status(200).json({ discount: discountAmount });
 }
 
@@ -1101,66 +1190,66 @@ async function confirmOrder(req, res) {
       }
     }
 
+    let recalculatedTotal = 0;
+    let totalOfferDiscount = 0;
 
-let recalculatedTotal = 0;
-let totalOfferDiscount = 0;
+    for (const item of items) {
+      const product = await Product.findById(item.productId);
+      const bestOffer = await getBestOffer(product);
+      const price =
+        bestOffer && bestOffer.isActive
+          ? bestOffer.discountedPrice
+          : product.price;
+      recalculatedTotal += price * item.quantity;
 
-for (const item of items) {
-  const product = await Product.findById(item.productId);
-  const bestOffer = await getBestOffer(product);
-  const price =
-    bestOffer && bestOffer.isActive
-      ? bestOffer.discountedPrice
-      : product.price;
-  recalculatedTotal += price * item.quantity;
+      if (bestOffer && bestOffer.isActive) {
+        totalOfferDiscount +=
+          (product.price - bestOffer.discountedPrice) * item.quantity;
+      }
+    }
 
-  if (bestOffer && bestOffer.isActive) {
-    totalOfferDiscount +=
-      (product.price - bestOffer.discountedPrice) * item.quantity;
-  }
-}
+    recalculatedTotal += 50;
 
-recalculatedTotal += 50;
+    let discount = 0;
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
 
-let discount = 0;
-if (couponCode) {
-  const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
+      if (!coupon) {
+        return res
+          .status(400)
+          .json({ message: "Invalid or inactive coupon code" });
+      }
 
-  if (!coupon) {
-    return res
-      .status(400)
-      .json({ message: "Invalid or inactive coupon code" });
-  }
+      if (new Date() > coupon.expiresAt) {
+        return res.status(400).json({ message: "This coupon has expired" });
+      }
 
-  if (new Date() > coupon.expiresAt) {
-    return res.status(400).json({ message: "This coupon has expired" });
-  }
+      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+        return res
+          .status(400)
+          .json({ message: "This coupon has reached its usage limit" });
+      }
 
-  if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-    return res
-      .status(400)
-      .json({ message: "This coupon has reached its usage limit" });
-  }
+      // Calculate discount
+      discount =
+        coupon.discountType === "flat"
+          ? coupon.discountAmount
+          : (coupon.discountAmount / 100) * recalculatedTotal;
 
-  // Calculate discount
-  discount =
-    coupon.discountType === "flat"
-      ? coupon.discountAmount
-      : (coupon.discountAmount / 100) * recalculatedTotal;
+      // Ensure discount does not exceed maxDiscount
+      if (coupon.maxDiscount && discount > coupon.maxDiscount) {
+        discount = coupon.maxDiscount;
+      }
+    }
 
-  // Ensure discount does not exceed maxDiscount
-  if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-    discount = coupon.maxDiscount;
-  }
-}
+    const finalTotalAmount = recalculatedTotal - discount;
 
-const finalTotalAmount = recalculatedTotal - discount;
-
-if (Math.abs(finalTotalAmount - totalAmount) > 0.01) {
-  return res.status(400).json({
-    message: "The order total has changed. Please review your cart and try again.",
-  });
-}
+    if (Math.abs(finalTotalAmount - totalAmount) > 0.01) {
+      return res.status(400).json({
+        message:
+          "The order total has changed. Please review your cart and try again.",
+      });
+    }
 
     // Check if the total has changed
     if (Math.abs(finalTotalAmount - totalAmount) > 0.01) {
@@ -1170,8 +1259,10 @@ if (Math.abs(finalTotalAmount - totalAmount) > 0.01) {
       });
     }
 
-    const paymentStatus = 
-    paymentMethod === "Razorpay" || paymentMethod === "Wallet" ? "Failed" : "Successful";  
+    const paymentStatus =
+      paymentMethod === "Razorpay" || paymentMethod === "Wallet"
+        ? "Failed"
+        : "Successful";
 
     // Create a new order
     const newOrder = new Order({
@@ -1389,7 +1480,6 @@ const deductWalletAmount = async (req, res) => {
   }
 };
 
-
 async function getOrderSuccessPage(req, res) {
   const { orderId } = req.query;
 
@@ -1590,7 +1680,10 @@ async function cancelProduct(req, res) {
     }
 
     // If payment method is Razorpay, add the price back to wallet
-    if (order.paymentMethod === "Razorpay"||order.paymentMethod === "Wallet") {
+    if (
+      order.paymentMethod === "Razorpay" ||
+      order.paymentMethod === "Wallet"
+    ) {
       const wallet = await Wallet.findOne({ userId: order.userId });
       if (wallet) {
         const refundAmount = item.price * item.quantity;

@@ -88,132 +88,172 @@
     <p class="text-center">No categories available.</p>
     <% } %>
   </section>
-
-  <!-- NEW-ARRIVALS Section -->
-  <section class="new-arrivals">
-    <div class="container new-arrival-container">
-      <div class="this-month">
-        <div class="this-month-box ml-3">
-          <div class="this-month-square"></div>
-          <span style="color: #9135ED;">Latest Arrivals</span>
-        </div>
-        <h2 class="text-left mt-3 ml-3">SHOP BY LATEST ARRIVALS</h2>
+  
+<!-- NEW-ARRIVALS Section -->
+<section class="new-arrivals">
+  <div class="container new-arrival-container">
+    <div class="this-month">
+      <div class="this-month-box ml-3">
+        <div class="this-month-square"></div>
+        <span style="color: #9135ED;">Latest Arrivals</span>
       </div>
-      <div class="row g-5">
-        <% if (productsWithOffers && productsWithOffers.length > 0) { %>
-        <% productsWithOffers.forEach(({ product, bestOffer }) => { %>
-        <% if (product.isListed) { %>
-        <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
-          <a href="/user/single-product/<%= product._id %>" class="card-link">
-            <div class="card-img-half position-relative">
-              <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
-              <% if (product.stock === 0) { %>
-              <span class="out-of-stock-label">Out of Stock</span>
-              <% } %>
-            </div>
-            <div class="card-body-half">
-              <div class="product-details">
-                <h5 class="card-title text-center"><%= product.name %></h5>
-                <div class="star-rating text-center">
-                  <p class="price text-center">
-                    <% if (bestOffer) { %>
-                    <span style="text-decoration: line-through;">₹ <%= product.price %></span>
-                    <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
-                    <% } else { %>
-                    <span>₹ <%= product.price %></span>
-                    <% } %>
-                  </p>
+      <h2 class="text-left mt-3 ml-3">SHOP BY LATEST ARRIVALS</h2>
+    </div>
+    <div class="row g-5">
+      <% if (latestProducts && latestProducts.length > 0) { %>  <!-- Change this line to use latestProducts -->
+      <% latestProducts.forEach(({ product, bestOffer }) => { %>  <!-- Change this line as well -->
+      <% if (product && product.isListed) { %>
+      <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
+        <a href="/user/single-product/<%= product._id %>" class="card-link">
+          <div class="card-img-half position-relative">
+            <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
+            <% if (product.stock === 0) { %>
+            <span class="out-of-stock-label">Out of Stock</span>
+            <% } %>
+          </div>
+          <div class="card-body-half">
+            <div class="product-details">
+              <h5 class="card-title text-center"><%= product.name %></h5>
+              <div class="star-rating text-center">
+                <p class="price text-center">
                   <% if (bestOffer) { %>
-                  <% if (bestOffer.offerType === 'percentage') { %>
-                  <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
-                  <% } else if (bestOffer.offerType === 'flat') { %>
-                  <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
+                  <span style="text-decoration: line-through;">₹ <%= product.price %></span>
+                  <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
+                  <% } else { %>
+                  <span>₹ <%= product.price %></span>
                   <% } %>
-                  <% } %>
-
-                </div>
-                <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
-                  <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                  <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
-                </div>
+                </p>
+                <% if (bestOffer) { %>
+                <% if (bestOffer.offerType === 'percentage') { %>
+                <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
+                <% } else if (bestOffer.offerType === 'flat') { %>
+                <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
+                <% } %>
+                <% } %>
+              </div>
+              <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
+                <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
               </div>
             </div>
-          </a>
-        </div>
-        <% } %>
-        <% }) %>
-        <% } else { %>
-        <p>No new arrivals available.</p>
-        <% } %>
+          </div>
+        </a>
       </div>
-      <div class="text-center my-4 mt-5 pt-3">
-        <a href="#" class="btn btn-secondary view-more-btn">View More</a>
-      </div>
+      <% } %>
+      <% }) %>
+      <% } else { %>
+      <p>No new arrivals available.</p>
+      <% } %>
     </div>
-  </section>
-
-  <!-- TOP SELLING Section -->
-  <section class="top-selling">
-    <div class="container top-selling-container">
-      <div class="this-month">
-        <div class="this-month-box ml-3">
-          <div class="this-month-square"></div>
-          <span style="color: #9135ED;">Best Selling</span>
-        </div>
-        <h2 class="text-left mt-3 ml-3">SHOP BY BEST SELLING PRODUCTS</h2>
-      </div>
-      <div style="color: #3097ff #4d64f9;" class="row g-5">
-        <% if (productsWithOffers && productsWithOffers.length > 0) { %>
-        <% productsWithOffers.forEach(({ product, bestOffer }) => { %>
-        <% if (product.isListed) { %>
-        <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
-          <a href="/user/single-product/<%= product._id %>" class="card-link">
-            <div class="card-img-half position-relative">
-              <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
-              <% if (product.stock === 0) { %>
-              <span class="out-of-stock-label">Out of Stock</span>
-              <% } %>
-            </div>
-            <div class="card-body-half">
-              <div class="product-details">
-                <h5 class="card-title text-center"><%= product.name %></h5>
-                <div class="star-rating text-center">
-                  <p class="price text-center">
-                    <% if (bestOffer) { %>
-                    <span style="text-decoration: line-through;">₹ <%= product.price %></span>
-                    <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
-                    <% } else { %>
-                    <span>₹ <%= product.price %></span>
-                    <% } %>
-                  </p>
-                  <% if (bestOffer) { %>
-                  <% if (bestOffer.offerType === 'percentage') { %>
-                  <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
-                  <% } else if (bestOffer.offerType === 'flat') { %>
-                  <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
-                  <% } %>
-                  <% } %>
-
-                </div>
-                <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
-                  <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                  <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-        <% } %>
-        <% }) %>
-        <% } else { %>
-        <p>No top-selling products available.</p>
-        <% } %>
-      </div>
-      <div class="text-center my-4 mt-5 pt-3">
-        <a href="#" class="btn btn-secondary view-more-btn">View More</a>
-      </div>
+    <div class="text-center my-4 mt-5 pt-3">
+      <a href="/user/shop" class="btn btn-secondary view-more-btn">View More</a>
     </div>
-  </section>
+  </div>
+</section>
+
+<!-- TOP SELLING Section -->
+<section class="top-selling">
+  <div class="container top-selling-container">
+    <div class="this-month">
+      <div class="this-month-box ml-3">
+        <div class="this-month-square"></div>
+        <span style="color: #9135ED;">Best Selling</span>
+      </div>
+      <h2 class="text-left mt-3 ml-3">SHOP BY BEST SELLING PRODUCTS</h2>
+    </div>
+    
+    <!-- Render Best Selling Products if Available -->
+    <div style="color: #3097ff #4d64f9;" class="row g-5">
+      <% if (bestSellingProducts && bestSellingProducts.length) { %>
+        <% bestSellingProducts.forEach(({ product, bestOffer, count }) => { %>
+          <% if (product && product.isListed) { %>
+            <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
+              <a href="/user/single-product/<%= product._id %>" class="card-link">
+                <div class="card-img-half position-relative">
+                  <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
+                  <% if (product.stock === 0) { %>
+                    <span class="out-of-stock-label">Out of Stock</span>
+                  <% } %>
+                </div>
+                <div class="card-body-half">
+                  <div class="product-details">
+                    <h5 class="card-title text-center"><%= product.name %></h5>
+                    <div class="star-rating text-center">
+                      <p class="price text-center">
+                        <% if (bestOffer) { %>
+                          <span style="text-decoration: line-through;">₹ <%= product.price %></span>
+                          <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
+                        <% } else { %>
+                          <span>₹ <%= product.price %></span>
+                        <% } %>
+                      </p>
+                      <% if (bestOffer) { %>
+                        <% if (bestOffer.offerType === 'percentage') { %>
+                          <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
+                        <% } else if (bestOffer.offerType === 'flat') { %>
+                          <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
+                        <% } %>
+                      <% } %>
+                    </div>
+                    <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
+                      <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                      <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          <% } %>
+        <% }) %>
+      <% } else { %>
+        <% fallbackProducts.forEach(({ product, bestOffer, count }) => { %>
+          <% if (product && product.isListed) { %>
+            <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
+              <a href="/user/single-product/<%= product._id %>" class="card-link">
+                <div class="card-img-half position-relative">
+                  <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
+                  <% if (product.stock === 0) { %>
+                    <span class="out-of-stock-label">Out of Stock</span>
+                  <% } %>
+                </div>
+                <div class="card-body-half">
+                  <div class="product-details">
+                    <h5 class="card-title text-center"><%= product.name %></h5>
+                    <div class="star-rating text-center">
+                      <p class="price text-center">
+                        <% if (bestOffer) { %>
+                          <span style="text-decoration: line-through;">₹ <%= product.price %></span>
+                          <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
+                        <% } else { %>
+                          <span>₹ <%= product.price %></span>
+                        <% } %>
+                      </p>
+                      <% if (bestOffer) { %>
+                        <% if (bestOffer.offerType === 'percentage') { %>
+                          <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
+                        <% } else if (bestOffer.offerType === 'flat') { %>
+                          <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
+                        <% } %>
+                      <% } %>
+                    </div>
+                    <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
+                      <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                      <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          <% } %>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <div class="text-center my-4 mt-5 pt-3">
+      <a href="/user/shop" class="btn btn-secondary view-more-btn">View More</a>
+    </div>
+  </div>
+</section>
 
 
   <%-include('partials/footer')%>
