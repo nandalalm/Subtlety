@@ -94,6 +94,32 @@
       color: #28a745;
       font-weight: bold;
     }
+
+    /* Apply a fixed width to the filter items */
+    .filter-item {
+      width: 250px;
+      /* Adjust this width as needed */
+    }
+
+    /* Optional: Ensure the button and selects fill the container */
+    .filter-item select,
+    .filter-item button {
+      width: 100%;
+    }
+
+    /* Adjust label spacing */
+    .filter-item label {
+      margin-bottom: 5px;
+      display: block;
+      /* Make sure label is on top of the select/input */
+    }
+
+    #showAllBtn {
+      text-align: center;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 5px;
+    }
   </style>
 </head>
 
@@ -114,8 +140,11 @@
     <div class="filter-container mt-3">
       <div class="d-flex align-items-center flex-wrap">
 
-        <div class="mr-4 mb-2">
-          <label for="category" class="filter-label"><i class="fas fa-filter filter-icon"></i>Filter by Category:</label>
+        <!-- Filter by Category -->
+        <div class="filter-item mr-4 mb-2">
+          <label for="category" class="filter-label">
+            <i class="fas fa-filter filter-icon"></i> Filter by Category:
+          </label>
           <select id="category" onchange="applyFilters()">
             <option value="all" <%= category === 'all' ? 'selected' : '' %>>All</option>
             <% categories.forEach(cat => { %>
@@ -124,8 +153,11 @@
           </select>
         </div>
 
-        <div class="mr-4 mb-2">
-          <label for="sort" class="filter-label"><i class="fas fa-sort filter-icon"></i>Sort by:</label>
+        <!-- Sort by -->
+        <div class="filter-item mr-4 mb-2">
+          <label for="sort" class="filter-label">
+            <i class="fas fa-sort filter-icon"></i> Sort by:
+          </label>
           <select id="sort" onchange="applyFilters()">
             <option value="">Select from</option>
             <option value="priceLowToHigh" <%= sort === 'priceLowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
@@ -135,11 +167,12 @@
           </select>
         </div>
 
-
         <!-- Show All Button -->
-        <button id="showAllBtn" onclick="resetFilters()" class="btn btn-sm btn-secondary ml-2">
-          <i class="fas fa-sync-alt"></i> Show All
-        </button>
+        <div style="padding-top: 30px;" class="filter-item mr-4 mb-2 ">
+          <button id="showAllBtn" onclick="resetFilters()" class="btn btn-sm btn-secondary m-0 ">
+            <i class="fas fa-sync-alt"></i> Show All
+          </button>
+        </div>
       </div>
     </div>
 
@@ -191,7 +224,7 @@
       <% } %>
     </div>
     <div class="text-center my-4 mt-5 pt-3">
-      <a href="#" class="btn btn-secondary view-more-btn">View More</a>
+
     </div>
   </div>
 
