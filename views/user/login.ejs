@@ -99,6 +99,12 @@
     <a href='/auth/google' class="btn btn-primary btn-block  hai">
       <img src="/images/google_icon.svg" alt="Google Icon" /> Login with Google
     </a>
+     <!-- Demo Login button -->
+  <p class="text-center mt-3">
+    <button id="demoLoginButton" class="btn btn-secondary btn-block">
+      Demo Login
+    </button>
+  </p>
 
     <p class="text-center mt-3"><small>Already have an account? </small><a href="/user/signup"><small>Signup here</small></a></p>
 
@@ -438,6 +444,18 @@
         confirmNewPasswordInput.type = type;
         this.classList.toggle('fa-eye');
         this.classList.toggle('fa-eye-slash');
+      };
+    </script>
+     <script>
+      // Demo login functionality
+      document.getElementById('demoLoginButton').onclick = function() {
+        // Fill the email and password fields with demo credentials
+        document.getElementById('email').value = 'demoUser@gmail.com';
+        document.getElementById('password').value = 'Demo@123';
+  
+        // Hide the Demo Login button
+        document.getElementById('demoLoginButton').style.display = 'none';
+  
       };
     </script>
 </body>

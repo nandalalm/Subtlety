@@ -80,6 +80,7 @@ async function addUser(req, res) {
 
     // Send OTP to email
     await sendOtpEmail(email, otp);
+    
 
     // Respond with a message
     res.status(200).json({ message: "OTP sent to your email. Please verify." });
@@ -1682,7 +1683,6 @@ async function downloadInvoice(req, res) {
 
     doc.font("Helvetica"); // Reset font to regular after the total amount
 
-    // Finalize the PDF and end the stream
     doc.end();
   } catch (error) {
     console.error("Error generating invoice:", error);
@@ -1725,10 +1725,7 @@ async function cancelProduct(req, res) {
     }
 
     // If payment method is Razorpay, add the price back to wallet
-    if (
-      order.paymentMethod === "Razorpay" ||
-      order.paymentMethod === "Wallet"
-    ) {
+    if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
       const wallet = await Wallet.findOne({ userId: order.userId });
       if (wallet) {
         const refundAmount = item.price * item.quantity;
@@ -1742,36 +1739,14 @@ async function cancelProduct(req, res) {
         await wallet.save();
       }
     }
-
-    // Check product statuses to determine overall order status
-    const allDelivered = order.items.every(
-      (item) => item.status === "Delivered"
-    );
-    const allCancelled = order.items.every(
-      (item) => item.status === "Cancelled"
-    );
-    const allReturned = order.items.every((item) => item.status === "Returned");
-    const hasPending = order.items.some((item) => item.status === "Pending");
-    const hasShipped = order.items.some((item) => item.status === "Shipped");
-    const hasCancelled = order.items.some(
-      (item) => item.status === "Cancelled"
-    );
-    const hasReturned = order.items.some((item) => item.status === "Returned");
+  
+    const allCancelled = order.items.every((item) => item.status === "Cancelled");
 
     // Update order status based on the product statuses
-    if (allDelivered) {
-      order.orderStatus = "Completed";
-    } else if (allCancelled) {
+    if (allCancelled) {
       order.orderStatus = "Cancelled";
-    } else if (allReturned) {
-      order.orderStatus = "Completed";
-    } else if (hasCancelled && !hasPending && !hasShipped) {
-      order.orderStatus = "Completed"; // Some products cancelled, none pending
-    } else {
-      order.orderStatus = "Pending"; // Default to pending if there are pending items
     }
-
-    await order.save(); // Save the updated order
+    await order.save();
 
     return res.json({
       success: true,
@@ -1783,7 +1758,6 @@ async function cancelProduct(req, res) {
   }
 }
 
-// Add this to your returnProduct controller
 async function returnProduct(req, res) {
   const userId = req.session.user._id;
   const orderId = req.params.id;
@@ -1813,7 +1787,7 @@ async function returnProduct(req, res) {
       productId: order.items[itemIndex].productId,
       reason: reason,
       requestedAt: new Date(),
-      status: "Pending", // Status for admin to approve
+      status: "Pending", 
     };
 
     // Store the return request in the order
@@ -1821,14 +1795,13 @@ async function returnProduct(req, res) {
       order.returnRequests = []; // Initialize returnRequests array if it doesn't exist
     }
 
-    order.returnRequests.push(returnRequest); // Add the new return request
+    order.returnRequests.push(returnRequest); 
 
-    await order.save(); // Save the updated order
+    await order.save(); 
 
     return res.json({
       success: true,
-      message:
-        "Return request submitted successfully. Please wait for admin approval.",
+      message:"Return request submitted successfully. Please wait for admin approval.",
     });
   } catch (error) {
     console.error(error);

@@ -6,87 +6,120 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Success - SUBTLETY</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     body {
-      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
       margin: 0;
-      padding: 0;
       font-family: 'Poppins', sans-serif;
-      background-color: #28a745 !important;
-      /* Light green background */
+      background-color: #f3f4f6;
     }
 
     .success-card {
       background-color: #ffffff;
-      /* White background for the card */
-      border-radius: 8px;
-      padding: 20px;
+      border-radius: 10px;
+      padding: 40px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 32% !important;
-      margin: auto;
-      /* Center card */
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
     }
 
-    .profile-section {
-      padding-top: 100px;
-      padding-bottom: 100px;
+    .success-icon {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 20px;
     }
 
     h1 {
-      color: #28a745;
-      /* Success color */
-      font-size: 2rem !important;
-      /* Adjusted size */
+      color: #333;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
     }
 
-    h2,
-    h3,
-    h4 {
-      font-size: 1.25rem !important;
-      /* Adjusted size */
+    .order-details {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 20px;
     }
 
-    .product-details {
+    .shipping-message {
+      font-size: 1rem;
+      color: #555;
+      margin: 20px 0;
+    }
+
+    .order-amount {
+      font-size: 1.2rem;
+      color: #333;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .button-container {
       display: flex;
-      justify-content: space-between;
-      /* Align items in a row */
+      justify-content: space-around;
+      margin-top: 20px;
     }
 
-    .btn-back {
+    .btn-view,
+    .btn-continue {
+      padding: 10px 20px;
+      border-radius: 5px;
+      border: none;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px; /* Space between text and icon */
+    }
+
+    .btn-view {
+      background-color: #ffffff;
+      color: #28a745;
+      border: 1px solid #28a745;
+    }
+
+    .btn-continue {
       background-color: #28a745;
-      /* Success color */
       color: #ffffff;
+    }
+
+    .arrow-icon {
+      width: 15px;
+      height: 15px;
+      fill: currentColor; /* Inherits color from the button text */
     }
   </style>
 </head>
 
 <body>
 
-  <%- include('partials/navBar') %>
+  <div class="success-card">
+    <!-- SVG Checkmark Icon -->
+    <svg class="success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M9 12l2 2 4-4"></path>
+    </svg>
 
-  <section class="profile-section">
-    <div class="container success-card mb-5 mt-5 text-center">
-      <h1>Thank You for Your Order!</h1>
-      <h3>Order ID: <%= order._id %></h3>
-
-      <h4>Shipping Address:</h4>
-      <p>
-        <%= order.shippingAddress.fullname %><br>
-        <%= order.shippingAddress.address.split(',').slice(0, 4) %><br>
-        <%= order.shippingAddress.address.split(',').slice(4).join(', ') %><br>
-        <%= order.shippingAddress.pincode %><br>
-        Phone: <%= order.shippingAddress.phone %>
-      </p>
-
-      <h4 class="mt-4">Total Amount: ₹ <%= order.totalAmount %></h4>
-
-      <div class="text-center">
-        <a href="/user/home" class="btn btn-primary mt-4">Back to Home</a>
-      </div>
+    <h1>Thank you for ordering!</h1>
+    <div class="order-details">
+      <p>Order ID: <%= order._id %></p>
     </div>
-  </section>
 
-  <%- include('partials/footer') %>
+    <div class="shipping-message">Your order will be shipped within 2 - 3 weeks.</div>
+
+    <div class="order-amount">Total Amount: ₹ <%= order.totalAmount %></div>
+
+    <div class="button-container">
+      <a href="/user/order/<%= order._id %>"><button class="btn btn-outline-success">View Order</button></a>
+      <a href="/user/home"><button class="btn btn-success">
+        Continue Shopping  <i class="fa-solid fa-arrow-right"></i>
+      </button></a>
+    </div>
+  </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
