@@ -78,12 +78,12 @@ npm install
 
 ###3. Create a .env file
 ```
-PORT = 3000
-EMAIL=nandalal673029@gmail.com
-EMAIL_PASSWORD=zlvk rocc rxlc lblx
+PORT=3000
+EMAIL=your_email_here
+EMAIL_PASSWORD=your_email_app_password
 GOOGLE_CLIENT_ID=your_google_client_id_here
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
-MONGO_URL = "mongodb+srv://nandalal673029:7oXzGJeNjujZLywV@cluster0.ljn4r.mongodb.net/Subtlety"
+MONGO_URL=your_mongodb_connection_string
 ```
 
 ###4. Start the App
