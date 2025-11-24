@@ -41,13 +41,15 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  res.setHeader(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, proxy-revalidate"
-  );
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
-  res.setHeader("Surrogate-Control", "no-store");
+  if (
+    !req.url.startsWith("/styles") &&
+    !req.url.startsWith("/scripts") &&
+    !req.url.startsWith("/uploads") &&
+    !req.url.startsWith("/images") &&
+    !req.url.startsWith("/favicon")
+  ) {
+    res.setHeader("Cache-Control", "no-store");
+  }
   next();
 });
 
@@ -91,8 +93,8 @@ connectDB();
 // ⭐ IMPORTANT FOR VERCEL:
 module.exports = app;
 
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}`);
-// });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 

@@ -207,15 +207,17 @@
       </div>
       <div class="row mt-3">
         <div class="col-md-6">
+          <% if(address && address.length > 0){ %>
           <h5>Select Saved Address</h5>
           <select class="form-control" id="addressSelect" onchange="populateAddress()">
             <option value="">Select an address</option>
-            <% if(address){ %> <% address.forEach(address =>{ %>
+            <% address.forEach(address =>{ %>
             <option value="<%= address.username %>" data-email="<%= address.email %>" data-address="<%= address.houseFlatNo %>,<%= address.address %>,<%= address.district %>,<%= address.state %>,<%= address.country %>" data-pincode="<%= address.pincode %>" data-phone="<%= address.phoneNo %>">
               <%= address.username %>
             </option>
-            <% }) %> <% } %>
+            <% }) %>
           </select>
+          <% } %>
 
           <h5 class="mt-4">Shipping Information</h5>
           <form id="shippingForm">
@@ -388,8 +390,8 @@
         'input[name="paymentMethod"]:checked'
       );
 
-      const isFullNameValid = /^[a-zA-Z]{3,}$/.test(fullName);
-      const isAddressValid = /^[a-zA-Z0-9,]{10,}$/.test(address);
+      const isFullNameValid = /^[A-Za-z]{3,}$/.test(fullName);
+      const isAddressValid = /^[A-Za-z0-9,]{10,}$/.test(address);
       const isPincodeValid = /^\d{6}$/.test(pincode);
       const isPhoneValid = /^\d{10}$/.test(phoneNo);
       const isPaymentMethodSelected = paymentMethod !== null;
@@ -403,18 +405,82 @@
       );
     }
 
-    function validateField(inputId, regex, errorMessage) {
-      const input = document.getElementById(inputId);
-      const errorElement = document.getElementById(`${inputId}Error`);
-
-      if (!regex.test(input.value)) {
-        input.classList.add("is-invalid");
-        input.classList.remove("is-valid");
-        errorElement.textContent = errorMessage;
+    function validateFullName() {
+      const input = document.getElementById('fullName');
+      const errorElement = document.getElementById('fullNameError');
+      const regex = /^[A-Za-z]{3,}$/;
+      
+      if (input.value.trim() === '') {
+        input.classList.remove('is-valid', 'is-invalid');
+        errorElement.textContent = '';
+      } else if (!regex.test(input.value)) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        errorElement.textContent = 'Username must contain only letters and be at least 3 characters long';
       } else {
-        input.classList.add("is-valid");
-        input.classList.remove("is-invalid");
-        errorElement.textContent = "";
+        input.classList.add('is-valid');
+        input.classList.remove('is-invalid');
+        errorElement.textContent = '';
+      }
+      checkFormValidity();
+    }
+
+    function validateAddress() {
+      const input = document.getElementById('address');
+      const errorElement = document.getElementById('addressError');
+      const regex = /^[A-Za-z0-9,]{10,}$/;
+      
+      if (input.value.trim() === '') {
+        input.classList.remove('is-valid', 'is-invalid');
+        errorElement.textContent = '';
+      } else if (!regex.test(input.value)) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        errorElement.textContent = 'Address must be at least 10 characters long, contain only letters, numbers, and commas (no spaces allowed)';
+      } else {
+        input.classList.add('is-valid');
+        input.classList.remove('is-invalid');
+        errorElement.textContent = '';
+      }
+      checkFormValidity();
+    }
+
+    function validatePincode() {
+      const input = document.getElementById('pincode');
+      const errorElement = document.getElementById('pincodeError');
+      const regex = /^\d{6}$/;
+      
+      if (input.value.trim() === '') {
+        input.classList.remove('is-valid', 'is-invalid');
+        errorElement.textContent = '';
+      } else if (!regex.test(input.value)) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        errorElement.textContent = 'Pincode must be exactly 6 digits';
+      } else {
+        input.classList.add('is-valid');
+        input.classList.remove('is-invalid');
+        errorElement.textContent = '';
+      }
+      checkFormValidity();
+    }
+
+    function validatePhone() {
+      const input = document.getElementById('phoneNo');
+      const errorElement = document.getElementById('phoneError');
+      const regex = /^\d{10}$/;
+      
+      if (input.value.trim() === '') {
+        input.classList.remove('is-valid', 'is-invalid');
+        errorElement.textContent = '';
+      } else if (!regex.test(input.value)) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        errorElement.textContent = 'Phone number must be exactly 10 digits';
+      } else {
+        input.classList.add('is-valid');
+        input.classList.remove('is-invalid');
+        errorElement.textContent = '';
       }
       checkFormValidity();
     }
@@ -435,26 +501,10 @@
         pincodeInput.value = selectedOption.getAttribute("data-pincode");
         phoneInput.value = selectedOption.getAttribute("data-phone");
 
-        validateField(
-          "fullName",
-          /^[a-zA-Z]{3,}$/,
-          "Full name must be at least 3 characters long and contain only letters."
-        );
-        validateField(
-          "address",
-          /^[a-zA-Z0-9,]{10,}$/,
-          "Address must be at least 10 characters long and contain letters, numbers, and commas."
-        );
-        validateField(
-          "pincode",
-          /^\d{6}$/,
-          "Pincode must be exactly 6 digits."
-        );
-        validateField(
-          "phoneNo",
-          /^\d{10}$/,
-          "Phone number must be exactly 10 digits."
-        );
+        validateFullName();
+        validateAddress();
+        validatePincode();
+        validatePhone();
       } else {
         fullnameInput.value = "";
         addressInput.value = "";
