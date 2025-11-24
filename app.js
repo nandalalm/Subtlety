@@ -67,27 +67,26 @@ app.use((err, req, res, next) => {
   res.status(500).render("500", { message: "Something went wrong!" });
 });
 
+// MongoDB Connection
 const dbURI = process.env.MONGO_URL;
 
 const connectDB = async () => {
-    try {
-        await mongoose.connect(dbURI, {
-          
-           
-        });
-        
-    } catch (error) {
-        console.error('MongoDB connection error:', error);
-        process.exit(1);
-    }
+  try {
+    await mongoose.connect(dbURI);
+    console.log("Mongo DB CONNECTED SUCCESSFULLY");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    process.exit(1);
+  }
 };
 
-connectDB().then(()=>{
-  console.log("Mongo DB CONNECED SUCCESSFULLY");
-})
+connectDB();
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// ⭐ IMPORTANT FOR VERCEL:
+module.exports = app;
+
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on http://localhost:${PORT}`);
+// });
 
