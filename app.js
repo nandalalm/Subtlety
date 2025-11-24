@@ -8,7 +8,7 @@ const userRoute = require("./routes/user");
 const adminRoute = require("./routes/admin");
 const authRoute = require("./routes/auth");
 const mongoose = require('mongoose');
-
+const MongoStore = require("connect-mongo");
 
 require("dotenv").config();
 require("./passport-setup");
@@ -24,13 +24,19 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Allow all origins
 app.use(cors());
 
-// Session setup
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false },
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URL,
+      collectionName: "sessions",
+    }),
+    cookie: {
+      secure: false, // on Vercel serverless use false
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
   })
 );
 
