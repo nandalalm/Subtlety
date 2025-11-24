@@ -60,11 +60,11 @@ const orderSchema = new mongoose.Schema(
     },
     offerDiscount: {
       type: Number,
-      default: 0, // Set default value if needed
+      default: 0,
     },
     couponDiscount: {
       type: Number,
-      default: 0, // Set default value if needed
+      default: 0, 
     },
     orderStatus: {
       type: String,
@@ -72,11 +72,10 @@ const orderSchema = new mongoose.Schema(
       default: "Pending",
     },
     paymentStatus: {
-      // Add paymentStatus field
       type: String,
-      enum: ["Failed", "Successful"], // Define the possible values
+      enum: ["Failed", "Successful"], 
       required: true,
-      default: "Pending", // Set a default value if needed
+      default: "Pending",
     },
     shippingAddress: {
       fullname: { type: String, required: true },
@@ -92,7 +91,7 @@ const orderSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    returnRequests: [returnRequestSchema], // Add the return requests field
+    returnRequests: [returnRequestSchema], 
   },
   { timestamps: true }
 );

@@ -63,8 +63,8 @@
               <li><a href="/user/wishlist" class="text-decoration-none">My Wishlist</a></li>
             </ul>
 
-            <form action="/user/logout" method="POST" style="display: inline;">
-              <button type="submit" id="logout-btn" class="btn btn-sm btn-danger">
+            <form action="/user/logout" method="POST" style="display: inline;" id="logout-form">
+              <button type="button" id="logout-btn" class="btn btn-sm btn-danger">
                 <i class="fas fa-power-off"></i> Logout
               </button>
             </form>
@@ -417,6 +417,25 @@
         input.setAttribute('type', type);
         this.querySelector('i').classList.toggle('fa-eye');
         this.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+    });
+
+    // Logout confirmation
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      Swal.fire({
+        title: 'Are you sure you want to logout?',
+        text: "You will be redirected to the login page.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, logout!',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById('logout-form').submit();
+        }
       });
     });
   </script>

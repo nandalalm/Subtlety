@@ -1,7 +1,7 @@
 const passport = require("passport");
 require("dotenv").config();
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
-const User = require("./model/user"); // Adjust the path to your User model
+const User = require("./model/user"); 
 passport.use(
   new GoogleStrategy(
     {
@@ -9,7 +9,7 @@ passport.use(
       clientSecret: process.env.CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
       scope: ["profile", "email"],
-      prompt: "select_account", // Ensures the account selection screen appears
+      prompt: "select_account",
     },
     async (accessToken, refreshToken, profile, done) => {
       const { id, emails, name } = profile;
@@ -20,12 +20,11 @@ passport.use(
 
         if (existingUser) {
           if (existingUser.isBlocked) {
-            return done(null, false, { message: "User is blocked" }); // Pass message to callback
+            return done(null, false, { message: "User is blocked" }); 
           }
           return done(null, existingUser);
         }
 
-        // Create a new user if not found
         const newUser = new User({
           googleId: id,
           firstname: name.givenName,
@@ -44,17 +43,15 @@ passport.use(
 
 // Serialize user to session
 passport.serializeUser((user, done) => {
-  done(null, user.id); // Store user ID in the session
+  done(null, user.id);
 });
 
 // Deserialize user from session
 passport.deserializeUser(async (id, done) => {
   try {
-    // Find the user by ID and pass the user object to `done`
     const user = await User.findById(id);
     done(null, user);
   } catch (error) {
-    // Handle any errors that occur
     console.error("Error deserializing user:", error);
     done(error, null);
   }

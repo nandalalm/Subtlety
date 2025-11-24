@@ -1,17 +1,22 @@
 const express = require("express");
 const path = require("path");
-const app = express();
 const session = require("express-session");
 const passport = require("passport");
 const cors = require("cors");
+const MongoStore = require("connect-mongo");
+
 const userRoute = require("./routes/user");
 const adminRoute = require("./routes/admin");
 const authRoute = require("./routes/auth");
-const mongoose = require('mongoose');
-const MongoStore = require("connect-mongo");
 
 require("dotenv").config();
 require("./passport-setup");
+
+const connectDB = require("./config/db");
+
+const app = express();
+
+connectDB();
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -21,7 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Allow all origins
 app.use(cors());
 
 app.use(
@@ -34,8 +38,8 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      secure: false, // on Vercel serverless use false
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
@@ -56,45 +60,23 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 app.get("/", (req, res) => {
   res.redirect("/user/home");
 });
+
 app.use("/user", userRoute);
 app.use("/admin", adminRoute);
 app.use("/auth", authRoute);
 
-// Handle 404 - Not Found
 app.use((req, res, next) => {
   res.status(404).render("404", { message: "Page not found!" });
 });
 
-// Handle 500 - Internal Server Error
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).render("500", { message: "Something went wrong!" });
 });
 
-// MongoDB Connection
-const dbURI = process.env.MONGO_URL;
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(dbURI);
-    console.log("Mongo DB CONNECTED SUCCESSFULLY");
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    process.exit(1);
-  }
-};
-
-connectDB();
-
-// ⭐ IMPORTANT FOR VERCEL:
 module.exports = app;
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
-
+// app.listen(3000, () => { console.log('Server running on http://localhost:3000') });

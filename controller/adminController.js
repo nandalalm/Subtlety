@@ -1,7 +1,7 @@
-const multer = require("multer"); // Import multer
+const multer = require("multer"); 
 const Admin = require("../model/admin");
-const User = require("../model/user"); // Import the User model
-const Product = require("../model/product"); // Import the Product model
+const User = require("../model/user"); 
+const Product = require("../model/product"); 
 const Category = require("../model/category");
 const Order = require("../model/order");
 const Wallet = require("../model/wallet");
@@ -80,8 +80,8 @@ async function getHome(req, res) {
 
         if (isDelivered) {
           const product = productMap[item.productId];
-          const offerDiscount = product.offerDiscount || 0; // Use only offer discount
-          const couponDiscount = item.couponDiscount || 0; // For reporting purposes
+          const offerDiscount = product.offerDiscount || 0; 
+          const couponDiscount = item.couponDiscount || 0; 
 
           // Calculate the adjusted total for the item using only the offer discount
           const itemTotal = totalPrice - offerDiscount;
@@ -102,12 +102,12 @@ async function getHome(req, res) {
             totalOfferDiscount: 0,
             totalCouponDiscount: 0,
           };
-          productSales[productId].sales += itemTotal; // Only add item total for product sales
+          productSales[productId].sales += itemTotal; 
           productSales[productId].quantity += item.quantity;
 
           // Accumulate only the offer discounts for total offer discount
           productSales[productId].totalOfferDiscount += offerDiscount;
-          productSales[productId].totalCouponDiscount += couponDiscount; // Keep this for reporting purposes
+          productSales[productId].totalCouponDiscount += couponDiscount; 
 
           const categoryId = product.category._id;
           categorySales[categoryId] =
@@ -134,8 +134,8 @@ async function getHome(req, res) {
           ? {
               index: index + 1,
               name: product.name,
-              description: product.description, // Add the product description
-              images: product.images, // Get all images
+              description: product.description, 
+              images: product.images, 
               quantity,
               unitPrice: product.price,
               offerDiscount:
@@ -195,10 +195,10 @@ async function loginadmin(req, res) {
     const admin = await Admin.findOne({ email });
 
     if (admin && (await bcrypt.compare(password, admin.password))) {
-      req.session.admin = admin; // Store admin info in session
-      res.redirect("/admin/dashboard"); // Redirect to dashboard
+      req.session.admin = admin; 
+      res.redirect("/admin/dashboard"); 
     } else {
-      res.status(401).send("Invalid email or password"); // Incorrect login
+      res.status(401).send("Invalid email or password"); 
     }
   } catch (error) {
     console.error(error);
@@ -208,20 +208,20 @@ async function loginadmin(req, res) {
 
 const productStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/products/"); // Specify product uploads directory
+    cb(null, "uploads/products/"); 
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`); // Save the file with a unique name
+    cb(null, `${Date.now()}_${file.originalname}`); 
   },
 });
 
 // Storage configuration for categories
 const categoryStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/categories/"); // Specify category uploads directory
+    cb(null, "uploads/categories/"); 
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`); // Save the file with a unique name
+    cb(null, `${Date.now()}_${file.originalname}`); 
   },
 });
 
@@ -271,13 +271,13 @@ const categoryUpload = multer({
 
 async function getUsers(req, res) {
   try {
-    const page = parseInt(req.query.page) || 1; // Get current page from query, default to 1
-    const limit = parseInt(req.query.limit) || 8; // Get limit from query, default to 10
-    const skip = (page - 1) * limit; // Calculate how many documents to skip
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 8; 
+    const skip = (page - 1) * limit; 
 
     // Fetch users with pagination
     const users = await User.find().skip(skip).limit(limit);
-    const totalUsers = await User.countDocuments(); // Get total count of users
+    const totalUsers = await User.countDocuments(); 
 
     // Calculate total pages
     const totalPages = Math.ceil(totalUsers / limit);
@@ -351,24 +351,24 @@ async function addProduct(req, res) {
 }
 
 async function getProducts(req, res) {
-  const limit = 5; // Number of products per page
-  const page = parseInt(req.query.page) || 1; // Get current page from query params
-  const totalProducts = await Product.countDocuments(); // Get total product count
-  const totalPages = Math.ceil(totalProducts / limit); // Calculate total pages
+  const limit = 5; 
+  const page = parseInt(req.query.page) || 1; 
+  const totalProducts = await Product.countDocuments(); 
+  const totalPages = Math.ceil(totalProducts / limit);
 
   const products = await Product.find()
     .populate("category")
-    .skip((page - 1) * limit) // Skip products for previous pages
-    .limit(limit); // Limit results to the current page
+    .skip((page - 1) * limit) 
+    .limit(limit); 
 
-  const categories = await Category.find(); // Fetch categories
+  const categories = await Category.find(); 
   res.render("admin/products", {
     products,
     categories,
     currentPage: page,
     totalPages,
     limit,
-  }); // Pass limit to the view
+  }); 
 }
 
 async function editProduct(req, res) {
@@ -377,7 +377,7 @@ async function editProduct(req, res) {
   // Handle deleteImages correctly
   let deleteImages = req.body.deleteImages;
   if (!Array.isArray(deleteImages)) {
-    deleteImages = deleteImages ? [deleteImages] : []; // Convert to array or empty array
+    deleteImages = deleteImages ? [deleteImages] : []; 
   }
 
   const existingProduct = await Product.findById(id);
@@ -446,15 +446,15 @@ async function toggleProductStatus(req, res) {
 }
 
 async function getCategories(req, res) {
-  const limit = 5; // Number of categories per page
-  const currentPage = parseInt(req.query.page) || 1; // Get current page from query, default to 1
-  const skip = (currentPage - 1) * limit; // Calculate the number of documents to skip
+  const limit = 5; 
+  const currentPage = parseInt(req.query.page) || 1; 
+  const skip = (currentPage - 1) * limit; 
 
   try {
     // Fetch the categories with pagination
     const categories = await Category.find().skip(skip).limit(limit);
-    const totalCategories = await Category.countDocuments(); // Get total count of categories
-    const totalPages = Math.ceil(totalCategories / limit); // Calculate total pages
+    const totalCategories = await Category.countDocuments(); 
+    const totalPages = Math.ceil(totalCategories / limit); 
 
     res.render("admin/categories", {
       categories,
@@ -480,7 +480,7 @@ async function addCategory(req, res) {
   }
 
   // Check if the request is already being processed
-  const requestKey = `${name}_${isListed}`; // Unique key based on input
+  const requestKey = `${name}_${isListed}`; 
 
   if (ongoingRequests.has(requestKey)) {
     return res
@@ -488,13 +488,13 @@ async function addCategory(req, res) {
       .json({ status: false, message: "Request already in progress" });
   }
 
-  ongoingRequests.add(requestKey); // Add to ongoing requests
+  ongoingRequests.add(requestKey); 
 
   try {
     // Check if a category with the same name already exists
     const existingCategory = await Category.findOne({ name });
     if (existingCategory) {
-      ongoingRequests.delete(requestKey); // Remove from ongoing requests
+      ongoingRequests.delete(requestKey); 
       return res
         .status(409)
         .json({ status: false, message: "Category already exists" });
@@ -525,11 +525,11 @@ async function editCategory(req, res) {
   const id = req.params.id;
   const updates = {
     name,
-    isListed: isListed === "true", // Ensure isListed is true/false based on string comparison
+    isListed: isListed === "true", 
   };
 
   if (req.file) {
-    updates.image = req.file.path; // Only update image if a new one is provided
+    updates.image = req.file.path; 
   }
 
   try {
@@ -583,15 +583,15 @@ async function toggleCategoryStatus(req, res) {
 
 async function getOrders(req, res) {
   const currentPage = parseInt(req.query.page) || 1;
-  const limit = 7; // Set limit to 6 orders per page
+  const limit = 7; 
   const offset = (currentPage - 1) * limit;
 
   try {
     // Fetch all orders and populate necessary fields
     const orders = await Order.find()
-      .populate("userId") // Populate userId to get user details
+      .populate("userId") 
       .populate("items.productId")
-      .sort({ createdAt: -1 }); // Sort by creation date, most recent first
+      .sort({ createdAt: -1 }); 
       
 
     // Split orders into two groups based on return request status
@@ -604,7 +604,6 @@ async function getOrders(req, res) {
         !order.returnRequests.some((request) => request.status === "Pending")
     );
 
-    // Combine the pending orders with the other orders
     const sortedOrders = [...pendingOrders, ...otherOrders];
 
     // Calculate total orders and paginate
@@ -619,7 +618,7 @@ async function getOrders(req, res) {
       currentPage,
       totalPages,
       limit,
-      totalOrders, // Add this line
+      totalOrders,
       showPagination: totalOrders > limit,
       pages: Array.from({ length: totalPages }, (_, i) => i + 1),
       hasPrevPage: currentPage > 1,
@@ -651,24 +650,22 @@ async function changeProductStatus(req, res) {
         .json({ success: false, message: "Product not found in order" });
     }
 
-    // Update the product status
-    const previousStatus = item.status; // Store the previous status
+    const previousStatus = item.status; 
     item.status = status;
 
     // Adjust stock based on status changes if necessary
     const product = await Product.findById(productId);
     if (product) {
       if (status === "Cancelled") {
-        product.stock += item.quantity; // Add stock back if cancelled
+        product.stock += item.quantity;
       } else if (previousStatus === "Cancelled") {
-        product.stock -= item.quantity; // Reduce stock when status changes from cancelled
+        product.stock -= item.quantity; 
       }
       await product.save();
     }
 
-    await order.save(); // Save the order changes
+    await order.save(); 
 
-    // Check the overall order status
     const allDelivered = order.items.every(
       (item) => item.status === "Delivered"
     );
@@ -684,18 +681,18 @@ async function changeProductStatus(req, res) {
     const hasShipped = order.items.some((item) => item.status === "Shipped");
 
     if (allDelivered) {
-      order.orderStatus = "Completed"; // Set order status to completed
+      order.orderStatus = "Completed"; 
     } else if (allCancelled) {
-      order.orderStatus = "Cancelled"; // Set order status to cancelled
+      order.orderStatus = "Cancelled"; 
     } else if (allReturned) {
-      order.orderStatus = "Completed"; // Set order status to cancelled
+      order.orderStatus = "Completed"; 
     } else if ((hasCancelled || hasReturned) && !hasPending && !hasShipped) {
-      order.orderStatus = "Completed"; // Some products cancelled and none pending
+      order.orderStatus = "Completed"; 
     } else {
-      order.orderStatus = "Pending"; // Default to pending if there are pending items
+      order.orderStatus = "Pending"; 
     }
 
-    await order.save(); // Save the updated order status
+    await order.save(); 
 
     res.json({ success: true });
   } catch (error) {
@@ -786,7 +783,7 @@ async function approveReturn(req, res) {
 
       const wallet = await Wallet.findOne({ userId: order.userId });
       if (wallet) {
-        wallet.balance += item.price * item.quantity; // Refund total price
+        wallet.balance += item.price * item.quantity; 
         wallet.transactions.push({
           amount: item.price * item.quantity,
           type: "credit",
@@ -803,11 +800,10 @@ async function approveReturn(req, res) {
 
       returnRequest.status = "Approved";
     } else if (action === "reject") {
-      // Logic for rejecting the return
       returnRequest.status = "Rejected";
     }
 
-    await order.save(); // Save the updated order
+    await order.save();
 
     res.json({
       success: true,
@@ -832,8 +828,8 @@ async function getOffers(req, res) {
     const totalPages = Math.ceil(totalOffers / limit);
 
     const offers = await Offer.find().skip(skip).limit(limit);
-    const products = await Product.find(); // Fetch all products
-    const categories = await Category.find(); // Fetch all categories
+    const products = await Product.find(); 
+    const categories = await Category.find(); 
 
     res.render("admin/offer", {
       offers,
@@ -854,7 +850,6 @@ async function getOffers(req, res) {
   }
 }
 
-// Add a new offer
 async function addOffer(req, res) {
   const {
     offerFor,
@@ -867,7 +862,6 @@ async function addOffer(req, res) {
     usedCount = 0,
   } = req.body;
 
-  // Basic validation
   if (
     !offerFor ||
     !targetId ||
@@ -880,7 +874,7 @@ async function addOffer(req, res) {
 
   // Check if expiry date is valid (not in the past)
   const currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+  currentDate.setHours(0, 0, 0, 0); 
   const expiryDate = new Date(expiresAt);
   if (expiryDate < currentDate) {
     return res
@@ -908,11 +902,11 @@ async function addOffer(req, res) {
       targetId,
       offerType,
       value,
-      maxDiscount: offerFor === "Category" ? maxDiscount : undefined, // Set only if relevant
+      maxDiscount: offerFor === "Category" ? maxDiscount : undefined, 
       minProductPrice:
         offerFor === "Category" && offerType === "flat"
           ? minProductPrice
-          : undefined, // Set only if relevant
+          : undefined, 
       expiresAt,
       usedCount,
     });
@@ -1006,13 +1000,13 @@ async function toggleOfferStatus(req, res) {
 }
 
 async function getCoupons(req, res) {
-  const limit = 7; // Number of categories per page
-  const currentPage = parseInt(req.query.page) || 1; // Get current page from query, default to 1
-  const skip = (currentPage - 1) * limit; // Calculate the number of documents to skip
+  const limit = 7;
+  const currentPage = parseInt(req.query.page) || 1; 
+  const skip = (currentPage - 1) * limit; 
   try {
     const coupons = await Coupon.find().skip(skip).limit(limit);
-    const totalCategories = await Coupon.countDocuments(); // Get total count of categories
-    const totalPages = Math.ceil(totalCategories / limit); // Calculate total pages
+    const totalCategories = await Coupon.countDocuments(); 
+    const totalPages = Math.ceil(totalCategories / limit); 
     res.render("admin/coupons", { coupons, currentPage, totalPages, limit });
   } catch (error) {
     console.error(error);
@@ -1129,15 +1123,15 @@ async function editCoupon(req, res) {
 
     // Logic for maxDiscount and minOrderValue based on discountType
     if (discountType === "flat") {
-      updatedCoupon.maxDiscount = 0; // Set maxDiscount to 0
+      updatedCoupon.maxDiscount = 0;
       updatedCoupon.minOrderValue =
         minOrderValue !== undefined
           ? minOrderValue
-          : updatedCoupon.minOrderValue; // Update if provided
+          : updatedCoupon.minOrderValue; 
     } else if (discountType === "percentage") {
-      updatedCoupon.minOrderValue = 0; // Set minOrderValue to 0
+      updatedCoupon.minOrderValue = 0; 
       updatedCoupon.maxDiscount =
-        maxDiscount !== undefined ? maxDiscount : updatedCoupon.maxDiscount; // Update if provided
+        maxDiscount !== undefined ? maxDiscount : updatedCoupon.maxDiscount; 
     }
 
     // Update other fields, keeping existing values if new values are not provided
@@ -1261,8 +1255,8 @@ async function generateSalesReport(req, res) {
 }
 
 async function downloadSalesReportPdf(req, res) {
-  const { reportType, startDate, endDate } = req.body; // Get filters from the request body
-  const filter = {}; // Create a filter object
+  const { reportType, startDate, endDate } = req.body; 
+  const filter = {}; 
 
   if (reportType === "custom" && startDate && endDate) {
     filter.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
@@ -1288,11 +1282,11 @@ async function downloadSalesReportPdf(req, res) {
   } else if (reportType === "monthly") {
     const startOfMonth = new Date();
     startOfMonth.setDate(1); // Set to first day of the month
-    startOfMonth.setHours(0, 0, 0, 0); // Start of the day
+    startOfMonth.setHours(0, 0, 0, 0); 
 
     const endOfMonth = new Date(startOfMonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Next month
-    endOfMonth.setHours(0, 0, 0, 0); // Start of next month
+    endOfMonth.setHours(0, 0, 0, 0); 
     filter.orderDate = {
       $gte: startOfMonth,
       $lt: endOfMonth,
@@ -1300,9 +1294,9 @@ async function downloadSalesReportPdf(req, res) {
   }
   // Add other filtering logic for weekly and monthly as needed
 
-  const orders = await Order.find(filter); // Use the filter in the query
+  const orders = await Order.find(filter); 
 
-  const doc = new PDFDocument({ layout: "landscape" }); // Set layout to landscape
+  const doc = new PDFDocument({ layout: "landscape" }); 
   res.setHeader(
     "Content-Disposition",
     'attachment; filename="sales_report.pdf"'
@@ -1324,22 +1318,22 @@ async function downloadSalesReportPdf(req, res) {
     (acc, order) => acc + order.offerDiscount + order.couponDiscount,
     0
   );
-  doc.fontSize(12).text(`Total Sales Count: ${totalSalesCount}`, 50, 120); // Adjusted y position for gap
-  doc.fontSize(12).text(`Total Order Amount: ${totalOrderAmount}`, 250, 120); // Adjusted y position for gap
-  doc.fontSize(12).text(`Total Discount: ${totalDiscount}`, 450, 120); // Adjusted y position for gap
+  doc.fontSize(12).text(`Total Sales Count: ${totalSalesCount}`, 50, 120); 
+  doc.fontSize(12).text(`Total Order Amount: ${totalOrderAmount}`, 250, 120); 
+  doc.fontSize(12).text(`Total Discount: ${totalDiscount}`, 450, 120); 
 
   // Table Header
-  doc.fontSize(12).text("Order ID", 50, 170); // Adjusted y position for gap
-  doc.fontSize(12).text("Customer", 220, 170); // Adjusted y position for gap
-  doc.fontSize(12).text("Offer Discount", 290, 170); // Adjusted y position for gap
-  doc.fontSize(12).text("Coupon Discount", 380, 170); // Adjusted y position for gap
-  doc.fontSize(12).text("Total Amount", 490, 170); // Adjusted y position for gap
-  doc.fontSize(12).text("Date", 580, 170); // Adjusted y position for gap
-  doc.fontSize(12).text("Status", 660, 170); // Adjusted y position for gap
+  doc.fontSize(12).text("Order ID", 50, 170); 
+  doc.fontSize(12).text("Customer", 220, 170);
+  doc.fontSize(12).text("Offer Discount", 290, 170); 
+  doc.fontSize(12).text("Coupon Discount", 380, 170); 
+  doc.fontSize(12).text("Total Amount", 490, 170); 
+  doc.fontSize(12).text("Date", 580, 170); 
+  doc.fontSize(12).text("Status", 660, 170); 
 
-  let y = 190; // Adjusted starting y position for the table
+  let y = 190; 
   orders.forEach((order) => {
-    doc.fontSize(12).text(`${order._id}`, 50, y, { width: 170 }); // Adjusted y position for gap
+    doc.fontSize(12).text(`${order._id}`, 50, y, { width: 170 }); 
     doc.fontSize(12).text(`${order.shippingAddress.fullname}`, 220, y);
     doc.fontSize(12).text(`${order.offerDiscount || "N/A"}`, 290, y);
     doc.fontSize(12).text(`${order.couponDiscount || "N/A"}`, 380, y);
@@ -1348,15 +1342,15 @@ async function downloadSalesReportPdf(req, res) {
       .fontSize(12)
       .text(`${new Date(order.orderDate).toLocaleDateString("en-GB")}`, 580, y);
     doc.fontSize(12).text(`${order.orderStatus}`, 660, y);
-    y += 20; // Adjusted y position for gap
+    y += 20; 
   });
 
   doc.end();
 }
 
 async function downloadSalesReportExcel(req, res) {
-  const { reportType, startDate, endDate } = req.body; // Get filters from the request body
-  const filter = {}; // Create a filter object
+  const { reportType, startDate, endDate } = req.body; 
+  const filter = {};
 
   if (reportType === "custom" && startDate && endDate) {
     filter.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
@@ -1382,11 +1376,11 @@ async function downloadSalesReportExcel(req, res) {
   } else if (reportType === "monthly") {
     const startOfMonth = new Date();
     startOfMonth.setDate(1); // Set to first day of the month
-    startOfMonth.setHours(0, 0, 0, 0); // Start of the day
+    startOfMonth.setHours(0, 0, 0, 0); 
 
     const endOfMonth = new Date(startOfMonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Next month
-    endOfMonth.setHours(0, 0, 0, 0); // Start of next month
+    endOfMonth.setHours(0, 0, 0, 0); 
     filter.orderDate = {
       $gte: startOfMonth,
       $lt: endOfMonth,
@@ -1394,7 +1388,7 @@ async function downloadSalesReportExcel(req, res) {
   }
   // Add other filtering logic for weekly and monthly as needed
 
-  const orders = await Order.find(filter); // Use the filter in the query
+  const orders = await Order.find(filter); 
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sales Report");
 

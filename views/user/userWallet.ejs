@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/styles/user/userProfile.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Font Awesome CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       background-color: #f4f4f4;
@@ -126,8 +127,8 @@
               <li><a href="/user/wishlist" class="text-decoration-none">My Wishlist</a></li>
             </ul>
 
-            <form action="/user/logout" method="POST" style="display: inline;">
-              <button type="submit" id="logout-btn" class="btn btn-logout btn-sm btn-danger">
+            <form action="/user/logout" method="POST" style="display: inline;" id="logout-form">
+              <button type="button" id="logout-btn" class="btn btn-logout btn-sm btn-danger">
                 <i class="fas fa-power-off"></i> Logout
               </button>
             </form>
@@ -189,47 +190,67 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
-</body>
 
-<script>
-function copyReferralLink() {
-  const referralLink = document.getElementById('referral-link');
-  const linkUrl = referralLink.value;
-
-  // Use the Clipboard API to copy the plain text link URL
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(linkUrl).then(function() {
-      // Show Toastify notification
-      Toastify({
-        text: "Referral link copied to clipboard!",
-        duration: 3000, // Duration in milliseconds
-        close: true,
-        gravity: "top", // Positioning: top or bottom
-        position: "right", // Positioning: left, center, right
-        backgroundColor: "#28a745",
-        stopOnFocus: true, // Stops the toast on hover
-      }).showToast();
-    }).catch(function(err) {
-      console.error('Unable to copy link to clipboard', err);
+  <script>
+    // Logout confirmation
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        Swal.fire({
+          title: 'Are you sure you want to logout?',
+          text: "You will be redirected to the login page.",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, logout!',
+          cancelButtonText: 'Cancel'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            document.getElementById('logout-form').submit();
+          }
+        });
+      });
     });
-  } else {
-    // Fallback for older browsers using document.execCommand
-    referralLink.select();
-    referralLink.setSelectionRange(0, 99999); // For mobile devices
-    document.execCommand('copy');
 
-    // Show Toastify notification for fallback method
-    Toastify({
-      text: "Referral link copied to clipboard!",
-      duration: 3000, // Duration in milliseconds
-      close: true,
-      gravity: "top", // Positioning: top or bottom
-      position: "right", // Positioning: left, center, right
-      backgroundColor: "#28a745",
-      stopOnFocus: true, // Stops the toast on hover
-    }).showToast();
-  }
-}
+    function copyReferralLink() {
+      const referralLink = document.getElementById('referral-link');
+      const linkUrl = referralLink.value;
+
+      // Use the Clipboard API to copy the plain text link URL
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(linkUrl).then(function() {
+          // Show Toastify notification
+          Toastify({
+            text: "Referral link copied to clipboard!",
+            duration: 3000, // Duration in milliseconds
+            close: true,
+            gravity: "top", // Positioning: top or bottom
+            position: "right", // Positioning: left, center, right
+            backgroundColor: "#28a745",
+            stopOnFocus: true, // Stops the toast on hover
+          }).showToast();
+        }).catch(function(err) {
+          console.error('Unable to copy link to clipboard', err);
+        });
+      } else {
+        // Fallback for older browsers using document.execCommand
+        referralLink.select();
+        referralLink.setSelectionRange(0, 99999); // For mobile devices
+        document.execCommand('copy');
+
+        // Show Toastify notification for fallback method
+        Toastify({
+          text: "Referral link copied to clipboard!",
+          duration: 3000, // Duration in milliseconds
+          close: true,
+          gravity: "top", // Positioning: top or bottom
+          position: "right", // Positioning: left, center, right
+          backgroundColor: "#28a745",
+          stopOnFocus: true, // Stops the toast on hover
+        }).showToast();
+      }
+    }
 </script>
 
 </html>

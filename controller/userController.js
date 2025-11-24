@@ -8,17 +8,17 @@ const Order = require("../model/order");
 const Coupon = require("../model/coupon");
 const nodemailer = require("nodemailer");
 const Razorpay = require("razorpay");
-const crypto = require("crypto"); // For generating random OTP
+const crypto = require("crypto"); 
 const Wallet = require("../model/wallet");
-const Offer = require("../model/offer"); // Adjust the path as needed
+const Offer = require("../model/offer");
 const PDFDocument = require("pdfkit");
 
 function getLogin(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
-  const errorMessage = req.session.errorMessage || null; // Get error message from session
-  req.session.errorMessage = null; // Clear the message after reading
+  const errorMessage = req.session.errorMessage || null; 
+  req.session.errorMessage = null; 
   res.render("user/login", { errorMessage });
 }
 
@@ -60,8 +60,8 @@ async function addUser(req, res) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const otp = String(crypto.randomInt(100000, 999999)); // Generate a 6-digit OTP
-    const otpTimestamp = Date.now(); // Get the current timestamp
+    const otp = String(crypto.randomInt(100000, 999999)); 
+    const otpTimestamp = Date.now(); 
 
     // Store user data temporarily in the session
     req.session.tempUser = {
@@ -70,19 +70,17 @@ async function addUser(req, res) {
       email,
       password: hashedPassword,
       otp,
-      otpTimestamp, // Store the timestamp
+      otpTimestamp,
     };
 
     // Store referral user ID (if any) in the session
     if (referral) {
-      req.session.referralUserId = referral; // Store the referring user's ID
+      req.session.referralUserId = referral;
     }
 
     // Send OTP to email
     await sendOtpEmail(email, otp);
     
-
-    // Respond with a message
     res.status(200).json({ message: "OTP sent to your email. Please verify." });
   } catch (error) {
     console.error(error);
@@ -92,10 +90,9 @@ async function addUser(req, res) {
 
 // Verify OTP
 async function verifyOtp(req, res) {
-  const { email, otp, referral } = req.body; // Destructure referral from the request body
+  const { email, otp, referral } = req.body; 
 
   try {
-    // Check if user data is in the session
     const tempUser = req.session.tempUser;
 
     if (
@@ -106,49 +103,44 @@ async function verifyOtp(req, res) {
       return res.status(400).send("Invalid OTP or user data not found");
     }
 
-    // Check if the OTP has expired (valid for 60 seconds)
-    const otpValidityDuration = 60 * 1000; // 60 seconds
+    const otpValidityDuration = 60 * 1000; 
     if (Date.now() - tempUser.otpTimestamp > otpValidityDuration) {
       return res.status(400).send("OTP has expired. Please request a new one.");
     }
 
-    // Create a new user instance and save to the database
     const newUser = new User({
       firstname: tempUser.firstname,
       lastname: tempUser.lastname,
       email: tempUser.email,
       password: tempUser.password,
-      isVerified: true, // Mark as verified
+      isVerified: true, 
     });
 
-    await newUser.save(); // Save the user to the database
+    await newUser.save();
 
-    // Clear the tempUser from the session
     req.session.tempUser = null;
 
-    // Check if there's a referral ID sent from the frontend
     if (referral) {
-      const referralUser = await User.findById(referral); // Get the referral user by ID
+      const referralUser = await User.findById(referral); 
 
       // Check if the referral user exists and hasn't already been credited
       if (referralUser && !referralUser.referralCreditsClaimed) {
-        // Credit the referring user with 600 rupees to their wallet
+
         const wallet = await Wallet.findOne({ userId: referralUser });
 
         if (wallet) {
-          // If the wallet exists, add 600 rupees to the balance
           wallet.balance += 600;
           wallet.transactions.push({
             amount: 600,
             type: "credit",
             description: "Referral bonus credited for referring a new user",
           });
-          await wallet.save(); // Save the updated wallet
+          await wallet.save(); 
         } else {
           // If the wallet does not exist, create a new one for the referral user
           const newWallet = new Wallet({
-            userId: referralUser._id, // Set the referral user's ID
-            balance: 600, // Initial balance credited with 600
+            userId: referralUser._id, 
+            balance: 600, 
             transactions: [
               {
                 amount: 600,
@@ -157,18 +149,17 @@ async function verifyOtp(req, res) {
               },
             ],
           });
-          await newWallet.save(); // Save the newly created wallet
+          await newWallet.save(); 
         }
 
-        // Mark the referral user as credited
-        referralUser.referralCreditsClaimed = true; // Mark as credited
-        await referralUser.save(); // Save the changes to the referral user
+        referralUser.referralCreditsClaimed = true; 
+        await referralUser.save(); 
       }
     }
 
     // Log the user in
-    req.session.user = newUser; // Store user info in session
-    res.status(200).redirect("/user/home"); // Redirect to home page
+    req.session.user = newUser; 
+    res.status(200).redirect("/user/home"); 
   } catch (error) {
     console.error(error);
     res.status(500).send("Error verifying OTP");
@@ -188,14 +179,13 @@ async function resendOtp(req, res) {
         .send("User not found in session. Please register again.");
     }
 
-    const otp = String(crypto.randomInt(100000, 999999)); // Generate a new OTP
-    const otpTimestamp = Date.now(); // Get the current timestamp
+    const otp = String(crypto.randomInt(100000, 999999)); 
+    const otpTimestamp = Date.now(); 
 
-    // Update the OTP and timestamp in the session
     tempUser.otp = otp;
     tempUser.otpTimestamp = otpTimestamp;
 
-    await sendOtpEmail(email, otp); // Send the new OTP to the user's email
+    await sendOtpEmail(email, otp); 
 
     res.status(200).json({ message: "New OTP sent to your email." });
   } catch (error) {
@@ -209,18 +199,18 @@ async function loginUser(req, res) {
   try {
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      req.session.errorMessage = "Invalid email or password"; // Set flash message
-      return res.redirect("/user/login"); // Redirect back to login
+      req.session.errorMessage = "Invalid email or password";
+      return res.redirect("/user/login"); 
     }
 
     if (user.isBlocked) {
       req.session.errorMessage =
         "Your account has been blocked. Please contact support.";
-      return res.redirect("/user/login"); // Redirect back to login
+      return res.redirect("/user/login"); 
     }
 
-    req.session.user = user; // Store user info in session
-    return res.redirect("/user/home"); // Redirect to home page
+    req.session.user = user; 
+    return res.redirect("/user/home"); 
   } catch (error) {
     console.error(error);
     return res.status(500).send("Error logging in");
@@ -260,7 +250,7 @@ async function getHome(req, res) {
     if (bestSellingProducts.length > 0) {
       // If we have best-selling products, get their details
       const bestSellingProductIds = bestSellingProducts
-        .slice(0, 4) // Only take the top 4 best-selling products
+        .slice(0, 4)
         .map((item) => item._id);
       const bestSellingProductDetails = await Product.find({
         _id: { $in: bestSellingProductIds },
@@ -282,15 +272,14 @@ async function getHome(req, res) {
           ).count;
           return { product, bestOffer, count };
         })
-        .sort((a, b) => b.count - a.count); // Sort by frequency (descending)
+        .sort((a, b) => b.count - a.count); 
     }
     // Fetch the latest 4 products sorted by creation date first, then alphabetically
     const latestProductsWithOffers = await Product.find({})
-      .sort({ createdAt: -1 }) // Sort by creation date descending first
-      .collation({ locale: "en", strength: 2 }) // Ensure case-insensitive sorting
-      .limit(4); // Limit to 4 products
+      .sort({ createdAt: -1 }) 
+      .collation({ locale: "en", strength: 2 }) 
+      .limit(4); 
 
-    // Sort them alphabetically (A-Z) within the same createdAt order
     latestProductsWithOffers.sort((a, b) => a.name.localeCompare(b.name));
 
     // Fetch offers for the latest products
@@ -312,14 +301,13 @@ async function getHome(req, res) {
      })
    );
 
-    // Send the response with both latest products and best-selling products (only 4 each)
     res.render("user/home", {
       user,
       productsWithOffers,
       categories,
       bestSellingProducts: bestSellingProductsWithOffers.slice(0, 4),
-      fallbackProducts: fallbackProductsWithOffers, // Send fallback products separately
-      latestProducts: latestProductsWithOffersAndDetails, // Latest products (4)
+      fallbackProducts: fallbackProductsWithOffers,
+      latestProducts: latestProductsWithOffersAndDetails, 
     });
   } catch (error) {
     console.error("Error fetching products or categories:", error);
@@ -327,23 +315,22 @@ async function getHome(req, res) {
   }
 }
 
-// Aggregating the product frequency across all orders
 const aggregateProductFrequency = async () => {
   const productFrequency = await Order.aggregate([
-    { $unwind: "$items" }, // Unwind the order items to separate each productId
+    { $unwind: "$items" }, 
     {
       $match: {
-        "items.status": "Delivered", // Only consider products that are delivered
+        "items.status": "Delivered", 
       },
     },
     {
       $group: {
-        _id: "$items.productId", // Group by productId
-        count: { $sum: 1 }, // Count the number of times this product appears
+        _id: "$items.productId", 
+        count: { $sum: 1 }, 
       },
     },
-    { $sort: { count: -1 } }, // Sort by the count in descending order
-    { $limit: 6 }, // Limit to the top 6 most frequent products
+    { $sort: { count: -1 } }, 
+    { $limit: 6 }, 
   ]);
 
   return productFrequency;
@@ -415,9 +402,9 @@ async function getShopPage(req, res) {
 
     // Handle category filtering
     if (category && category !== "all") {
-      const categoryDoc = await Category.findById(category); // Use category ID directly
+      const categoryDoc = await Category.findById(category); 
       if (categoryDoc) {
-        query.category = categoryDoc._id; // Assuming 'category' in query is the ID
+        query.category = categoryDoc._id; 
       }
     }
 
@@ -426,9 +413,8 @@ async function getShopPage(req, res) {
       query.name = { $regex: search, $options: "i" };
     }
 
-    let products = await Product.find(query); // Fetch products based on the query
+    let products = await Product.find(query); 
 
-    // Sort products if a sort option is provided
     if (sort) {
       if (sort === "priceLowToHigh") {
         products.sort((a, b) => a.price - b.price);
@@ -450,7 +436,6 @@ async function getShopPage(req, res) {
 
     const categories = await Category.find({ isListed: true });
 
-    // Assuming you have user information in req.user
     const user = req.session.user || null;
 
     res.render("user/shop", {
@@ -470,16 +455,14 @@ async function getShopPage(req, res) {
 async function getSingleProduct(req, res) {
   const { id } = req.params;
   try {
-    // Fetch the product and populate the category field
     const product = await Product.findById(id).populate("category", "name");
     const categories = await Category.find({});
-    const user = req.session.user; // Get the user from the session
+    const user = req.session.user; 
 
     if (!product) {
       return res.status(404).send("Product not found");
     }
 
-    // Get the category name
     const categoryName = product.category
       ? product.category.name
       : "Uncategorized";
@@ -550,7 +533,6 @@ async function getSingleProduct(req, res) {
     // Select top 2 best coupons
     const topCoupons = sortedCoupons.slice(0, 2).map(item => item.coupon);
 
-    // Render the single product view with populated product, related products, and top coupons
     res.render("user/single-product", {
       user,
       product,
@@ -559,7 +541,7 @@ async function getSingleProduct(req, res) {
       categoryName,
       categories,
       relatedProductsWithOffers,
-      activeCoupons: topCoupons, // Send only top 2 best coupons
+      activeCoupons: topCoupons, 
     });
   } catch (error) {
     console.error("Error fetching product:", error);
@@ -571,7 +553,7 @@ async function getSingleProduct(req, res) {
 async function getUserProfile(req, res) {
   try {
     const user = req.session.user;
-    res.render("user/profile", { user }); // Render the profile page
+    res.render("user/profile", { user }); 
   } catch (error) {
     console.error("Error fetching user profile:", error);
     res.status(500).send("Error loading user profile");
@@ -581,9 +563,9 @@ async function getUserProfile(req, res) {
 async function getAddresses(req, res) {
   const userId = req.session.user._id;
   try {
-    const addresses = await Address.find({ userId }); // Fetch addresses associated with the user
-    const user = req.session.user; // Get user from session
-    res.render("user/address", { addresses, user }); // Pass user data to the template
+    const addresses = await Address.find({ userId }); 
+    const user = req.session.user; 
+    res.render("user/address", { addresses, user }); 
   } catch (error) {
     console.error("Error fetching addresses:", error);
     res.status(500).send("Error fetching addresses");
@@ -594,10 +576,8 @@ async function updateUserProfile(req, res) {
   const userId = req.session.user._id;
 
   try {
-    // Update user details excluding email
     await User.findByIdAndUpdate(userId, { firstname, lastname });
 
-    // Update the session with the new user info
     req.session.user.firstname = firstname;
     req.session.user.lastname = lastname;
 
@@ -611,12 +591,12 @@ async function updateUserProfile(req, res) {
 }
 
 async function updateEmail(req, res) {
-  const { email } = req.body; // Ensure email is being retrieved correctly
+  const { email } = req.body; 
   const userId = req.session.user._id;
 
   try {
     await User.findByIdAndUpdate(userId, { email });
-    req.session.user.email = email; // Update the session with the new email
+    req.session.user.email = email;
     res.status(200).json({ message: "Email updated successfully" });
   } catch (error) {
     console.error("Error updating email:", error);
@@ -627,12 +607,12 @@ async function updateEmail(req, res) {
 }
 
 async function updatePhoneNumber(req, res) {
-  const { phone } = req.body; // Ensure phone number is being retrieved correctly
+  const { phone } = req.body; 
   const userId = req.session.user._id;
 
   try {
     await User.findByIdAndUpdate(userId, { phoneNo: phone });
-    req.session.user.phoneNo = phone; // Update the session with the new phone number
+    req.session.user.phoneNo = phone; 
     res.status(200).json({ message: "Phone number updated successfully" });
   } catch (error) {
     console.error("Error updating phone number:", error);
@@ -701,17 +681,16 @@ async function addAddress(req, res) {
 
     await newAddress.save();
     // Redirect back to the address management page
-    res.status(200).json({ message: "success" }); // Adjust this path as necessary
+    res.status(200).json({ message: "success" }); 
   } catch (error) {
     console.error("Error adding address:", error);
-    // Handle error, possibly by redirecting back with an error message
     req.flash("error", "Error adding address");
-    res.redirect("/user/address/manage"); // Redirect to the same page on error as well
+    res.redirect("/user/address/manage");
   }
 }
 
 async function editAddress(req, res) {
-  const { id } = req.params; // Get address ID from the URL
+  const { id } = req.params;
   const {
     username,
     phoneNo,
@@ -778,7 +757,6 @@ async function deleteAddress(req, res) {
 async function changePassword(req, res) {
   const { currentPassword, newPassword } = req.body;
   const userId = req.session.user._id;
-  // Assuming you have user info in req.user from authentication middleware
 
   try {
     // Find the user by ID
@@ -828,7 +806,7 @@ async function getCart(req, res) {
         cart: null,
         subtotal: 0,
         deliveryCharge: 50,
-        total: 50, // Only delivery charge if no items in cart
+        total: 50, 
       });
     }
 
@@ -935,7 +913,7 @@ async function addToCart(req, res) {
           message: `Cannot exceed a quantity of ${MAX_QUANTITY} for this product.`,
         });
       }
-      cart.products[existingProductIndex].quantity = newQuantity; // Update quantity
+      cart.products[existingProductIndex].quantity = newQuantity; 
     } else {
       // If the product does not exist, add it to the cart
       cart.products.push({ productId, quantity });
@@ -952,13 +930,12 @@ async function addToCart(req, res) {
 }
 
 async function removeFromCart(req, res) {
-  const userId = req.session.user._id; // Ensure you're using the correct property for user ID
+  const userId = req.session.user._id; 
   const { productId } = req.body;
 
   try {
     const cart = await Cart.findOne({ user: userId });
     if (cart) {
-      // Filter out the product
       cart.products = cart.products.filter(
         (item) => item.productId.toString() !== productId
       );
@@ -976,10 +953,10 @@ async function removeFromCart(req, res) {
 }
 
 async function updateQuantity(req, res) {
-  const userId = req.session.user._id; // Ensure you're using the correct property for user ID
+  const userId = req.session.user._id; 
   const { productId, quantity } = req.body;
 
-  const MAX_QUANTITY = 10; // Limit for quantity of a single product
+  const MAX_QUANTITY = 10; 
 
   try {
     const cart = await Cart.findOne({ user: userId });
@@ -1002,7 +979,7 @@ async function updateQuantity(req, res) {
         }
 
         // Retrieve the product's stock from your product model
-        const product = await Product.findById(productId); // Assuming you have a Product model
+        const product = await Product.findById(productId); 
         if (!product) {
           return res.status(404).json({ message: "Product not found" });
         }
@@ -1015,7 +992,7 @@ async function updateQuantity(req, res) {
         }
 
         // Update quantity in the cart
-        cart.products[productIndex].quantity = quantity; // Update quantity
+        cart.products[productIndex].quantity = quantity; 
         await cart.save();
         return res
           .status(200)
@@ -1033,7 +1010,7 @@ async function updateQuantity(req, res) {
 }
 
 async function checkoutPage(req, res) {
-  const userId = req.session.user?._id; // Optional chaining for safety
+  const userId = req.session.user?._id;
   if (!userId) {
     return res
       .status(401)
@@ -1120,7 +1097,6 @@ async function checkoutPage(req, res) {
       });
     }
 
-    // Render the view for standard requests
     res.render("user/checkout", {
       cart: { ...cart.toObject(), products: availableProducts },
       subtotal,
@@ -1139,7 +1115,6 @@ async function checkoutPage(req, res) {
 async function applyCoupon(req, res) {
   const { couponCode, totalAmount } = req.body;
 
-  // Get the user ID from the session
   const userId = req.session.user ? req.session.user._id : null;
 
   if (!userId) {
@@ -1177,7 +1152,7 @@ async function applyCoupon(req, res) {
   let discountAmount =
     coupon.discountType === "flat"
       ? coupon.discountAmount
-      : (coupon.discountAmount / 100) * totalAmount; // Assuming discountAmount is the percentage value
+      : (coupon.discountAmount / 100) * totalAmount; 
 
   // Ensure discount does not exceed maxDiscount
   if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
@@ -1379,7 +1354,6 @@ const razorpayInstance = new Razorpay({
   key_secret: "ttwYmmlesedbxjWK8AF59uJq",
 });
 
-// Example function to create a Razorpay order
 async function createRazorpayOrder(req, res) {
   const { orderId } = req.body;
 
@@ -1447,10 +1421,9 @@ async function confirmRazorpayPayment(req, res) {
   }
 }
 
-// Function to get the wallet balance of the user
 const getWalletBalance = async (req, res) => {
   try {
-    const userId = req.session.user._id; // Get the user ID from session or JWT
+    const userId = req.session.user._id; 
 
     // Find the wallet associated with the user
     let wallet = await Wallet.findOne({ userId });
@@ -1531,7 +1504,7 @@ async function getOrderSuccessPage(req, res) {
 
   try {
     // Fetch the order details from the database
-    const order = await Order.findById(orderId).populate("items.productId"); // Adjust the fields as needed
+    const order = await Order.findById(orderId).populate("items.productId"); 
 
     if (!order) {
       return res.status(404).send("Order not found");
@@ -1555,7 +1528,7 @@ async function getUserOrders(req, res) {
         path: "items.productId",
         populate: { path: "category" },
       })
-      .sort({ createdAt: -1 }); // Sort orders by creation date
+      .sort({ createdAt: -1 }); 
 
     res.render("user/orders", { orders, user: req.session.user });
   } catch (error) {
@@ -1607,30 +1580,27 @@ async function downloadInvoice(req, res) {
     );
     res.setHeader("Content-type", "application/pdf");
 
-    // Pipe the PDF into the response
     doc.pipe(res);
 
-    // Add content to the PDF
     doc.fontSize(27).text("Subtlety", { align: "center" });
     doc.fontSize(12).text("Sold by: Nandalal M", { align: "center" });
     doc.fontSize(12).text("Address: Ft44, Main Street, City Central, Delhi", {
       align: "center",
     });
-    doc.moveDown(2); // Add some space
+    doc.moveDown(2); 
 
-    // Shipping address
     doc.fontSize(16).text("Billing Address:", { underline: true });
-    doc.moveDown(); // Add space before the address
+    doc.moveDown();
 
     doc.fontSize(12).text(`Name: ${order.shippingAddress.fullname}`);
     doc.fontSize(12).text(`Address: ${order.shippingAddress.address}`);
     doc.fontSize(12).text(`Pincode: ${order.shippingAddress.pincode}`);
     doc.fontSize(12).text(`Phone No: ${order.shippingAddress.phone || "N/A"}`);
-    doc.moveDown(); // Add space after billing address
+    doc.moveDown(); 
 
     // Order summary
     doc.fontSize(16).text("Order Summary", { underline: true });
-    doc.moveDown(); // Add space before the summary
+    doc.moveDown(); 
 
     doc.fontSize(12).text(`Order ID: ${order._id}`);
     doc
@@ -1640,24 +1610,24 @@ async function downloadInvoice(req, res) {
     doc.moveDown(2);
 
     // Order summary headers (bold)
-    doc.fontSize(12).font("Helvetica-Bold"); // Set font to bold
-    const headerY = doc.y; // Store current Y position for headers
+    doc.fontSize(12).font("Helvetica-Bold"); 
+    const headerY = doc.y; 
     doc.text("Product Name", 73, headerY, { width: 110 });
     doc.text("Product Status", 215, headerY);
     doc.text("Unit Price", 320, headerY);
     doc.text("Quantity", 390, headerY);
     doc.text("Total Price", 470, headerY);
 
-    doc.fontSize(12).font("Helvetica"); // Reset font to regular
+    doc.fontSize(12).font("Helvetica"); 
 
-    let y = headerY + 20; // Start just below the headers
-    let totalPaid = 0; // Initialize total paid amount
+    let y = headerY + 20; 
+    let totalPaid = 0; 
 
     // Loop through the order items and add them to the table
     order.items.forEach((item) => {
       const totalPrice = item.price * item.quantity;
       const isDelivered =
-        item.status && item.status.trim().toLowerCase() === "delivered"; // Check if status is delivered
+        item.status && item.status.trim().toLowerCase() === "delivered"; 
 
       doc.fontSize(12).text(`${item.productId.name}`, 73, y, { width: 110 });
       doc.fontSize(12).text(`${item.status || "N/A"}`, 215, y);
@@ -1665,23 +1635,22 @@ async function downloadInvoice(req, res) {
       doc.fontSize(12).text(`x ${item.quantity}`, 390, y);
       doc
         .fontSize(12)
-        .text(`${isDelivered ? totalPrice.toFixed(2) : "0.00"}`, 470, y); // Show total price only if delivered
+        .text(`${isDelivered ? totalPrice.toFixed(2) : "0.00"}`, 470, y);
 
       // Add to totalPaid only if delivered
       if (isDelivered) {
-        totalPaid += totalPrice; // Accumulate total price for delivered items
+        totalPaid += totalPrice; 
       }
 
-      y += 20; // Adjusted y position for the next row
+      y += 20; 
     });
 
-    // Add the total amount paid at the end, aligned to the left
     doc.moveDown(3);
-    doc.font("Helvetica-Bold"); // Set font to bold for total amount text
+    doc.font("Helvetica-Bold"); 
     const totalAmountText = `Total Amount Paid: ${totalPaid.toFixed(2)}`;
     doc.fontSize(14).text(totalAmountText, 73);
 
-    doc.font("Helvetica"); // Reset font to regular after the total amount
+    doc.font("Helvetica"); 
 
     doc.end();
   } catch (error) {
@@ -1840,8 +1809,8 @@ async function sendOtpForPasswordReset(req, res) {
       return res.status(400).send("Email not registered");
     }
 
-    const otp = String(crypto.randomInt(100000, 999999)); // Generate a new OTP
-    const otpTimestamp = Date.now(); // Get the current timestamp
+    const otp = String(crypto.randomInt(100000, 999999)); 
+    const otpTimestamp = Date.now(); 
 
     // Store user data temporarily in the session
     req.session.passwordResetUser = { email, otp, otpTimestamp };
@@ -1874,7 +1843,7 @@ async function verifyOtpForPasswordReset(req, res) {
     }
 
     // Check if the OTP has expired (valid for 60 seconds)
-    const otpValidityDuration = 60 * 1000; // 60 seconds
+    const otpValidityDuration = 60 * 1000; 
     if (Date.now() - resetUser.otpTimestamp > otpValidityDuration) {
       return res.status(400).send("OTP has expired. Please request a new one.");
     }
@@ -1921,8 +1890,8 @@ async function resendPasswordResetOtp(req, res) {
         .send("User not found in session. Please request a new OTP.");
     }
 
-    const otp = String(crypto.randomInt(100000, 999999)); // Generate a new OTP
-    const otpTimestamp = Date.now(); // Get the current timestamp
+    const otp = String(crypto.randomInt(100000, 999999)); 
+    const otpTimestamp = Date.now(); 
 
     // Update the OTP and timestamp in the session
     resetUser.otp = otp;
@@ -1939,7 +1908,7 @@ async function resendPasswordResetOtp(req, res) {
 
 async function getWishlist(req, res) {
   try {
-    const userId = req.session.user._id; // Assuming you are using session to store user ID
+    const userId = req.session.user._id; 
     const user = await User.findById(userId).populate("wishlisted"); // Populate the wishlisted products
     const categories = await Category.find({});
 
@@ -1996,8 +1965,8 @@ async function addToWishlist(req, res) {
 }
 
 async function deleteFromWishlist(req, res) {
-  const { userId } = req.body; // You might want to send the userId in the request body
-  const { productId } = req.params; // Extract the productId from the URL parameters
+  const { userId } = req.body; 
+  const { productId } = req.params;
 
   try {
     // Find the user by ID
@@ -2031,7 +2000,6 @@ async function logout(req, res) {
     // Remove user info from the session
     delete req.session.user;
   }
-  // Optionally, you can also clear other session data if necessary
 
   // Redirect to login after logout
   res.redirect("/user/login");
