@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - SUBTLETY</title>
 
@@ -103,42 +104,7 @@
       <% if (latestProducts && latestProducts.length > 0) { %>  <!-- Change this line to use latestProducts -->
       <% latestProducts.forEach(({ product, bestOffer }) => { %>  <!-- Change this line as well -->
       <% if (product && product.isListed) { %>
-      <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
-        <a href="/user/single-product/<%= product._id %>" class="card-link">
-          <div class="card-img-half position-relative">
-            <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
-            <% if (product.stock === 0) { %>
-            <span class="out-of-stock-label">Out of Stock</span>
-            <% } %>
-          </div>
-          <div class="card-body-half">
-            <div class="product-details">
-              <h5 class="card-title text-center"><%= product.name %></h5>
-              <div class="star-rating text-center">
-                <p class="price text-center">
-                  <% if (bestOffer) { %>
-                  <span style="text-decoration: line-through;">₹ <%= product.price %></span>
-                  <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
-                  <% } else { %>
-                  <span>₹ <%= product.price %></span>
-                  <% } %>
-                </p>
-                <% if (bestOffer) { %>
-                <% if (bestOffer.offerType === 'percentage') { %>
-                <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
-                <% } else if (bestOffer.offerType === 'flat') { %>
-                <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
-                <% } %>
-                <% } %>
-              </div>
-              <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
-                <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
-              </div>
-            </div>
-          </div>
-        </a>
-      </div>
+      <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
       <% } %>
       <% }) %>
       <% } else { %>
@@ -167,83 +133,13 @@
       <% if (bestSellingProducts && bestSellingProducts.length) { %>
         <% bestSellingProducts.forEach(({ product, bestOffer, count }) => { %>
           <% if (product && product.isListed) { %>
-            <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
-              <a href="/user/single-product/<%= product._id %>" class="card-link">
-                <div class="card-img-half position-relative">
-                  <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
-                  <% if (product.stock === 0) { %>
-                    <span class="out-of-stock-label">Out of Stock</span>
-                  <% } %>
-                </div>
-                <div class="card-body-half">
-                  <div class="product-details">
-                    <h5 class="card-title text-center"><%= product.name %></h5>
-                    <div class="star-rating text-center">
-                      <p class="price text-center">
-                        <% if (bestOffer) { %>
-                          <span style="text-decoration: line-through;">₹ <%= product.price %></span>
-                          <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
-                        <% } else { %>
-                          <span>₹ <%= product.price %></span>
-                        <% } %>
-                      </p>
-                      <% if (bestOffer) { %>
-                        <% if (bestOffer.offerType === 'percentage') { %>
-                          <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
-                        <% } else if (bestOffer.offerType === 'flat') { %>
-                          <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
-                        <% } %>
-                      <% } %>
-                    </div>
-                    <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
-                      <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                      <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
+            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
           <% } %>
         <% }) %>
       <% } else { %>
         <% fallbackProducts.forEach(({ product, bestOffer, count }) => { %>
           <% if (product && product.isListed) { %>
-            <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
-              <a href="/user/single-product/<%= product._id %>" class="card-link">
-                <div class="card-img-half position-relative">
-                  <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
-                  <% if (product.stock === 0) { %>
-                    <span class="out-of-stock-label">Out of Stock</span>
-                  <% } %>
-                </div>
-                <div class="card-body-half">
-                  <div class="product-details">
-                    <h5 class="card-title text-center"><%= product.name %></h5>
-                    <div class="star-rating text-center">
-                      <p class="price text-center">
-                        <% if (bestOffer) { %>
-                          <span style="text-decoration: line-through;">₹ <%= product.price %></span>
-                          <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
-                        <% } else { %>
-                          <span>₹ <%= product.price %></span>
-                        <% } %>
-                      </p>
-                      <% if (bestOffer) { %>
-                        <% if (bestOffer.offerType === 'percentage') { %>
-                          <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
-                        <% } else if (bestOffer.offerType === 'flat') { %>
-                          <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
-                        <% } %>
-                      <% } %>
-                    </div>
-                    <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
-                      <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                      <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
+            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
           <% } %>
         <% }) %>
       <% } %>
@@ -266,113 +162,10 @@
 
   <!-- Toastify JS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="/js/cartControls.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-        button.addEventListener('click', async (e) => {
-          e.preventDefault();
-          const productId = button.getAttribute('data-product-id');
-          const userId = '<%= user ? user._id : null %>'; // Check user ID
-
-          // Log product ID
-
-          if (!userId) {
-            Toastify({
-              text: "Please log in to add items to your cart",
-              duration: 3000,
-              gravity: "top",
-              position: "center",
-              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-            }).showToast();
-            return; // Exit if user ID is not available
-          }
-
-          try {
-            const response = await fetch('/user/cart/add', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                user: userId,
-                productId,
-                quantity: 1
-              })
-            });
-
-            const result = await response.json();
-            Toastify({
-              text: result.message,
-              duration: 3000,
-              gravity: "top",
-              position: "center",
-              backgroundColor: "linear-gradient(to right, #3097ff, #4d64f9,#3097ff)",
-            }).showToast();
-          } catch (error) {
-            console.error('Error adding to cart:', error);
-            Toastify({
-              text: "Error adding item to cart",
-              duration: 3000,
-              gravity: "top",
-              position: "center",
-              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-            }).showToast();
-          }
-        });
-      });
-
-      document.querySelectorAll('.btn-add-to-wishlist').forEach(button => {
-        button.addEventListener('click', async (e) => {
-          e.preventDefault();
-          const productId = button.getAttribute('data-product-id');
-          const userId = '<%= user ? user._id : null %>'; // Check user ID
-
-          if (!userId) {
-            Toastify({
-              text: "Please log in to add items to your wishlist",
-              duration: 2000,
-              gravity: "top",
-              position: "center",
-              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-            }).showToast();
-            return;
-          }
-
-          try {
-            const response = await fetch('/user/add-to-wishlist', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                userId,
-                productId
-              }),
-            });
-
-            const result = await response.json();
-            Toastify({
-              text: result.message,
-              duration: 2000,
-              gravity: "top",
-              position: "center",
-              backgroundColor: response.ok ? "linear-gradient(to right, #3097ff, #4d64f9,#3097ff)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
-            }).showToast();
-          } catch (error) {
-            console.error('Error adding to wishlist:', error);
-            Toastify({
-              text: "Error adding item to wishlist",
-              duration: 2000,
-              gravity: "top",
-              position: "center",
-              backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-            }).showToast();
-          }
-        });
-      });
-
-    });
+    // Other home-specific scripts can stay here if any
   </script>
 
 </body>

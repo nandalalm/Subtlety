@@ -2,15 +2,25 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Poppins', sans-serif; /* Apply Poppins font globally */
+  font-family: 'Poppins', sans-serif;
+  /* Apply Poppins font globally */
   background-color: #f4f4f4 !important;
 }
 
-.profile{
-  width: 80% !important;
+.profile {
+  width: 95% !important;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
-.profile-section{
+@media (max-width: 991px) {
+  .profile-section {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+}
+
+.profile-section {
   padding-top: 100px;
   padding-bottom: 100px;
   height: 100%;
@@ -25,39 +35,326 @@ h5 {
 h6 {
   margin-top: 20px;
   font-size: larger !important;
-  font-weight:bolder;
+  font-weight: bolder;
 }
 
 .content-section {
   margin-top: 20px;
 }
 
-.address-item {
-  background-color: #f9f9f9;
+.section-main-title {
+  color: #333;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
 }
 
-.table {
+/* Detail sub-headings inside content sections — larger & light weight */
+.content-section h4,
+#myProfile h4 {
+  font-size: 1.1rem !important;
+  font-weight: 400 !important;
+  color: #444;
+  margin-bottom: 8px;
   margin-top: 20px;
 }
 
+.address-item {
+  background-color: #f9f9f9;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.table {
+  margin-top: 15px;
+}
+
 input[disabled] {
-  cursor: not-allowed; /* Change the cursor to not-allowed for disabled inputs */
+  cursor: not-allowed;
+  /* Change the cursor to not-allowed for disabled inputs */
 }
 
-/* Sidebar Links */
-.list-unstyled a {
-  color: rgb(84, 84, 84); /* Default link color */
-  text-decoration: none; /* Remove underline */
+/* Responsive User Sidebar Styles */
+.user-sidebar-wrapper {
+  position: relative;
 }
 
-/* Active Link Style */
-.active-link {
-  color:rgb(0, 0, 0)!important; /* Default link color */
-  font-weight: bold; /* Make the active link bold for emphasis */
+.user-sidebar {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  height: fit-content;
 }
 
-@media(max-width:776px){
-  .profile{
+.sidebar-inner {
+  padding: 20px;
+}
+
+.sidebar-header h6 {
+  color: #333;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin: 20px 0 10px 0;
+}
+
+.sidebar-nav ul li {
+  margin-bottom: 5px;
+}
+
+.sidebar-nav ul li a {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  color: #555;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav ul li a i {
+  font-size: 1.25rem;
+  min-width: 30px;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-nav ul li a:hover {
+  background-color: #f8f0ff;
+  color: #9135ED;
+}
+
+.sidebar-nav ul li a:hover i {
+  transform: scale(1.1);
+}
+
+.sidebar-nav ul li.active a {
+  background-color: #9135ED;
+  color: #fff;
+}
+
+.sidebar-nav ul li.active a i {
+  color: #fff;
+}
+
+.sidebar-footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.btn-logout-sidebar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  color: #dc3545;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.btn-logout-sidebar:hover {
+  background-color: #fff5f5;
+}
+
+.btn-logout-sidebar i {
+  font-size: 1.25rem;
+  min-width: 30px;
+}
+
+/* Unified Overlay Sidebar (< 992px) */
+@media (max-width: 991px) {
+  .sidebar-toggle-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1001;
+    border-radius: 18px;
+    width: 60px;
+    height: 60px;
+    box-shadow: 0 8px 25px rgba(145, 53, 237, 0.5);
+    background: linear-gradient(135deg, #9135ED 0%, #6e21c0 100%);
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 1.4rem;
+  }
+
+  .sidebar-toggle-btn:hover {
+    transform: scale(1.1) rotate(5deg);
+    color: white;
+    box-shadow: 0 12px 30px rgba(145, 53, 237, 0.6);
+  }
+
+  .user-sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 260px;
+    height: 100vh;
+    z-index: 1002;
+    border-radius: 0;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 15px 0 35px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar-inner {
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px 100px 20px;
+    /* Extra bottom padding for logout */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-header {
+    margin-bottom: 20px;
+  }
+
+  .sidebar-nav {
+    flex-grow: 1;
+  }
+
+  .nav-section {
+    margin-bottom: 15px;
+  }
+
+  .user-sidebar.show {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 1001;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .sidebar-overlay.show {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Welcome text alignment for mobile */
+  .breadcrumbs h5 {
+    text-align: right;
+    width: 100%;
+    font-size: 0.95rem;
+  }
+}
+
+/* Visibility Fixes */
+.wallet-table-desktop,
+.order-table-desktop {
+  display: table !important;
+}
+
+.wallet-cards-mobile,
+.order-cards-mobile {
+  display: none !important;
+}
+
+@media (max-width: 991px) {
+
+  .wallet-table-desktop,
+  .order-table-desktop {
+    display: none !important;
+  }
+
+  .wallet-cards-mobile,
+  .order-cards-mobile {
+    display: block !important;
+  }
+}
+
+/* Admin-style Pagination */
+.pagination {
+  gap: 5px;
+}
+
+.pagination .btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.pagination .btn:hover:not(:disabled) {
+  background-color: #f8f0ff;
+  border-color: #9135ED;
+  color: #9135ED;
+}
+
+.pagination .btn:disabled {
+  background-color: #f9f9f9;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination .page-number {
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 30px;
+  text-align: center;
+  color: #9135ED;
+}
+
+
+/* Breadcrumb Fixes */
+.breadcrumbs a {
+  color: black !important;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  color: #9135ED !important;
+}
+
+@media(max-width:776px) {
+  .profile {
     width: 100% !important;
   }
+}
+
+/* Shared Card Component */
+.profile-card {
+  background-color: white;
+  padding: 10px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 25px;
 }

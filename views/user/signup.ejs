@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signup - SUBTLETY</title>
   <!-- Bootstrap CSS CDN -->
@@ -76,8 +77,8 @@
         <small id="firstname-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <div class="form-group">
-        <label for="lastname"><small>Lastname</small></label>
-        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname" required>
+        <label for="lastname"><small>Lastname <span class="text-muted">(optional)</span></small></label>
+        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname (optional)">
         <small id="lastname-error" class="form-text text-danger" style="display: none;"></small>
         <small id="lastname-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
@@ -124,12 +125,12 @@
     <div id="otp-section" style="display: none;">
       <h3 class="text-center mt-4">Verify Your Email</h3>
       <div class="otp-inputs text-center">
-        <div class="otp-box" id="otp-box-1" contenteditable="true"></div>
-        <div class="otp-box" id="otp-box-2" contenteditable="true"></div>
-        <div class="otp-box" id="otp-box-3" contenteditable="true"></div>
-        <div class="otp-box" id="otp-box-4" contenteditable="true"></div>
-        <div class="otp-box" id="otp-box-5" contenteditable="true"></div>
-        <div class="otp-box" id="otp-box-6" contenteditable="true"></div>
+        <input type="text" class="otp-box" id="otp-box-1" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        <input type="text" class="otp-box" id="otp-box-2" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        <input type="text" class="otp-box" id="otp-box-3" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        <input type="text" class="otp-box" id="otp-box-4" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        <input type="text" class="otp-box" id="otp-box-5" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+        <input type="text" class="otp-box" id="otp-box-6" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
       </div>
       <small id="timer-message" class="text-danger text-center pt-2 pb-2" style="display: none;">OTP valid for 00:60</small>
       <button id="verify-otp" class="btn btn-success btn-block rounded-pill mt-2">Verify OTP</button>
@@ -162,48 +163,99 @@
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const firstname = document.getElementById('firstname').value;
-      const lastname = document.getElementById('lastname').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
+      const firstnameEl = document.getElementById('firstname');
+      const lastnameEl = document.getElementById('lastname');
+      const emailEl = document.getElementById('email');
+      const passwordEl = document.getElementById('password');
+      const confirmPasswordEl = document.getElementById('confirmPassword');
 
-      // Capture the referral ID from the URL query params (if any)
+      const firstname = firstnameEl.value.trim();
+      const lastname = lastnameEl.value.trim();
+      const email = emailEl.value.trim();
+      const password = passwordEl.value;
+      const confirmPassword = confirmPasswordEl.value;
+
+      // --- Client-side validation ---
+      let isValid = true;
+
+      // Firstname: required, min 4 alpha chars
+      if (!/^[a-zA-Z]{4,}$/.test(firstname)) {
+        document.getElementById('firstname-error').textContent = 'At least 4 characters, no spaces, numbers, or special characters';
+        document.getElementById('firstname-error').style.display = 'block';
+        document.getElementById('firstname-success').style.display = 'none';
+        firstnameEl.classList.add('is-invalid');
+        firstnameEl.classList.remove('is-valid');
+        isValid = false;
+      }
+
+      // Lastname: optional, but if filled must be alpha only
+      if (lastname !== '' && !/^[a-zA-Z]+$/.test(lastname)) {
+        document.getElementById('lastname-error').textContent = 'No spaces, numbers, or special characters';
+        document.getElementById('lastname-error').style.display = 'block';
+        document.getElementById('lastname-success').style.display = 'none';
+        lastnameEl.classList.add('is-invalid');
+        lastnameEl.classList.remove('is-valid');
+        isValid = false;
+      }
+
+      // Email: required, valid format
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('email-error').textContent = 'Invalid email format';
+        document.getElementById('email-error').style.display = 'block';
+        document.getElementById('email-success').style.display = 'none';
+        emailEl.classList.add('is-invalid');
+        emailEl.classList.remove('is-valid');
+        isValid = false;
+      }
+
+      // Password: required, strong
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
+      if (!passwordRegex.test(password)) {
+        document.getElementById('password-error').textContent = 'At least 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character, no spaces';
+        document.getElementById('password-error').style.display = 'block';
+        document.getElementById('password-success').style.display = 'none';
+        passwordEl.classList.add('is-invalid');
+        passwordEl.classList.remove('is-valid');
+        isValid = false;
+      }
+
+      // Confirm Password: must match
+      if (confirmPassword !== password) {
+        document.getElementById('confirm-password-error').textContent = 'Passwords do not match';
+        document.getElementById('confirm-password-error').style.display = 'block';
+        document.getElementById('confirm-password-success').style.display = 'none';
+        confirmPasswordEl.classList.add('is-invalid');
+        confirmPasswordEl.classList.remove('is-valid');
+        isValid = false;
+      }
+
+      if (!isValid) return; // Stop - don't send OTP if any field is invalid
+
+      // All validations passed — proceed to send OTP
       const urlParams = new URLSearchParams(window.location.search);
-      const referral = urlParams.get('referral'); // Get the referral ID
+      const referral = urlParams.get('referral');
 
-      const data = {
-        firstname,
-        lastname,
-        email,
-        password,
-        confirmPassword,
-        referral
-      };
+      const data = { firstname, lastname, email, password, confirmPassword, referral };
 
-      // Show loading spinner
       document.getElementById('loading').style.display = 'block';
 
       const response = await fetch('/user/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
 
-      // Hide loading spinner
       document.getElementById('loading').style.display = 'none';
 
       if (response.ok) {
-        document.getElementById('otp-section').style.display = 'block'; // Show OTP section
-        document.getElementById('signupForm').style.display = 'none'; // Hide signup form
-        startOtpTimer(); // Start the timer
+        document.getElementById('otp-section').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+        startOtpTimer();
       } else {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'User Aldredy Present',
+          text: 'User already exists with this email.',
         });
       }
     });
@@ -233,29 +285,38 @@
 
     otpBoxes.forEach((box, index) => {
       box.addEventListener('input', (e) => {
-        if (e.inputType === "insertText" && e.data) {
-          box.textContent = e.data; // Set box content
-          box.nextElementSibling?.focus(); // Move to the next box
+        if (box.value.length === 1 && index < otpBoxes.length - 1) {
+          otpBoxes[index + 1].focus();
         }
       });
 
       box.addEventListener('keydown', (e) => {
         if (e.key === "Backspace") {
-          if (box.textContent === '') {
-            const previousBox = box.previousElementSibling;
-            if (previousBox) {
-              previousBox.focus(); // Focus on the previous box
-              setTimeout(() => {
-                previousBox.textContent = ''; // Clear the previous box content
-              }, 0);
-            }
+          if (box.value === '' && index > 0) {
+            otpBoxes[index - 1].focus();
           }
+        }
+      });
+
+      box.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasteData = e.clipboardData.getData('text').slice(0, 6).split('');
+        pasteData.forEach((char, i) => {
+          if (otpBoxes[index + i]) {
+            otpBoxes[index + i].value = char;
+          }
+        });
+        const nextIndex = index + pasteData.length;
+        if (otpBoxes[nextIndex]) {
+          otpBoxes[nextIndex].focus();
+        } else if (otpBoxes[otpBoxes.length - 1]) {
+          otpBoxes[otpBoxes.length - 1].focus();
         }
       });
     });
 
     document.getElementById('verify-otp').addEventListener('click', async () => {
-      const otp = Array.from(otpBoxes).map(box => box.textContent).join('');
+      const otp = Array.from(otpBoxes).map(box => box.value).join('');
       const email = document.querySelector('input[name="email"]').value;
 
       // Get the referral ID from the URL or form (if any)
@@ -275,19 +336,21 @@
       });
 
       if (response.ok) {
-        clearInterval(otpTimeout); // Clear the timer on successful verification
+        const data = await response.json();
+        clearInterval(otpTimeout);
         Swal.fire({
           icon: 'success',
           title: 'Success!',
           text: 'OTP verified successfully!',
         }).then(() => {
-          window.location.href = '/user/login'; // Redirect to login after verification
+          window.location.href = data.redirect || '/user/home';
         });
       } else {
+        const errText = await response.text();
         Swal.fire({
           icon: 'error',
           title: 'Oops...',
-          text: 'Invalid OTP',
+          text: errText || 'Invalid OTP. Please try again.',
         });
       }
     });
@@ -321,7 +384,7 @@
           title: 'OTP Resent',
           text: 'OTP has been resent to your email.',
         });
-        otpBoxes.forEach(box => box.textContent = ''); // Clear OTP inputs
+        otpBoxes.forEach(box => box.value = ''); // Clear OTP inputs
         otpBoxes[0].focus(); // Focus on the first box
         startOtpTimer(); // Restart the timer
       } else {
@@ -367,8 +430,14 @@
       );
     });
 
-    // Lastname validation
+    // Lastname validation (optional field)
     document.getElementById('lastname').addEventListener('input', function() {
+      if (this.value.trim() === '') {
+        document.getElementById('lastname-error').style.display = 'none';
+        document.getElementById('lastname-success').style.display = 'none';
+        this.classList.remove('is-invalid', 'is-valid');
+        return;
+      }
       validateInput(
         this,
         /^[a-zA-Z]+$/,

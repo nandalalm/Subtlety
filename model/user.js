@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
     },
     lastname: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
       minlength: 1,
       maxlength: 20,
@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
       ref: "Product",
       default: [],
     },
-    referralCreditsClaimed: { 
+    referralCreditsClaimed: {
       type: Boolean,
       default: false,
     },

@@ -48,6 +48,7 @@ body {
   font-size: 4vw;
   background: linear-gradient(90deg,#9135ED,white); /* Gradient from white to #9135ED */
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent; /* Makes the text transparent */
 }
 
@@ -55,6 +56,7 @@ body {
   font-size: 2vw;
   background: linear-gradient(90deg,#9135ED,white); /* Same gradient */
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent; /* Makes the text transparent */
 }
 /* Statistics */
@@ -110,9 +112,38 @@ body {
   color: #F5BF25; /* Gold color for stars */
 }
 
-.price {
+.price-container {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: #333 !important;
+}
+
+.price-container .old-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 0.9em !important;
+  font-weight: normal;
+}
+
+.price-container .new-price, .price-container .current-price {
   font-weight: bold;
-  color: #000;
+  color: #000 !important;
+  font-size: 1.1em !important;
+}
+
+.price-container .discount-separator {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #999;
+}
+
+.price-container .discount-text {
+  font-size: 0.9em !important;
+  font-weight: 600;
+  color: #28a745 !important;
 }
 
 .top-selling {
@@ -133,9 +164,38 @@ body {
   display: inline;
 }
 
-.price {
+.price-container {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: #333 !important;
+}
+
+.price-container .old-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 0.9em !important;
+  font-weight: normal;
+}
+
+.price-container .new-price, .price-container .current-price {
   font-weight: bold;
-  color: #000;
+  color: #000 !important;
+  font-size: 1.1em !important;
+}
+
+.price-container .discount-separator {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #999;
+}
+
+.price-container .discount-text {
+  font-size: 0.9em !important;
+  font-weight: 600;
+  color: #28a745 !important;
 }
 
 .categories {

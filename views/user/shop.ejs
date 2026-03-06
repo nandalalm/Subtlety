@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Explore Our Products - SUBTLETY</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -176,55 +177,21 @@
       </div>
     </div>
 
-    <div class="row g-5">
+    <div class="row g-5" id="product-grid">
       <% if (productsWithOffers && productsWithOffers.length > 0) { %>
       <% productsWithOffers.forEach(({ product, bestOffer }) => { %>
-      <% if (product.isListed) { %>
-      <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %>">
-        <a href="/user/single-product/<%= product._id %>" class="card-link">
-          <div class="card-img-half position-relative">
-            <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top fixed-height" alt="<%= product.name %>">
-            <% if (product.stock === 0) { %>
-            <span class="out-of-stock-label">Out of Stock</span>
-            <% } %>
-          </div>
-          <div class="card-body-half">
-            <div class="product-details">
-              <h5 class="card-title text-center"><%= product.name %></h5>
-              <div class="star-rating text-center">
-                <p class="price text-center">
-                  <% if (bestOffer) { %>
-                  <span style="text-decoration: line-through;">₹ <%= product.price %></span>
-                  <span class="text-success">₹ <%= bestOffer.discountedPrice.toFixed(2) %></span>
-                  <% } else { %>
-                  <span>₹ <%= product.price %></span>
-                  <% } %>
-                </p>
-                <% if (bestOffer) { %>
-                <% if (bestOffer.offerType === 'percentage') { %>
-                <p class="discount text-success text-center"><%= bestOffer.value %>% off</p>
-                <% } else if (bestOffer.offerType === 'flat') { %>
-                <p class="discount text-success text-center">₹ <%= bestOffer.value %> off</p>
-                <% } %>
-                <% } %>
-
-              </div>
-              <div class="btn-group button-container" role="group" aria-label="Basic outlined example">
-                <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)"><i class="fas fa-heart"></i> Wishlist</button>
-              </div>
-            </div>
-          </div>
-        </a>
-      </div>
-      <% } %>
+        <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
       <% }) %>
       <% } else { %>
-      <p>No product was found of that criteria.</p>
+      <div class="col-12 text-center">
+        <p>No product was found of that criteria.</p>
+      </div>
       <% } %>
     </div>
     <div class="text-center my-4 mt-5 pt-3">
-
+      <% if (hasMore) { %>
+        <button id="load-more-btn" class="btn text-white" style="background-color: #9135ED;" data-page="<%= currentPage + 1 %>">Load More</button>
+      <% } %>
     </div>
   </div>
 
@@ -233,7 +200,28 @@
   <script src="https://code.jquery.com/jquery-3.5.2.slim.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="/js/cartControls.js"></script>
   <script>
+    function resetFilters() {
+      window.location.href = window.location.pathname;
+    }
+
+    function applyFilters() {
+      const sort = document.getElementById('sort').value;
+      const category = document.getElementById('category').value;
+      const search = document.getElementById('search').value.trim();
+
+      const url = new URL(window.location.href);
+      if (search) {
+        url.searchParams.set('search', search);
+      } else {
+        url.searchParams.delete('search');
+      }
+      url.searchParams.set('sort', sort);
+      url.searchParams.set('category', category);
+      window.location.href = url.toString();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const sortSelect = document.getElementById('sort');
       const categorySelect = document.getElementById('category');
@@ -289,133 +277,90 @@
     });
   </script>
   <script>
-    function applyFilters() {
-      const sort = document.getElementById('sort').value;
-      const category = document.getElementById('category').value;
-      const search = document.querySelector('input[placeholder="Search for products..."]').value;
+    // Load More Functionality
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener('click', async () => {
+        const page = loadMoreBtn.getAttribute('data-page');
+        const url = new URL(window.location.href);
+        url.pathname = '/user/shop/load-more';
+        url.searchParams.set('page', page);
 
-      const queryString = `?search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&category=${encodeURIComponent(category)}`;
-      window.location.href = window.location.pathname + queryString;
-    }
+        try {
+          const response = await fetch(url.toString());
+          const data = await response.json();
 
-    function resetFilters() {
-      // Clear the query parameters and reload the page
-      window.location.href = window.location.pathname;
-    }
+          if (data.products && data.products.length > 0) {
+            const productGrid = document.getElementById('product-grid');
+            data.products.forEach(({
+              product,
+              bestOffer
+            }) => {
+              const cartQty = (data.cartItemMap && data.cartItemMap[product._id]) ? data.cartItemMap[product._id] : 0;
+              const cartControls = cartQty > 0 ? `
+                <div class="cart-quantity-controls d-flex align-items-center">
+                  <button type="button" class="btn btn-dark btn-decrement m-0" data-product-id="${product._id}">-</button>
+                  <span class="px-3 quantity-display" style="min-width: 40px; text-align: center; font-weight: bold; color: #9135ED;">${cartQty}</span>
+                  <button type="button" class="btn btn-dark btn-increment m-0" data-product-id="${product._id}">+</button>
+                </div>
+              ` : `
+                <button type="button" class="btn btn-dark m-0 btn-add-to-cart ${product.stock === 0 ? 'disabled' : ''}" data-product-id="${product._id}">
+                  <i class="fas fa-shopping-cart"></i> Add to Cart
+                </button>
+              `;
 
-    // Add to Cart functionality
-    document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-      button.addEventListener('click', function(e) {
-        e.preventDefault();
-        const productId = this.getAttribute('data-product-id');
-        // Add your cart logic here
+              const productHtml = `
+                <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 ${product.stock === 0 ? 'out-of-stock' : ''}">
+                  <a href="/user/single-product/${product._id}" class="card-link">
+                    <div class="card-img-half position-relative">
+                      <img src="/${product.images[0].replace(/\\/g, '/')}" class="card-img-top fixed-height" alt="${product.name}">
+                      ${product.stock === 0 ? '<span class="out-of-stock-label">Out of Stock</span>' : ''}
+                    </div>
+                    <div class="card-body-half">
+                      <div class="product-details">
+                        <h5 class="card-title text-center">${product.name}</h5>
+                        <div class="star-rating text-center">
+                          <div class="price-container text-center">
+                            ${bestOffer ? `
+                              <span class="old-price">₹${product.price}</span>
+                              <span class="new-price text-dark">₹${bestOffer.discountedPrice.toFixed(0)}</span>
+                              <span class="discount-separator text-muted">-</span>
+                              <span class="discount-text text-success">${bestOffer.value}${bestOffer.offerType === 'percentage' ? '%' : '₹'} off</span>
+                            ` : `<span class="current-price text-dark">₹${product.price}</span>`}
+                          </div>
+                        </div>
+                        <div class="btn-group button-container cart-controls-container" role="group" data-product-id="${product._id}">
+                          ${cartControls}
+                          <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="${product._id}">
+                            <i class="fas fa-heart"></i> Wishlist
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </div>`;
+              productGrid.insertAdjacentHTML('beforeend', productHtml);
+            });
 
-        // You can make an AJAX call to your server here
+            if (data.hasMore) {
+              loadMoreBtn.setAttribute('data-page', parseInt(page) + 1);
+            } else {
+              loadMoreBtn.remove();
+            }
+          }
+        } catch (error) {
+          console.error('Error loading more products:', error);
+          Toastify({
+            text: "Error loading more products",
+            duration: 3000,
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
+        }
       });
-    });
+    }
   </script>
   <script>
-    // Add to Cart functionality
-    document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-      button.addEventListener('click', async function(e) {
-        e.preventDefault();
-        const productId = this.getAttribute('data-product-id');
-        const userId = '<%= user ? user._id : null %>'; // Get user ID from server-side variable
-
-        if (!userId) {
-          Toastify({
-            text: "Please log in to add items to your cart",
-            duration: 3000,
-            gravity: "top",
-            position: "center",
-            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-          }).showToast();
-          return; // Exit if user ID is not available
-        }
-
-        try {
-          const response = await fetch('/user/cart/add', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              user: userId,
-              productId,
-              quantity: 1
-            }),
-          });
-
-          const result = await response.json();
-          Toastify({
-            text: result.message,
-            duration: 3000,
-            gravity: "top",
-            position: "center",
-            backgroundColor: "linear-gradient(to right, #3097ff, #4d64f9)",
-          }).showToast();
-        } catch (error) {
-          console.error('Error adding to cart:', error);
-          Toastify({
-            text: "Error adding item to cart",
-            duration: 3000,
-            gravity: "top",
-            position: "center",
-            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-          }).showToast();
-        }
-      });
-    });
-
-    document.querySelectorAll('.btn-add-to-wishlist').forEach(button => {
-      button.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const productId = button.getAttribute('data-product-id');
-        const userId = '<%= user ? user._id : null %>'; // Check user ID
-
-        if (!userId) {
-          Toastify({
-            text: "Please log in to add items to your wishlist",
-            duration: 2000,
-            gravity: "top",
-            position: "center",
-            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-          }).showToast();
-          return;
-        }
-
-        try {
-          const response = await fetch('/user/add-to-wishlist', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId,
-              productId
-            }),
-          });
-
-          const result = await response.json();
-          Toastify({
-            text: result.message,
-            duration: 2000,
-            gravity: "top",
-            position: "center",
-            backgroundColor: response.ok ? "linear-gradient(to right, #3097ff, #4d64f9,#3097ff)" : "linear-gradient(to right, #ff416c, #ff4b2b)",
-          }).showToast();
-        } catch (error) {
-          console.error('Error adding to wishlist:', error);
-          Toastify({
-            text: "Error adding item to wishlist",
-            duration: 2000,
-            gravity: "top",
-            position: "center",
-            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
-          }).showToast();
-        }
-      });
-    });
+    // Existing filter logic stays here
   </script>
 
 </body>

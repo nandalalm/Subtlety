@@ -33,6 +33,31 @@ body {
 .price {
   font-weight: bold;
   font-size: 1.5em;
+  color: #000 !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.price .old-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 0.7em;
+  font-weight: normal;
+}
+
+.price .new-price, .price .current-price {
+  color: #000 !important;
+}
+
+.price .discount-separator {
+  color: #999;
+  font-size: 0.7em;
+}
+
+.price .discount-text {
+  color: #28a745 !important;
+  font-size: 0.7em;
 }
 
 .description {
@@ -121,10 +146,39 @@ body {
    color: #F5BF25; /* Gold color for stars */
  }
  
- .price {
-   font-weight: bold;
-   color: #000;
- }
+.price-container {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: #333 !important;
+}
+
+.price-container .old-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 0.9em !important;
+  font-weight: normal;
+}
+
+.price-container .new-price, .price-container .current-price {
+  font-weight: bold;
+  color: #000 !important;
+  font-size: 1.1em !important;
+}
+
+.price-container .discount-separator {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #999;
+}
+
+.price-container .discount-text {
+  font-size: 0.9em !important;
+  font-weight: 600;
+  color: #28a745 !important;
+}
 
 .button-container {
   display: flex;

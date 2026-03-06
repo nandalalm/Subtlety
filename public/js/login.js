@@ -46,7 +46,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   togglePassword.addEventListener("click", function () {
-    // Toggle the type attribute
     if (passwordInput.type === "password") {
       passwordInput.type = "text";
       togglePassword.classList.remove("fa-eye");
@@ -69,7 +68,6 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
       }
     });
-  // Initialize validation on load to handle case when fields have default values
   validateEmail();
   validatePassword();
 });

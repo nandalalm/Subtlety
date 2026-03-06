@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Profile - SUBTLETY</title>
 
@@ -17,14 +18,6 @@
     input:focus {
       box-shadow: none !important;
       /* Removes the box shadow */
-    }
-
-    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1) {
-      color: black;
-    }
-
-    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1):hover {
-      color: #9135ED;
     }
   </style>
 </head>
@@ -45,35 +38,14 @@
       </div>
 
       <div class="row">
-        <!-- Sidebar (30% width) -->
-        <div class="col-lg-3 col-md-3 col-sm-4 col-5">
-          <div class="pt-3 mb-3">
-            <h6>Manage My Account</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/profile" class="text-decoration-none active-link">My Profile</a></li>
-              <li><a href="/user/address" class="text-decoration-none">Address Book</a></li>
-            </ul>
-            <h6>Manage Orders</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/orders" class="text-decoration-none">My Orders</a></li>
-            </ul>
-            <h6>My Stuff</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/wallet" class="text-decoration-none">My Wallet</a></li>
-              <li><a href="/user/wishlist" class="text-decoration-none">My Wishlist</a></li>
-            </ul>
-
-            <form action="/user/logout" method="POST" style="display: inline;" id="logout-form">
-              <button type="button" id="logout-btn" class="btn btn-sm btn-danger">
-                <i class="fas fa-power-off"></i> Logout
-              </button>
-            </form>
-          </div>
+        <div class="col-md-3">
+          <%- include('partials/userSidebar', { activePage: 'profile' }) %>
         </div>
 
-        <!-- Main Content (70% width) -->
-        <div class="col-lg-9 col-md-9 col-sm-8 col-7">
+        <!-- Main Content -->
+        <div class="col-lg-9 col-12">
           <div id="content">
+            <h2 class="section-main-title">My Profile</h2>
             <div id="myProfile" class="content-section">
               <h4>Username
                 <a id="edit-btn" class="pl-2 text-decoration-none" href="#" style="font-size: 14px;">Edit</a>
@@ -88,8 +60,8 @@
                     </div>
                     <div style="flex: 1;">
                       <label>Last Name</label>
-                      <input type="text" name="lastname" id="last-name" value="<%= user.lastname %>" placeholder="Last Name" class="form-control" disabled pattern="^[a-zA-Z]{3,}$" title="At least 3 letters, no numbers or special characters" required>
-                      <small id="last-name-error" class="form-text text-danger" style="display: none;">At least 3 letters, no numbers or special characters</small>
+                      <input type="text" name="lastname" id="last-name" value="<%= user.lastname || '' %>" placeholder="Last Name (optional)" class="form-control" disabled pattern="^[a-zA-Z]*$" title="No numbers or special characters">
+                      <small id="last-name-error" class="form-text text-danger" style="display: none;">No numbers or special characters</small>
                     </div>
                   </div>
                   <button id="save-btn" class="btn btn-primary mt-2" style="display: none;">Save</button>
@@ -220,7 +192,7 @@
       const firstNameInput = document.getElementById('first-name');
       const lastNameInput = document.getElementById('last-name');
 
-      if (!firstNameInput.checkValidity() || !lastNameInput.checkValidity()) {
+      if (!firstNameInput.checkValidity()) {
         return;
       }
 
@@ -420,24 +392,6 @@
       });
     });
 
-    // Logout confirmation
-    document.getElementById('logout-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      Swal.fire({
-        title: 'Are you sure you want to logout?',
-        text: "You will be redirected to the login page.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, logout!',
-        cancelButtonText: 'Cancel'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          document.getElementById('logout-form').submit();
-        }
-      });
-    });
   </script>
 
 </body>

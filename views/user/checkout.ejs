@@ -118,20 +118,34 @@
 
     .coupon-flex {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       gap: 10px;
-      /* Space between elements */
+      flex-wrap: wrap; /* Allow wrapping on small screens */
     }
 
     input#couponCode {
       flex: 1;
-      /* Allow input to take the remaining space */
+      min-width: 200px; /* Ensure input has a decent width */
       padding: 10px;
-      /* Add some padding */
       border: 1px solid #ccc;
-      /* Border style */
       border-radius: 4px;
-      /* Rounded corners */
+    }
+
+    .apply-btn, .remove-coupon-btn {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 576px) {
+      .coupon-flex {
+        flex-direction: column;
+      }
+      .apply-btn, .remove-coupon-btn {
+        width: 100%;
+      }
+      input#couponCode {
+        width: 100%;
+      }
     }
 
     .apply-btn {
@@ -209,11 +223,11 @@
         <div class="col-md-6">
           <% if(address && address.length > 0){ %>
           <h5>Select Saved Address</h5>
-          <select class="form-control" id="addressSelect" onchange="populateAddress()">
+          <select class="form-control" id="addressSelect" onchange="populateAddress()" style="white-space: normal; height: auto; min-height: 38px;">
             <option value="">Select an address</option>
             <% address.forEach(address =>{ %>
             <option value="<%= address.username %>" data-email="<%= address.email %>" data-address="<%= address.houseFlatNo %>,<%= address.address %>,<%= address.district %>,<%= address.state %>,<%= address.country %>" data-pincode="<%= address.pincode %>" data-phone="<%= address.phoneNo %>">
-              <%= address.username %>
+              <%= address.username %> - <%= address.address.substring(0, 30) %>...
             </option>
             <% }) %>
           </select>
@@ -609,6 +623,7 @@
             title: "Oops...",
             text: "Please select a payment method.",
           });
+          placeOrderButton.disabled = false;
           return;
         }
 
@@ -626,7 +641,6 @@
           0
         );
         const deliveryCharge = 50;
-        const totalAmount = subtotal + deliveryCharge; // Total amount before discount and payment status
 
         const shippingAddress = {
           fullname: fullName,
@@ -643,201 +657,167 @@
           shippingAddress,
           paymentMethod: paymentMethod.value,
           couponCode: appliedCouponCode,
-          status: "pending", // Initial status before payment confirmation
         };
 
-        // Step 1: Create order in the database
-        const orderResponse = await fetch("/user/checkout/confirm-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(orderData),
-        });
+        try {
+          const orderResponse = await fetch("/user/checkout/confirm-order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+          });
 
-        if (orderResponse.ok) {
-          const order = await orderResponse.json();
-          const orderId = order.orderId; // Get the created order ID
+          if (orderResponse.ok) {
+            const order = await orderResponse.json();
+            const orderId = order.orderId;
 
-
-          // Check if the payment method is Wallet
-          if (paymentMethod.value === 'Wallet') {
-            // Step 2: Check Wallet Balance
-            const walletBalanceResponse = await fetch("/user/get-wallet-balance", {
-              method: "GET",
-            });
-
-            const walletData = await walletBalanceResponse.json();
-
-            if (walletData.balance >= totalAmountAfterDiscount) {
-              // Deduct the amount from the user's wallet
-              const walletDeductResponse = await fetch("/user/deduct-wallet-amount", {
+            if (paymentMethod.value === 'Wallet') {
+              Swal.fire({
+                icon: "success",
+                title: "Success!",
+                text: "Your order has been placed successfully using your wallet balance.",
+                showConfirmButton: false,
+                timer: 1000,
+              }).then(() => {
+                window.location.href = `/user/order-success?orderId=${orderId}`;
+              });
+            } else if (paymentMethod.value === 'Razorpay') {
+              const razorpayResponse = await fetch("/user/create-razorpay-order", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  orderId,
-                  amount: totalAmountAfterDiscount,
+                  orderId
                 }),
               });
-              
 
-              if (walletDeductResponse.ok) {
-                Swal.fire({
-                  icon: "success",
-                  title: "Success!",
-                  text: "Your order has been placed successfully using your wallet balance.",
-                  showConfirmButton: false,
-                  timer: 1000,
-                }).then(() => {
-                  window.location.href = `/user/order-success?orderId=${orderId}`;
-                });
-              } else {
-                const errorData = await walletDeductResponse.json();
-                await Swal.fire({
-                  icon: "error",
-                  title: "Wallet Error",
-                  text: `Error deducting wallet balance: ${errorData.message}`,
-                }).then(() => {
-                  window.location.href = "/user/home"; // Redirect to home after closing the error alert
-                });
-              }
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Insufficient Wallet Balance",
-                text: "You do not have enough balance in your wallet to complete this transaction.",
-              }).then(() => {
-                window.location.href = "/user/home"; // Redirect to home after closing the error alert
-              });
-            }
-          }
-          // Check if the payment method is Razorpay
-          else if (paymentMethod.value === 'Razorpay') {
-            // Step 2: Create Razorpay order
-            const razorpayResponse = await fetch("/user/create-razorpay-order", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                totalAmount,
-                orderId
-              }), // Send order ID to associate with Razorpay
-            });
-
-            if (razorpayResponse.ok) {
-              const razorpayData = await razorpayResponse.json();
-              const options = {
-                key: "rzp_test_KZK1gW6B1A7B5s",
-                amount: razorpayData.amount,
-                currency: "INR",
-                name: "Subtlety",
-                description: "Order Payment",
-                order_id: razorpayData.id,
-                handler: async function(response) {
-                  try {
-                    // Step 3: Confirm payment and update order status
-                    const paymentConfirmationResponse = await fetch("/user/razorpay-confirm", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        orderId,
-                        paymentResponse: response,
-                      }),
-                    });
-
-                    if (paymentConfirmationResponse.ok) {
-                      const data = await paymentConfirmationResponse.json();
-                      Swal.fire({
-                        icon: "success",
-                        title: "Success!",
-                        text: data.message,
-                        showConfirmButton: false,
-                        timer: 1000,
-                      }).then(() => {
-                        window.location.href = `/user/order-success?orderId=${orderId}`;
+              if (razorpayResponse.ok) {
+                const razorpayData = await razorpayResponse.json();
+                const options = {
+                  key: "rzp_test_KZK1gW6B1A7B5s",
+                  amount: razorpayData.amount,
+                  currency: "INR",
+                  name: "Subtlety",
+                  description: "Order Payment",
+                  order_id: razorpayData.id,
+                  handler: async function(response) {
+                    try {
+                      const paymentConfirmationResponse = await fetch("/user/razorpay-confirm", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          orderId,
+                          paymentResponse: response,
+                        }),
                       });
-                    } else {
-                      const errorData = await paymentConfirmationResponse.json();
-                      await Swal.fire({
+
+                      if (paymentConfirmationResponse.ok) {
+                        const data = await paymentConfirmationResponse.json();
+                        Swal.fire({
+                          icon: "success",
+                          title: "Success!",
+                          text: data.message,
+                          showConfirmButton: false,
+                          timer: 1000,
+                        }).then(() => {
+                          window.location.href = `/user/order-success?orderId=${orderId}`;
+                        });
+                      } else {
+                        const errorData = await paymentConfirmationResponse.json();
+                        Swal.fire({
+                          icon: "error",
+                          title: "Oops...",
+                          text: `Error confirming payment: ${errorData.message}`,
+                        });
+                      }
+                    } catch (error) {
+                      Swal.fire({
                         icon: "error",
                         title: "Oops...",
-                        text: `Error confirming payment: ${errorData.message}`,
-                      }).then(() => {
-                        window.location.href = "/user/home"; // Redirect to home after closing the error alert
+                        text: "An unexpected error occurred while confirming the payment.",
                       });
                     }
-                  } catch (error) {
-                    await Swal.fire({
-                      icon: "error",
-                      title: "Oops...",
-                      text: "An unexpected error occurred while confirming the payment.",
-                    }).then(() => {
-                      window.location.href = "/user/home"; // Redirect to home after closing the error alert
-                    });
+                  },
+                  modal: {
+                    ondismiss: function() {
+                      Swal.fire({
+                        title: 'Processing...',
+                        text: 'Redirecting to your order details.',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                          Swal.showLoading();
+                        }
+                      });
+                      setTimeout(() => {
+                        window.location.href = `/user/order/${orderId}`;
+                      }, 1000);
+                    }
                   }
-                },
-              };
+                };
 
-              const razorpay = new Razorpay(options);
-              razorpay.on("payment.failed", async (res) => {
-                // Create a new Promise to wait for the Razorpay modal to close
-                await new Promise((resolve) => {
-                  Swal.fire({
-                    icon: "error",
-                    title: "Payment Failed",
-                    text: "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank.",
-                    willClose: () => resolve(), // Resolve the promise when the alert is closed
+                const razorpay = new Razorpay(options);
+                razorpay.on("payment.failed", async (res) => {
+                  await new Promise((resolve) => {
+                    Swal.fire({
+                      icon: "error",
+                      title: "Payment Failed",
+                      text: "The payment failed or was declined. Redirecting to order details for retry.",
+                      willClose: () => resolve(),
+                    });
                   });
+                  window.location.href = `/user/order/${orderId}`;
                 });
-
-                // Redirect to home after the alert is closed
-                window.location.href = "/user/home";
-              });
-
-              // Open the Razorpay payment gateway
-              razorpay.open();
+                razorpay.open();
+              } else {
+                const errorData = await razorpayResponse.json();
+                Swal.fire({
+                  icon: "error",
+                  title: "Razorpay Error",
+                  text: errorData.message || "Failed to initiate payment.",
+                });
+                placeOrderButton.disabled = false;
+              }
             } else {
-              const errorData = await razorpayResponse.json();
-              await Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: `Error creating Razorpay order: ${errorData.message}`,
+              // Cash on Delivery
+              Swal.fire({
+                icon: "success",
+                title: "Success!",
+                text: "Your order has been placed successfully!",
+                showConfirmButton: false,
+                timer: 1000,
               }).then(() => {
-                window.location.href = "/user/home"; // Redirect to home after closing the error alert
+                window.location.href = `/user/order-success?orderId=${orderId}`;
               });
             }
           } else {
-            // If Cash on Delivery is selected, simply show success message and redirect
+            const errorData = await orderResponse.json();
             Swal.fire({
-              icon: "success",
-              title: "Success!",
-              text: "Your order has been placed successfully!",
-              showConfirmButton: false,
-              timer: 1000,
-            }).then(() => {
-              window.location.href = `/user/order-success?orderId=${orderId}`;
+              icon: "error",
+              title: "Order Failed",
+              text: errorData.message || "Error creating order.",
             });
+            placeOrderButton.disabled = false;
           }
-        } else {
-          const errorData = await orderResponse.json();
-          await Swal.fire({
+        } catch (error) {
+          console.error("Order process error:", error);
+          Swal.fire({
             icon: "error",
-            title: "Oops...",
-            text: `Error creating order: ${errorData.message}`,
-          }).then(() => {
-            window.location.href = "/user/home"; // Redirect to home after closing the error alert
+            title: "Error",
+            text: "Something went wrong. Please try again later.",
           });
+          placeOrderButton.disabled = false;
         }
       }
 
       // Add event listener for placing the order
       placeOrderButton.addEventListener("click", function(e) {
         e.preventDefault();
+        placeOrderButton.disabled = true; // Disable to prevent double-click
         placeOrder();
       });
 

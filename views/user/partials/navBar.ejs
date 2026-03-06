@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>navbar</title>
   <!-- Bootstrap CSS -->
@@ -42,12 +43,13 @@
       /* White with 80% opacity */
     }
   </style>
+  <meta name="user-id" content="<%= user ? user._id : '' %>">
 </head>
 
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-light position-fixed header-nav">
-    <a class="navbar-brand" href="#"><img src="/images/logo-bg-removed.png"></a>
+    <a class="navbar-brand" href="/user/home"><img src="/images/logo-bg-removed.png"></a>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mx-auto">

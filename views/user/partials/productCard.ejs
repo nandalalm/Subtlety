@@ -1,0 +1,51 @@
+<div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %> mb-4">
+    <div class="product-card h-100 shadow-sm border-0" style="border-radius: 0; overflow: hidden; background: #f4f4f4; transition: transform 0.3s ease;">
+        <a href="/user/single-product/<%= product._id %>" class="card-link text-decoration-none color-inherit">
+            <div class="card-img-half position-relative" style="aspect-ratio: 1/1; overflow: hidden; border-radius: 0;">
+                <img src="/<%= product.images[0].replace(/\\/g, '/') %>" class="card-img-top w-100 h-100" style="object-fit: cover; border-radius: 0;" alt="<%= product.name %>">
+                <% if (product.stock === 0) { %>
+                    <span class="out-of-stock-label position-absolute" style="top: 10px; right: 10px; background: rgba(255, 0, 0, 0.8); color: white; padding: 2px 8px; border-radius: 0; font-size: 10px; font-weight: bold;">Out of Stock</span>
+                <% } %>
+                <% if (bestOffer) { %>
+                    <span class="offer-badge position-absolute" style="top: 10px; left: 10px; background: rgba(40, 167, 69, 0.9); color: white; padding: 2px 8px; border-radius: 0; font-size: 10px; font-weight: bold;"><%= bestOffer.value %><%= bestOffer.offerType === 'percentage' ? '%' : '₹' %> OFF</span>
+                <% } %>
+            </div>
+            <div class="card-body p-2 mt-2" style="border-top: 1px solid #eee;">
+                <h6 class="card-title text-center mb-1 text-truncate" style="font-size: 0.9rem; font-weight: 600; color: #333;"><%= product.name %></h6>
+                <div class="price-container text-center mb-2 d-flex justify-content-center align-items-center gap-2">
+                    <% if (bestOffer) { %>
+                        <span class="old-price text-muted small text-decoration-line-through" style="color: #333 !important;">₹<%= product.price %></span>
+                        <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.95rem;">₹<%= bestOffer.discountedPrice.toFixed(0) %></span>
+                    <% } else { %>
+                        <span class="current-price font-weight-bold" style="color: #333; font-size: 0.95rem;">₹<%= product.price %></span>
+                    <% } %>
+                </div>
+            </div>
+        </a>
+        <div class="card-footer p-0 border-0 bg-transparent">
+            <div class="btn-group w-100 cart-controls-container" role="group" data-product-id="<%= product._id %>" style="border-radius: 0;">
+                <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
+                    <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
+                        <button type="button" class="btn btn-dark btn-decrement m-0" data-product-id="<%= product._id %>" style="border-radius: 0; min-width: 40px;">-</button>
+                        <span class="quantity-display flex-grow-1 text-center" style="font-weight: bold; color: #333; background: #eee; height: 100%; display: flex; align-items: center; justify-content: center;"><%= cartItemMap[product._id.toString()] %></span>
+                        <button type="button" class="btn btn-dark btn-increment m-0" data-product-id="<%= product._id %>" style="border-radius: 0; min-width: 40px;">+</button>
+                    </div>
+                <% } else { %>
+                    <button type="button" class="btn btn-dark m-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %> flex-grow-1" data-product-id="<%= product._id %>" style="border-radius: 0;">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                <% } %>
+                
+                <% if (typeof showRemoveWishlist !== 'undefined' && showRemoveWishlist) { %>
+                    <button type="button" class="btn btn-outline-danger m-0 btn-remove-from-wishlist" data-product-id="<%= product._id %>" style="border-radius: 0;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                <% } else { %>
+                    <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="<%= product._id %>" style="border-radius: 0;">
+                        <i class="fas fa-heart"></i> Wishlist
+                    </button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Success - SUBTLETY</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -15,82 +16,152 @@
       min-height: 100vh;
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background-color: #f3f4f6;
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      overflow: hidden;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .success-card {
       background-color: #ffffff;
-      border-radius: 10px;
-      padding: 40px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      padding: 50px 40px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
       text-align: center;
       width: 90%;
-      max-width: 400px;
+      max-width: 450px;
+      animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      position: relative;
+      z-index: 1;
     }
 
     .success-icon {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 20px;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 30px;
+      display: inline-block;
+    }
+
+    .check-path {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: drawCheck 0.8s ease-in-out 0.4s forwards;
+    }
+
+    .circle-path {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: drawCircle 0.8s ease-in-out forwards;
+    }
+
+    @keyframes drawCircle {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes drawCheck {
+      to {
+        stroke-dashoffset: 0;
+      }
     }
 
     h1 {
-      color: #333;
-      font-size: 1.5rem;
-      margin-bottom: 10px;
+      color: #2d3436;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out 0.6s forwards;
     }
 
     .order-details {
-      font-size: 0.9rem;
-      color: #555;
-      margin-bottom: 20px;
+      font-size: 1rem;
+      color: #636e72;
+      margin-bottom: 25px;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out 0.7s forwards;
     }
 
     .shipping-message {
       font-size: 1rem;
-      color: #555;
-      margin: 20px 0;
+      color: #636e72;
+      margin: 15px 0;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out 0.8s forwards;
     }
 
     .order-amount {
-      font-size: 1.2rem;
-      color: #333;
-      font-weight: bold;
+      font-size: 1.4rem;
+      color: #2d3436;
+      font-weight: 700;
       margin: 20px 0;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out 0.9s forwards;
     }
 
     .button-container {
       display: flex;
-      justify-content: space-around;
-      margin-top: 20px;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 30px;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out 1s forwards;
     }
 
-    .btn-view,
-    .btn-continue {
-      padding: 10px 20px;
-      border-radius: 5px;
-      border: none;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px; /* Space between text and icon */
+    .btn-view, .btn-continue {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
-    .btn-view {
-      background-color: #ffffff;
+    .btn-outline-success {
+      border: 2px solid #28a745;
       color: #28a745;
-      border: 1px solid #28a745;
     }
 
-    .btn-continue {
+    .btn-outline-success:hover {
+      background-color: #f1fcf4;
+      color: #28a745;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
       background-color: #28a745;
-      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
     }
 
-    .arrow-icon {
-      width: 15px;
-      height: 15px;
-      fill: currentColor; /* Inherits color from the button text */
+    .btn-success:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
     }
   </style>
 </head>
@@ -98,26 +169,32 @@
 <body>
 
   <div class="success-card">
-    <!-- SVG Checkmark Icon -->
+    <!-- SVG Checkmark Icon with draw animation -->
     <svg class="success-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <path d="M9 12l2 2 4-4"></path>
+      <circle class="circle-path" cx="12" cy="12" r="10"></circle>
+      <path class="check-path" d="M9 12l2 2 4-4"></path>
     </svg>
 
-    <h1>Thank you for ordering!</h1>
+    <h1>Order Successful!</h1>
     <div class="order-details">
-      <p>Order ID: <%= order._id %></p>
+      <span>Order ID: #<%= order._id %></span>
     </div>
 
-    <div class="shipping-message">Your order will be shipped within 2 - 3 weeks.</div>
+    <div class="shipping-message text-muted"><i class="fas fa-truck-fast me-2"></i> Your order will be shipped within 2 - 3 weeks.</div>
 
     <div class="order-amount">Total Amount: ₹ <%= order.totalAmount %></div>
 
     <div class="button-container">
-      <a href="/user/order/<%= order._id %>"><button class="btn btn-outline-success">View Order</button></a>
-      <a href="/user/home"><button class="btn btn-success">
-        Continue Shopping  <i class="fa-solid fa-arrow-right"></i>
-      </button></a>
+      <a href="/user/order/<%= order._id %>" class="text-decoration-none">
+        <button class="btn btn-outline-success btn-view transition-all">
+          <i class="fas fa-file-invoice me-2"></i> View Order Details
+        </button>
+      </a>
+      <a href="/user/home" class="text-decoration-none">
+        <button class="btn btn-success btn-continue transition-all">
+          Continue Shopping <i class="fas fa-arrow-right ms-2"></i>
+        </button>
+      </a>
     </div>
   </div>
 

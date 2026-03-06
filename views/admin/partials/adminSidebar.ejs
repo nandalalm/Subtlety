@@ -1,0 +1,55 @@
+<div class="sidebar" id="sidebar">
+    <ul class="list-unstyled components">
+        <li>
+            <a href="/admin/dashboard" class="sidebar-item <%= activePage === 'dashboard' ? 'active' : '' %>">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="/admin/users" class="sidebar-item <%= activePage === 'users' ? 'active' : '' %>">
+                <i class="fas fa-users"></i> Users
+            </a>
+        </li>
+        <li>
+            <a href="/admin/products" class="sidebar-item <%= activePage === 'products' ? 'active' : '' %>">
+                <i class="fas fa-box"></i> Products
+            </a>
+        </li>
+        <li>
+            <a href="/admin/categories" class="sidebar-item <%= activePage === 'categories' ? 'active' : '' %>">
+                <i class="fas fa-th"></i> Category
+            </a>
+        </li>
+        <li>
+            <a href="/admin/orderList" class="sidebar-item <%= activePage === 'orders' ? 'active' : '' %>">
+                <i class="fas fa-list"></i> Orders
+            </a>
+        </li>
+        <li>
+            <a href="/admin/offer" class="sidebar-item <%= activePage === 'offers' ? 'active' : '' %>">
+                <i class="fas fa-tags"></i> Offers
+            </a>
+        </li>
+        <li>
+            <a href="/admin/coupons" class="sidebar-item <%= activePage === 'coupons' ? 'active' : '' %>">
+                <i class="fas fa-ticket-alt"></i> Coupons
+            </a>
+        </li>
+        <li>
+            <a href="/admin/salesReport" class="sidebar-item <%= activePage === 'salesReport' ? 'active' : '' %>">
+                <i class="fas fa-chart-line"></i> Sales Report
+            </a>
+        </li>
+        <li>
+            <form action="/admin/logout" method="POST" id="logout-form" style="margin:0;padding:0;">
+                <button
+                    type="button"
+                    id="logout-btn"
+                    class="sidebar-item bg-transparent border-0"
+                    style="cursor:pointer; padding-left: 30px;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </li>
+    </ul>
+</div>

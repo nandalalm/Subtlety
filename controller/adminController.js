@@ -1,7 +1,7 @@
-const multer = require("multer"); 
+const multer = require("multer");
 const Admin = require("../model/admin");
-const User = require("../model/user"); 
-const Product = require("../model/product"); 
+const User = require("../model/user");
+const Product = require("../model/product");
 const Category = require("../model/category");
 const Order = require("../model/order");
 const Wallet = require("../model/wallet");
@@ -11,6 +11,8 @@ const PDFDocument = require("pdfkit");
 const ExcelJS = require("exceljs");
 const bcrypt = require("bcryptjs");
 const path = require("path");
+const fs = require("fs");
+const { generateTransactionId } = require("./userController");
 
 function getLogin(req, res) {
   if (req.session.admin) {
@@ -80,8 +82,8 @@ async function getHome(req, res) {
 
         if (isDelivered) {
           const product = productMap[item.productId];
-          const offerDiscount = product.offerDiscount || 0; 
-          const couponDiscount = item.couponDiscount || 0; 
+          const offerDiscount = product.offerDiscount || 0;
+          const couponDiscount = item.couponDiscount || 0;
 
           // Calculate the adjusted total for the item using only the offer discount
           const itemTotal = totalPrice - offerDiscount;
@@ -102,12 +104,12 @@ async function getHome(req, res) {
             totalOfferDiscount: 0,
             totalCouponDiscount: 0,
           };
-          productSales[productId].sales += itemTotal; 
+          productSales[productId].sales += itemTotal;
           productSales[productId].quantity += item.quantity;
 
           // Accumulate only the offer discounts for total offer discount
           productSales[productId].totalOfferDiscount += offerDiscount;
-          productSales[productId].totalCouponDiscount += couponDiscount; 
+          productSales[productId].totalCouponDiscount += couponDiscount;
 
           const categoryId = product.category._id;
           categorySales[categoryId] =
@@ -132,16 +134,16 @@ async function getHome(req, res) {
 
         return product
           ? {
-              index: index + 1,
-              name: product.name,
-              description: product.description, 
-              images: product.images, 
-              quantity,
-              unitPrice: product.price,
-              offerDiscount:
-                totalOfferDiscount > 0 ? `₹${totalOfferDiscount}` : "N/A",
-              totalAmount: sales >= 0 ? `₹${sales}` : "N/A",
-            }
+            index: index + 1,
+            name: product.name,
+            description: product.description,
+            images: product.images,
+            quantity,
+            unitPrice: product.price,
+            offerDiscount:
+              totalOfferDiscount > 0 ? `₹${totalOfferDiscount}` : "N/A",
+            totalAmount: sales >= 0 ? `₹${sales}` : "N/A",
+          }
           : null;
       })
       .filter(Boolean);
@@ -161,11 +163,11 @@ async function getHome(req, res) {
 
         return category
           ? {
-              index: index + 1,
-              name: category.name,
-              discountAmount,
-              image: category.image,
-            }
+            index: index + 1,
+            name: category.name,
+            discountAmount,
+            image: category.image,
+          }
           : null;
       })
       .filter(Boolean);
@@ -181,6 +183,7 @@ async function getHome(req, res) {
       salesByYear,
       bestSellingProducts,
       bestSellingCategories,
+      admin: req.session.admin
     });
   } catch (error) {
     console.error(error);
@@ -195,10 +198,10 @@ async function loginadmin(req, res) {
     const admin = await Admin.findOne({ email });
 
     if (admin && (await bcrypt.compare(password, admin.password))) {
-      req.session.admin = admin; 
-      res.redirect("/admin/dashboard"); 
+      req.session.admin = admin;
+      res.redirect("/admin/dashboard");
     } else {
-      res.status(401).send("Invalid email or password"); 
+      res.status(401).send("Invalid email or password");
     }
   } catch (error) {
     console.error(error);
@@ -208,20 +211,20 @@ async function loginadmin(req, res) {
 
 const productStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/products/"); 
+    cb(null, "uploads/products/");
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`); 
+    cb(null, `${Date.now()}_${file.originalname}`);
   },
 });
 
 // Storage configuration for categories
 const categoryStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/categories/"); 
+    cb(null, "uploads/categories/");
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`); 
+    cb(null, `${Date.now()}_${file.originalname}`);
   },
 });
 
@@ -241,7 +244,7 @@ const productUpload = multer({
     cb(
       new Error(
         "Error: File upload only supports the following filetypes - " +
-          filetypes
+        filetypes
       )
     );
   },
@@ -263,7 +266,7 @@ const categoryUpload = multer({
     cb(
       new Error(
         "Error: File upload only supports the following filetypes - " +
-          filetypes
+        filetypes
       )
     );
   },
@@ -271,54 +274,65 @@ const categoryUpload = multer({
 
 async function getUsers(req, res) {
   try {
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 8; 
-    const skip = (page - 1) * limit; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const sort = req.query.sort || ''; // 'active' | 'blocked' | ''
 
-    // Fetch users with pagination
-    const users = await User.find().skip(skip).limit(limit);
-    const totalUsers = await User.countDocuments(); 
+    // Build query
+    const query = {};
+    if (search) {
+      query.$or = [
+        { firstname: { $regex: search, $options: 'i' } },
+        { lastname: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (sort === 'active') query.isBlocked = false;
+    if (sort === 'blocked') query.isBlocked = true;
 
-    // Calculate total pages
+    const sortOrder = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
+
+    const users = await User.find(query).sort(sortOrder).skip(skip).limit(limit);
+    const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
-    // Render the users list with pagination info
-    res.render("admin/usersList", {
+    res.render('admin/usersList', {
       users,
       currentPage: page,
       totalPages,
       limit,
+      search,
+      sort,
+      admin: req.session.admin
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error retrieving users");
+    res.status(500).send('Error retrieving users');
   }
 }
 
 async function toggleUserStatus(req, res) {
-  const { userId, action } = req.body;
   try {
+    const userId = req.params.id; // ID from URL param
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).send("User not found");
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    user.isBlocked = action === "block";
+    user.isBlocked = !user.isBlocked; // Toggle current status
     await user.save();
 
-    // If the user is being blocked, remove their user info from the session
-    if (user.isBlocked) {
-      // Remove user info from the session
-      if (req.session.user && req.session.user._id === userId.toString()) {
-        delete req.session.user; // Remove the user key
-      }
-      res.status(200).send({ isBlocked: user.isBlocked });
-    } else {
-      res.status(200).send({ isBlocked: user.isBlocked });
+    // If blocking a currently logged-in user, destroy their session
+    if (user.isBlocked && req.session.user && req.session.user._id.toString() === userId.toString()) {
+      delete req.session.user;
     }
+
+    return res.status(200).json({ success: true, isBlocked: user.isBlocked });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error updating user status");
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 }
 
@@ -326,15 +340,30 @@ async function addProduct(req, res) {
   try {
     const { name, description, category, price, stock } = req.body;
 
-    // Check if images were uploaded
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).send("No images uploaded");
+    // Duplicate name check (case-insensitive)
+    const existingProduct = await Product.findOne({
+      name: { $regex: new RegExp("^" + name.trim() + "$", "i") },
+    });
+
+    if (existingProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product with this name already exists",
+      });
+    }
+
+    // Check if images were uploaded (Min 3, Max 8)
+    if (!req.files || req.files.length < 3 || req.files.length > 8) {
+      return res.status(400).json({
+        success: false,
+        message: "You must upload between 3 and 8 images."
+      });
     }
 
     const images = req.files.map((file) => file.path);
 
     const newProduct = new Product({
-      name,
+      name: name.trim(),
       description,
       category,
       price,
@@ -343,69 +372,200 @@ async function addProduct(req, res) {
     });
 
     await newProduct.save();
-    res.redirect("/admin/products");
+    return res.status(200).json({ success: true, message: "Product added successfully" });
   } catch (error) {
     console.error("Error adding product:", error.message || error);
-    res.status(500).send("Server error");
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 }
 
 async function getProducts(req, res) {
-  const limit = 5; 
-  const page = parseInt(req.query.page) || 1; 
-  const totalProducts = await Product.countDocuments(); 
-  const totalPages = Math.ceil(totalProducts / limit);
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 4;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+    const sort = req.query.sort || "latest";
 
-  const products = await Product.find()
-    .populate("category")
-    .skip((page - 1) * limit) 
-    .limit(limit); 
+    // Build query
+    let query = {};
 
-  const categories = await Category.find(); 
-  res.render("admin/products", {
-    products,
-    categories,
-    currentPage: page,
-    totalPages,
-    limit,
-  }); 
+    if (search) {
+      const categories = await Category.find({
+        name: { $regex: search, $options: "i" },
+      });
+      const categoryIds = categories.map((c) => c._id);
+
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { category: { $in: categoryIds } },
+      ];
+
+      // Match price or stock if search is numeric
+      const numSearch = Number(search);
+      if (!isNaN(numSearch)) {
+        query.$or.push({ price: numSearch }, { stock: numSearch });
+      }
+    }
+
+    // Apply sort filters
+    if (sort === "listed") query.isListed = true;
+    if (sort === "unlisted") query.isListed = false;
+
+    // Sort order
+    let sortOrder = { createdAt: -1 };
+    if (sort === "oldest") sortOrder = { createdAt: 1 };
+
+    const products = await Product.find(query)
+      .populate("category")
+      .sort(sortOrder)
+      .skip(skip)
+      .limit(limit);
+
+    const totalProducts = await Product.countDocuments(query);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    const categories = await Category.find();
+
+    res.render("admin/products", {
+      products,
+      categories,
+      currentPage: page,
+      totalPages,
+      search,
+      sort,
+      limit,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error.message || error);
+    res.status(500).send("Internal Server Error");
+  }
 }
 
-async function editProduct(req, res) {
-  const { id, name, description, category, price, stock } = req.body;
-
-  // Handle deleteImages correctly
-  let deleteImages = req.body.deleteImages;
-  if (!Array.isArray(deleteImages)) {
-    deleteImages = deleteImages ? [deleteImages] : []; 
-  }
-
-  const existingProduct = await Product.findById(id);
-  if (!existingProduct) {
-    return res.status(404).send("Product not found");
-  }
-
-  const images = existingProduct.images.slice();
-
-  if (req.files) {
-    req.files.forEach((file) => {
-      images.push(file.path);
-    });
-  }
-
-  // Handle image deletion
-  deleteImages.forEach((imagePath) => {
-    const index = images.indexOf(imagePath);
-    if (index > -1) {
-      images.splice(index, 1);
-    }
-  });
-
+async function getAddProduct(req, res) {
   try {
+    const categories = await Category.find({ isListed: true });
+    res.render("admin/addProduct", { categories });
+  } catch (error) {
+    console.error("Error rendering add product page:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+async function getEditProduct(req, res) {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id).populate("category");
+    if (!product) {
+      return res.status(404).send("Product not found");
+    }
+    const categories = await Category.find({ isListed: true });
+    res.render("admin/editProduct", { product, categories });
+  } catch (error) {
+    console.error("Error rendering edit product page:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+
+async function editProduct(req, res) {
+  try {
+    const { id, name, description, category, price, stock } = req.body;
+
+    // Duplicate name check (case-insensitive, excluding itself)
+    const duplicateProduct = await Product.findOne({
+      name: { $regex: new RegExp("^" + name.trim() + "$", "i") },
+      _id: { $ne: id },
+    });
+
+    if (duplicateProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product with this name already exists",
+      });
+    }
+
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    // Product Price Validation against active flat offers
+    const newPrice = parseFloat(price);
+    const existingPrice = existingProduct.price;
+
+    if (newPrice !== existingPrice) {
+      // Find active flat offers for this product or its category
+      const activeFlatOffers = await Offer.find({
+        $or: [
+          { targetId: id, offerFor: 'Product' },
+          { targetId: category || existingProduct.category, offerFor: 'Category' }
+        ],
+        offerType: 'flat',
+        isActive: true,
+        expiresAt: { $gt: new Date() }
+      });
+
+      for (const offer of activeFlatOffers) {
+        if (newPrice <= offer.value) {
+          return res.status(400).json({
+            success: false,
+            message: `New price (₹${newPrice}) cannot be less than or equal to active flat discount (₹${offer.value})`
+          });
+        }
+      }
+    }
+
+    // New Slot-based Image Management
+    let finalImages = [];
+    let imageSlots = [];
+
+    try {
+      if (req.body.imageSlots) {
+        imageSlots = JSON.parse(req.body.imageSlots);
+      }
+    } catch (e) {
+      console.error("Error parsing imageSlots:", e);
+    }
+
+    // Final Validation: 3-8 images
+    if (imageSlots.length < 3 || imageSlots.length > 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Product must have between 3 and 8 images."
+      });
+    }
+
+    // Process slots
+    for (const slot of imageSlots) {
+      if (slot.type === 'original') {
+        // Keep existing image
+        finalImages.push(slot.value);
+      } else if (slot.type === 'new') {
+        // Find the file in req.files
+        const file = req.files.find(f => f.fieldname === `newImage_${slot.index}`);
+        if (file) {
+          finalImages.push(file.path);
+        }
+      }
+    }
+
+    // Optional: Cleanup old images that are NO LONGER in finalImages
+    existingProduct.images.forEach(oldImg => {
+      if (!finalImages.includes(oldImg)) {
+        const oldPath = path.join(__dirname, "..", oldImg);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+    });
+
+    const images = finalImages;
+
     await Product.findByIdAndUpdate(
       id,
       {
-        name,
+        name: name.trim(),
         description,
         category,
         price,
@@ -415,10 +575,10 @@ async function editProduct(req, res) {
       { new: true, runValidators: true }
     );
 
-    res.redirect("/admin/products");
+    return res.status(200).json({ success: true, message: "Product updated successfully" });
   } catch (error) {
     console.error("Error updating product:", error);
-    res.status(500).send("Error updating product");
+    return res.status(500).json({ success: false, message: "Error updating product" });
   }
 }
 
@@ -446,21 +606,38 @@ async function toggleProductStatus(req, res) {
 }
 
 async function getCategories(req, res) {
-  const limit = 5; 
-  const currentPage = parseInt(req.query.page) || 1; 
-  const skip = (currentPage - 1) * limit; 
-
   try {
-    // Fetch the categories with pagination
-    const categories = await Category.find().skip(skip).limit(limit);
-    const totalCategories = await Category.countDocuments(); 
-    const totalPages = Math.ceil(totalCategories / limit); 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+    const sort = req.query.sort || "";
+
+    // Build query
+    const query = {};
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    // Apply sort filters
+    let sortOrder = { createdAt: -1 }; // Default: Latest
+    if (sort === "oldest") sortOrder = { createdAt: 1 };
+    if (sort === "listed") query.isListed = true;
+    if (sort === "unlisted") query.isListed = false;
+
+    // Fetch the categories with pagination and sort
+    const categories = await Category.find(query).sort(sortOrder).skip(skip).limit(limit);
+    const totalCategories = await Category.countDocuments(query);
+    const totalPages = Math.ceil(totalCategories / limit);
 
     res.render("admin/categories", {
       categories,
-      currentPage,
+      currentPage: page,
       totalPages,
       limit,
+      search,
+      sort,
+      admin: req.session.admin
     });
   } catch (error) {
     console.error(error);
@@ -480,7 +657,7 @@ async function addCategory(req, res) {
   }
 
   // Check if the request is already being processed
-  const requestKey = `${name}_${isListed}`; 
+  const requestKey = `${name}_${isListed}`;
 
   if (ongoingRequests.has(requestKey)) {
     return res
@@ -488,13 +665,13 @@ async function addCategory(req, res) {
       .json({ status: false, message: "Request already in progress" });
   }
 
-  ongoingRequests.add(requestKey); 
+  ongoingRequests.add(requestKey);
 
   try {
     // Check if a category with the same name already exists
     const existingCategory = await Category.findOne({ name });
     if (existingCategory) {
-      ongoingRequests.delete(requestKey); 
+      ongoingRequests.delete(requestKey);
       return res
         .status(409)
         .json({ status: false, message: "Category already exists" });
@@ -525,15 +702,15 @@ async function editCategory(req, res) {
   const id = req.params.id;
   const updates = {
     name,
-    isListed: isListed === "true", 
+    isListed: isListed === "true",
   };
 
   if (req.file) {
-    updates.image = req.file.path; 
+    updates.image = req.file.path;
   }
 
   try {
-    // Check if a category with the same name already exists (excluding the current category)
+    // Check if a category with the same name already exists excluding the current category
     const existingCategory = await Category.findOne({
       name: name,
       _id: { $ne: id },
@@ -582,49 +759,131 @@ async function toggleCategoryStatus(req, res) {
 }
 
 async function getOrders(req, res) {
-  const currentPage = parseInt(req.query.page) || 1;
-  const limit = 7; 
-  const offset = (currentPage - 1) * limit;
-
   try {
-    // Fetch all orders and populate necessary fields
-    const orders = await Order.find()
-      .populate("userId") 
-      .populate("items.productId")
-      .sort({ createdAt: -1 }); 
-      
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+    const sort = req.query.sort || "default";
+    const paymentStatusFilter = req.query.paymentStatus || "";
 
-    // Split orders into two groups based on return request status
-    const pendingOrders = orders.filter((order) =>
-      order.returnRequests.some((request) => request.status === "Pending")
-    );
+    // Match stage for search, payment status, and order status
+    const match = {};
+    if (paymentStatusFilter) {
+      match.paymentStatus = paymentStatusFilter;
+    }
 
-    const otherOrders = orders.filter(
-      (order) =>
-        !order.returnRequests.some((request) => request.status === "Pending")
-    );
+    // If sort value is a specific order status, treat it as a filter
+    const orderStatuses = ["Pending", "Shipped", "Completed", "Cancelled", "Returned"];
+    if (orderStatuses.includes(sort)) {
+      match.orderStatus = sort;
+    }
 
-    const sortedOrders = [...pendingOrders, ...otherOrders];
+    // Lookup users for email search
+    const pipeline = [
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      { $unwind: "$userDetails" }
+    ];
 
-    // Calculate total orders and paginate
-    const totalOrders = sortedOrders.length;
+    if (search) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { orderId: { $regex: search, $options: "i" } },
+            { "userDetails.email": { $regex: search, $options: "i" } }
+          ]
+        }
+      });
+    }
+
+    if (Object.keys(match).length > 0) {
+      pipeline.push({ $match: match });
+    }
+
+    // Add priority field for custom sorting
+    pipeline.push({
+      $addFields: {
+        priority: {
+          $cond: {
+            if: { $gt: [{ $size: { $filter: { input: "$returnRequests", as: "req", cond: { $eq: ["$$req.status", "Pending"] } } } }, 0] },
+            then: 1,
+            else: {
+              $cond: {
+                if: { $and: [{ $eq: ["$orderStatus", "Pending"] }, { $eq: ["$paymentStatus", "Successful"] }] },
+                then: 2,
+                else: {
+                  $cond: {
+                    if: { $eq: ["$orderStatus", "Shipped"] },
+                    then: 3,
+                    else: {
+                      $cond: {
+                        if: { $eq: ["$orderStatus", "Completed"] },
+                        then: 4,
+                        else: {
+                          $cond: {
+                            if: { $and: [{ $eq: ["$orderStatus", "Pending"] }, { $eq: ["$paymentStatus", "Failed"] }] },
+                            then: 5,
+                            else: {
+                              $cond: {
+                                if: { $eq: ["$orderStatus", "Cancelled"] },
+                                then: 6,
+                                else: 7
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Define Sort Order
+    let sortObj = {};
+    if (sort === "latest") {
+      sortObj = { createdAt: -1 };
+    } else if (sort === "oldest") {
+      sortObj = { createdAt: 1 };
+    } else if (sort === "default") {
+      sortObj = { priority: 1, createdAt: -1 };
+    } else {
+      // For status-specific views, sort by latest by default
+      sortObj = { createdAt: -1 };
+    }
+
+    const countPipeline = [...pipeline, { $count: "total" }];
+    const totalCountResult = await Order.aggregate(countPipeline);
+    const totalOrders = totalCountResult.length > 0 ? totalCountResult[0].total : 0;
     const totalPages = Math.ceil(totalOrders / limit);
 
-    // Slice the sortedOrders for the current page
-    const paginatedOrders = sortedOrders.slice(offset, offset + limit);
+    pipeline.push({ $sort: sortObj });
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    const orders = await Order.aggregate(pipeline);
 
     res.render("admin/orderList", {
-      orders: paginatedOrders,
-      currentPage,
+      orders,
+      currentPage: page,
       totalPages,
       limit,
       totalOrders,
-      showPagination: totalOrders > limit,
-      pages: Array.from({ length: totalPages }, (_, i) => i + 1),
-      hasPrevPage: currentPage > 1,
-      hasNextPage: currentPage < totalPages,
-      prevPage: currentPage - 1,
-      nextPage: currentPage + 1,
+      search,
+      sort,
+      paymentStatus: paymentStatusFilter,
+      admin: req.session.admin
     });
   } catch (error) {
     console.error(error);
@@ -650,7 +909,7 @@ async function changeProductStatus(req, res) {
         .json({ success: false, message: "Product not found in order" });
     }
 
-    const previousStatus = item.status; 
+    const previousStatus = item.status;
     item.status = status;
 
     // Adjust stock based on status changes if necessary
@@ -659,12 +918,12 @@ async function changeProductStatus(req, res) {
       if (status === "Cancelled") {
         product.stock += item.quantity;
       } else if (previousStatus === "Cancelled") {
-        product.stock -= item.quantity; 
+        product.stock -= item.quantity;
       }
       await product.save();
     }
 
-    await order.save(); 
+    await order.save();
 
     const allDelivered = order.items.every(
       (item) => item.status === "Delivered"
@@ -681,19 +940,79 @@ async function changeProductStatus(req, res) {
     const hasShipped = order.items.some((item) => item.status === "Shipped");
 
     if (allDelivered) {
-      order.orderStatus = "Completed"; 
+      order.orderStatus = "Completed";
     } else if (allCancelled) {
-      order.orderStatus = "Cancelled"; 
+      order.orderStatus = "Cancelled";
     } else if (allReturned) {
-      order.orderStatus = "Completed"; 
+      order.orderStatus = "Completed";
     } else if ((hasCancelled || hasReturned) && !hasPending && !hasShipped) {
-      order.orderStatus = "Completed"; 
+      order.orderStatus = "Completed";
     } else {
-      order.orderStatus = "Pending"; 
+      order.orderStatus = "Pending";
     }
 
-    await order.save(); 
+    await order.save();
 
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+async function changeOrderStatus(req, res) {
+  const { orderId, newStatus } = req.body;
+
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (newStatus === "Cancelled") {
+      return res.status(400).json({ success: false, message: "Admin cannot cancel orders from here" });
+    }
+
+    // Validate linear transition
+    const currentStatus = order.orderStatus;
+    if (currentStatus === "Pending") {
+      if (newStatus !== "Shipped") {
+        return res.status(400).json({ success: false, message: "Pending orders can only be moved to Shipped" });
+      }
+    } else if (currentStatus === "Shipped") {
+      if (newStatus !== "Delivered") {
+        return res.status(400).json({ success: false, message: "Shipped orders can only be moved to Delivered" });
+      }
+    } else {
+      return res.status(400).json({ success: false, message: `Cannot change status from ${currentStatus}` });
+    }
+
+    // Update all non-cancelled and non-returned items to the new status
+    order.items.forEach((item) => {
+      if (item.status !== "Cancelled" && item.status !== "Returned") {
+        item.status = newStatus;
+      }
+    });
+
+    // Update the order-level status
+    if (newStatus === "Shipped") {
+      order.orderStatus = "Shipped";
+    } else if (newStatus === "Delivered") {
+      const activeItems = order.items.filter(
+        (item) => item.status !== "Cancelled" && item.status !== "Returned"
+      );
+      const allActiveDelivered = activeItems.length > 0 && activeItems.every((item) => item.status === "Delivered");
+
+      if (allActiveDelivered) {
+        order.orderStatus = "Completed";
+      } else {
+        // This case might happen if some items are still pending/shipped somehow, 
+        // but with our linear flow it should generally be Completed.
+        order.orderStatus = "Delivered";
+      }
+    }
+
+    await order.save();
     res.json({ success: true });
   } catch (error) {
     console.error(error);
@@ -778,16 +1097,19 @@ async function approveReturn(req, res) {
     }
 
     if (action === "approve") {
-      // Existing logic for approving the return
       item.status = "Returned";
 
       const wallet = await Wallet.findOne({ userId: order.userId });
-      if (wallet) {
-        wallet.balance += item.price * item.quantity; 
+      const returnedProduct = await Product.findById(productId);
+      if (wallet && returnedProduct) {
+        const refundAmount = item.price * item.quantity;
+        wallet.balance += refundAmount;
         wallet.transactions.push({
-          amount: item.price * item.quantity,
+          transactionId: generateTransactionId(),
+          amount: refundAmount,
           type: "credit",
-          orderId: order._id,
+          orderId: order.orderId,
+          description: `Refund for returning of order ${order.orderId}`,
         });
         await wallet.save();
       }
@@ -821,15 +1143,50 @@ async function approveReturn(req, res) {
 async function getOffers(req, res) {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 7;
+    const limit = 6;
     const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+    const sortParam = req.query.sort || "latest";
 
-    const totalOffers = await Offer.countDocuments();
+    let query = {};
+    if (search) {
+      const matchingProducts = await Product.find({ name: { $regex: search, $options: "i" } }).select('_id');
+      const matchingCategories = await Category.find({ name: { $regex: search, $options: "i" } }).select('_id');
+      const targetIds = [...matchingProducts.map(p => p._id), ...matchingCategories.map(c => c._id)];
+      query.targetId = { $in: targetIds };
+    }
+
+    // Merged Sort and Filter logic
+    let sortOrder = { createdAt: -1 };
+    if (sortParam === "oldest") sortOrder = { createdAt: 1 };
+    
+    if (sortParam === "active") {
+      query.isActive = true;
+      query.expiresAt = { $gt: new Date() };
+      sortOrder = { expiresAt: 1 };
+    }
+    if (sortParam === "expired") {
+      query.expiresAt = { $lt: new Date() };
+      sortOrder = { expiresAt: -1 };
+    }
+    
+    // Type filters hidden in sort dropdown
+    if (sortParam === "flat") query.offerType = "flat";
+    if (sortParam === "percentage") query.offerType = "percentage";
+    
+    // Target filters hidden in sort dropdown
+    if (sortParam === "Product" || sortParam === "Category") query.offerFor = sortParam;
+
+    const offers = await Offer.find(query)
+      .sort(sortOrder)
+      .skip(skip)
+      .limit(limit);
+
+    const totalOffers = await Offer.countDocuments(query);
     const totalPages = Math.ceil(totalOffers / limit);
 
-    const offers = await Offer.find().skip(skip).limit(limit);
-    const products = await Product.find(); 
-    const categories = await Category.find(); 
+    const products = await Product.find();
+    const categories = await Category.find();
 
     res.render("admin/offer", {
       offers,
@@ -837,15 +1194,13 @@ async function getOffers(req, res) {
       categories,
       currentPage: page,
       totalPages,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
-      nextPage: page + 1,
-      previousPage: page - 1,
+      search,
+      sort: sortParam,
       limit,
-      lastPage: totalPages,
+      admin: req.session.admin
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error in getOffers:", error);
     res.status(500).send("Server Error");
   }
 }
@@ -872,17 +1227,29 @@ async function addOffer(req, res) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
-  // Check if expiry date is valid (not in the past)
+  // Check if expiry date is valid
   const currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0); 
+  currentDate.setHours(0, 0, 0, 0);
   const expiryDate = new Date(expiresAt);
   if (expiryDate < currentDate) {
     return res
       .status(400)
-      .json({ message: "Expiry date must be today or a future date." });
+      .json({ success: false, message: "Expiry date must be today or a future date." });
   }
 
   try {
+    // Check for duplicate offer
+    const existingOffer = await Offer.findOne({
+      targetId,
+      offerType,
+      value,
+      expiresAt: new Date(expiresAt)
+    });
+
+    if (existingOffer) {
+      return res.status(400).json({ success: false, message: "An identical offer already exists." });
+    }
+
     // Check for flat discount exceeding product price
     if (offerFor === "Product" && offerType === "flat") {
       const product = await Product.findById(targetId);
@@ -891,6 +1258,7 @@ async function addOffer(req, res) {
       }
       if (value >= product.price) {
         return res.status(400).json({
+          success: false,
           message:
             "Flat discount cannot exceed or be equal to the product price.",
         });
@@ -902,11 +1270,11 @@ async function addOffer(req, res) {
       targetId,
       offerType,
       value,
-      maxDiscount: offerFor === "Category" ? maxDiscount : undefined, 
+      maxDiscount: offerFor === "Category" ? maxDiscount : undefined,
       minProductPrice:
         offerFor === "Category" && offerType === "flat"
           ? minProductPrice
-          : undefined, 
+          : undefined,
       expiresAt,
       usedCount,
     });
@@ -917,7 +1285,7 @@ async function addOffer(req, res) {
     console.error(error);
     res
       .status(500)
-      .json({ message: "Error adding offer", error: error.message });
+      .json({ success: false, message: "Error adding offer", error: error.message });
   }
 }
 
@@ -934,21 +1302,35 @@ async function editOffer(req, res) {
       expiresAt,
     } = req.body;
 
-    // Check if expiry date is valid (not in the past)
+    // Check if expiry date is valid
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
     const expiryDate = new Date(expiresAt);
     if (expiryDate < currentDate) {
       return res
         .status(400)
-        .json({ message: "Expiry date must be today or a future date." });
+        .json({ success: false, message: "Expiry date must be today or a future date." });
     }
 
-    // Logic to check if flat discount is valid
+    // Check for duplicate offer
+    const duplicateOffer = await Offer.findOne({
+      _id: { $ne: offerId },
+      targetId,
+      offerType,
+      value,
+      expiresAt: new Date(expiresAt)
+    });
+
+    if (duplicateOffer) {
+      return res.status(400).json({ success: false, message: "An identical offer already exists." });
+    }
+
+    // Check if flat discount is valid
     if (offerFor === "Product" && offerType === "flat") {
       const product = await Product.findById(targetId);
       if (value >= product.price) {
         return res.status(400).json({
+          success: false,
           message:
             "Flat discount cannot exceed or be equal to the product price.",
         });
@@ -975,7 +1357,7 @@ async function editOffer(req, res) {
       .json({ message: "Offer updated successfully!", offer: updatedOffer });
   } catch (error) {
     console.error("Error updating offer:", error);
-    res.status(500).json({ message: "Error updating offer." });
+    res.status(500).json({ success: false, message: "Error updating offer." });
   }
 }
 
@@ -1000,14 +1382,54 @@ async function toggleOfferStatus(req, res) {
 }
 
 async function getCoupons(req, res) {
-  const limit = 7;
-  const currentPage = parseInt(req.query.page) || 1; 
-  const skip = (currentPage - 1) * limit; 
+  const limit = 5;
+  const currentPage = parseInt(req.query.page) || 1;
+  const skip = (currentPage - 1) * limit;
+  const search = req.query.search || "";
+  const sort = req.query.sort || "latest";
+
   try {
-    const coupons = await Coupon.find().skip(skip).limit(limit);
-    const totalCategories = await Coupon.countDocuments(); 
-    const totalPages = Math.ceil(totalCategories / limit); 
-    res.render("admin/coupons", { coupons, currentPage, totalPages, limit });
+    let query = {};
+    const currentDate = new Date();
+
+    // Backend Search
+    if (search) {
+      query.code = { $regex: search, $options: "i" };
+    }
+
+    // Backend Sort / Filter
+    let sortQuery = { createdAt: -1 }; // Default: Latest
+
+    if (sort === "oldest") {
+      sortQuery = { createdAt: 1 };
+    } else if (sort === "listed") {
+      query.isActive = true;
+    } else if (sort === "unlisted") {
+      query.isActive = false;
+    } else if (sort === "active") {
+      query.isActive = true;
+      query.expiresAt = { $gt: currentDate };
+    } else if (sort === "expired") {
+      query.expiresAt = { $lt: currentDate };
+    } else if (sort === "flat") {
+      query.discountType = "flat";
+    } else if (sort === "percentage") {
+      query.discountType = "percentage";
+    }
+
+    const coupons = await Coupon.find(query).sort(sortQuery).skip(skip).limit(limit);
+    const totalCoupons = await Coupon.countDocuments(query);
+    const totalPages = Math.ceil(totalCoupons / limit);
+
+    res.render("admin/coupons", {
+      coupons,
+      currentPage,
+      totalPages,
+      limit,
+      search,
+      sort,
+      admin: req.session.admin,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
@@ -1026,7 +1448,7 @@ async function addCoupon(req, res) {
   } = req.body;
 
   if (!code || !discountAmount || !expiresAt || !usageLimit) {
-    return res.status(400).json({ message: "All fields are required." });
+    return res.status(400).json({ success: false, message: "All fields are required." });
   }
 
   const expirationDate = new Date(expiresAt);
@@ -1035,14 +1457,25 @@ async function addCoupon(req, res) {
   if (expirationDate <= today) {
     return res
       .status(400)
-      .json({ message: "Expiration date must be a future date." });
+      .json({ success: false, message: "Expiration date must be a future date." });
   }
 
   // Validate discountAmount if discountType is percentage
   if (discountType === "percentage") {
-    if (discountAmount <= 0 || discountAmount >= 80) {
+    if (discountAmount <= 0 || discountAmount > 80) {
       return res.status(400).json({
-        message: "Discount amount must be greater than 0% and less than 80%.",
+        success: false,
+        message: "Discount amount must be between 1% and 80%.",
+      });
+    }
+  }
+
+  // Validate discountAmount vs minOrderValue if discountType is flat
+  if (discountType === "flat") {
+    if (Number(discountAmount) >= Number(minOrderValue)) {
+      return res.status(400).json({
+        success: false,
+        message: "Discount amount must be less than Minimum Order Value.",
       });
     }
   }
@@ -1051,6 +1484,7 @@ async function addCoupon(req, res) {
     const existingCoupon = await Coupon.findOne({ code });
     if (existingCoupon) {
       return res.status(409).json({
+        success: false,
         message: "Coupon code already exists. Please enter a new one.",
       });
     }
@@ -1059,18 +1493,18 @@ async function addCoupon(req, res) {
       code,
       discountAmount,
       discountType,
-      maxDiscount,
-      minOrderValue,
+      maxDiscount: discountType === "flat" ? 0 : maxDiscount,
+      minOrderValue: discountType === "percentage" ? 0 : minOrderValue,
       expiresAt,
       usageLimit,
     });
     await newCoupon.save();
-    res.status(201).json({ message: "Coupon added successfully!" });
+    res.status(201).json({ success: true, message: "Coupon added successfully!" });
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ message: "Error adding coupon", error: error.message });
+      .json({ success: false, message: "Error adding coupon", error: error.message });
   }
 }
 
@@ -1089,7 +1523,7 @@ async function editCoupon(req, res) {
   try {
     const updatedCoupon = await Coupon.findById(id);
     if (!updatedCoupon) {
-      return res.status(404).json({ message: "Coupon not found" });
+      return res.status(404).json({ success: false, message: "Coupon not found" });
     }
 
     const expirationDate = expiresAt ? new Date(expiresAt) : null;
@@ -1099,59 +1533,56 @@ async function editCoupon(req, res) {
     if (expiresAt && expirationDate <= today) {
       return res
         .status(400)
-        .json({ message: "Expiration date must be in the future." });
+        .json({ success: false, message: "Expiration date must be in the future." });
     }
 
-    // Check if the new code already exists (excluding the current coupon)
+    // Check if the new code already exists excluding the current coupon
     if (code && code !== updatedCoupon.code) {
       const existingCoupon = await Coupon.findOne({ code });
       if (existingCoupon) {
         return res.status(409).json({
+          success: false,
           message: "Coupon code already exists. Please enter a new one.",
         });
       }
     }
-
     // Validate discountAmount if discountType is percentage
     if (discountType === "percentage") {
-      if (discountAmount <= 0 || discountAmount >= 80) {
+      if (discountAmount <= 0 || discountAmount > 80) {
         return res.status(400).json({
-          message: "Discount amount must be greater than 0% and less than 80%.",
+          success: false,
+          message: "Discount amount must be between 1% and 80%.",
         });
       }
     }
 
-    // Logic for maxDiscount and minOrderValue based on discountType
+    // Validate discountAmount vs minOrderValue if discountType is flat
     if (discountType === "flat") {
-      updatedCoupon.maxDiscount = 0;
-      updatedCoupon.minOrderValue =
-        minOrderValue !== undefined
-          ? minOrderValue
-          : updatedCoupon.minOrderValue; 
-    } else if (discountType === "percentage") {
-      updatedCoupon.minOrderValue = 0; 
-      updatedCoupon.maxDiscount =
-        maxDiscount !== undefined ? maxDiscount : updatedCoupon.maxDiscount; 
+      if (Number(discountAmount) >= Number(minOrderValue)) {
+        return res.status(400).json({
+          success: false,
+          message: "Discount amount must be less than Minimum Order Value.",
+        });
+      }
     }
 
-    // Update other fields, keeping existing values if new values are not provided
-    updatedCoupon.code = code !== undefined ? code : updatedCoupon.code;
-    updatedCoupon.discountAmount =
-      discountAmount !== undefined
-        ? discountAmount
-        : updatedCoupon.discountAmount;
-    updatedCoupon.discountType =
-      discountType !== undefined ? discountType : updatedCoupon.discountType;
-    updatedCoupon.expiresAt =
-      expiresAt !== undefined ? expiresAt : updatedCoupon.expiresAt;
-    updatedCoupon.usageLimit =
-      usageLimit !== undefined ? usageLimit : updatedCoupon.usageLimit;
+    // Update coupon fields
+    updatedCoupon.code = code || updatedCoupon.code;
+    updatedCoupon.discountAmount = discountAmount || updatedCoupon.discountAmount;
+    updatedCoupon.discountType = discountType || updatedCoupon.discountType;
+    updatedCoupon.expiresAt = expiresAt || updatedCoupon.expiresAt;
+    updatedCoupon.usageLimit = usageLimit || updatedCoupon.usageLimit;
+
+    if (discountType === "flat") {
+      updatedCoupon.maxDiscount = 0;
+      updatedCoupon.minOrderValue = minOrderValue;
+    } else if (discountType === "percentage") {
+      updatedCoupon.minOrderValue = 0;
+      updatedCoupon.maxDiscount = maxDiscount;
+    }
 
     await updatedCoupon.save();
-
-    res
-      .status(200)
-      .json({ message: "Coupon updated successfully!", coupon: updatedCoupon });
+    res.status(200).json({ success: true, message: "Coupon updated successfully!", coupon: updatedCoupon });
   } catch (error) {
     console.error("Error updating coupon:", error);
     res
@@ -1180,69 +1611,97 @@ async function toggleCouponStatus(req, res) {
   }
 }
 
+const getSalesReportFilter = (reportType, startDate, endDate) => {
+  let dateFilter = { "items.status": "Delivered" };
+  const currentDate = new Date();
+  
+  if (reportType === "daily") {
+    dateFilter.orderDate = {
+      $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+      $lt: new Date(new Date().setHours(23, 59, 59, 999)),
+    };
+  } else if (reportType === "monthly") {
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    dateFilter.orderDate = {
+      $gte: startOfMonth,
+      $lt: new Date(currentDate.setHours(23, 59, 59, 999)),
+    };
+  } else if (reportType === "yearly") {
+    const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
+    dateFilter.orderDate = {
+      $gte: startOfYear,
+      $lt: new Date(currentDate.setHours(23, 59, 59, 999)),
+    };
+  } else if (reportType === "custom" && startDate && endDate) {
+    dateFilter.orderDate = { 
+      $gte: new Date(new Date(startDate).setHours(0, 0, 0, 0)), 
+      $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)) 
+    };
+  }
+  return dateFilter;
+};
+
 async function getSalesReport(req, res) {
+  const limit = 7;
+  const currentPage = parseInt(req.query.page) || 1;
+  const skip = (currentPage - 1) * limit;
+  
+  const reportType = req.query.reportType || "all";
+  const startDate = req.query.startDate || "";
+  const endDate = req.query.endDate || "";
+  const sort = req.query.sort || "latest";
+
   try {
-    // Fetch orders data from your database
-    const orders = await Order.find();
-    res.render("admin/salesReport", { orders });
+    const dateFilter = getSalesReportFilter(reportType, startDate, endDate);
+    const sortQuery = sort === "latest" ? { orderDate: -1 } : { orderDate: 1 };
+
+    const orders = await Order.find(dateFilter)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limit);
+
+    const totalOrdersCount = await Order.countDocuments(dateFilter);
+    const totalPages = Math.ceil(totalOrdersCount / limit);
+
+    // Calculate totals for the entire filtered set (not just paginated)
+    const allFilteredOrders = await Order.find(dateFilter);
+    const totalSalesCount = allFilteredOrders.length;
+    const totalOrderAmount = allFilteredOrders.reduce((acc, order) => acc + (order.totalAmount || 0), 0);
+    const totalDiscount = allFilteredOrders.reduce((acc, order) => acc + (order.offerDiscount || 0) + (order.couponDiscount || 0), 0);
+
+    res.render("admin/salesReport", {
+      orders,
+      currentPage,
+      totalPages,
+      reportType,
+      startDate,
+      endDate,
+      sort,
+      totalSalesCount,
+      totalOrderAmount,
+      totalDiscount,
+      admin: req.session.admin,
+    });
   } catch (error) {
-    console.error("Error fetching orders data:", error);
+    console.error("Error fetching sales report:", error);
     res.status(500).send("Internal Server Error");
   }
 }
 
 async function generateSalesReport(req, res) {
-  const { reportType, startDate, endDate } = req.body;
-
-  // Determine the date range
-  let dateFilter = {};
-  if (reportType === "daily") {
-    dateFilter = {
-      orderDate: {
-        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-        $lt: new Date(new Date().setHours(23, 59, 59, 999)),
-      },
-    };
-  } else if (reportType === "weekly") {
-    const startOfWeek = new Date();
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Set to Sunday
-    dateFilter = {
-      orderDate: {
-        $gte: startOfWeek,
-        $lt: new Date(new Date().setHours(23, 59, 59, 999)),
-      },
-    };
-  } else if (reportType === "monthly") {
-    const startOfMonth = new Date(
-      new Date().setFullYear(new Date().getFullYear(), new Date().getMonth(), 1)
-    );
-    dateFilter = {
-      orderDate: {
-        $gte: startOfMonth,
-        $lt: new Date(new Date().setHours(23, 59, 59, 999)),
-      },
-    };
-  } else if (reportType === "custom") {
-    dateFilter = {
-      orderDate: { $gte: new Date(startDate), $lt: new Date(endDate) },
-    };
-  }
-
+  const { reportType, startDate, endDate, sort } = req.body;
   try {
-    const orders = await Order.find(dateFilter);
+    const dateFilter = getSalesReportFilter(reportType, startDate, endDate);
+    const sortQuery = sort === "oldest" ? { orderDate: 1 } : { orderDate: -1 };
+    
+    const orders = await Order.find(dateFilter).sort(sortQuery);
 
-    // Calculate totals
     const totalSalesCount = orders.length;
-    const totalOrderAmount = orders.reduce(
-      (acc, order) => acc + order.totalAmount,
-      0
-    );
-    const totalDiscount = orders.reduce(
-      (acc, order) => acc + order.offerDiscount + order.couponDiscount,
-      0
-    );
+    const totalOrderAmount = orders.reduce((acc, order) => acc + (order.totalAmount || 0), 0);
+    const totalDiscount = orders.reduce((acc, order) => acc + (order.offerDiscount || 0) + (order.couponDiscount || 0), 0);
 
     res.json({
+      success: true,
       totalSalesCount,
       totalOrderAmount,
       totalDiscount,
@@ -1250,192 +1709,148 @@ async function generateSalesReport(req, res) {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 }
 
 async function downloadSalesReportPdf(req, res) {
-  const { reportType, startDate, endDate } = req.body; 
-  const filter = {}; 
+  const { reportType, startDate, endDate, sort } = req.body;
+  
+  try {
+    const dateFilter = getSalesReportFilter(reportType, startDate, endDate);
+    const sortQuery = sort === "oldest" ? { orderDate: 1 } : { orderDate: -1 };
+    const orders = await Order.find(dateFilter).sort(sortQuery);
 
-  if (reportType === "custom" && startDate && endDate) {
-    filter.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
-  } else if (reportType === "daily") {
-    const today = new Date();
-    filter.orderDate = {
-      $gte: new Date(today.setHours(0, 0, 0, 0)),
-      $lte: new Date(today.setHours(23, 59, 59, 999)),
-    };
-  } else if (reportType === "weekly") {
-    const startOfWeek = new Date();
-    const dayOfWeek = startOfWeek.getDay();
-    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Set Monday as start
-    startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
-    startOfWeek.setHours(0, 0, 0, 0); // Start of the week
+    const doc = new PDFDocument({ layout: "landscape", margin: 50 });
+    res.setHeader("Content-Disposition", 'attachment; filename="sales_report.pdf"');
+    res.setHeader("Content-Type", "application/pdf");
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(endOfWeek.getDate() + 7); // End of the week
-    filter.orderDate = {
-      $gte: startOfWeek,
-      $lt: endOfWeek,
-    };
-  } else if (reportType === "monthly") {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1); // Set to first day of the month
-    startOfMonth.setHours(0, 0, 0, 0); 
+    doc.pipe(res);
 
-    const endOfMonth = new Date(startOfMonth);
-    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Next month
-    endOfMonth.setHours(0, 0, 0, 0); 
-    filter.orderDate = {
-      $gte: startOfMonth,
-      $lt: endOfMonth,
-    };
+    // Classy Header
+    doc.fillColor("#333").fontSize(25).text("SALES REPORT", { align: "center" });
+    doc.fontSize(10).text(`Generated on: ${new Date().toLocaleString()}`, { align: "center" });
+    doc.moveDown();
+
+    const totalSalesCount = orders.length;
+    const totalOrderAmount = orders.reduce((acc, order) => acc + (order.totalAmount || 0), 0);
+    const totalDiscount = orders.reduce((acc, order) => acc + (order.offerDiscount || 0) + (order.couponDiscount || 0), 0);
+
+    // Summary Boxes (Classy grey/white)
+    doc.rect(50, 100, 700, 40).fill("#f8f9fa");
+    doc.fillColor("#333").fontSize(12);
+    doc.text(`Total Sales: ${totalSalesCount}`, 70, 115);
+    doc.text(`Total Amount: ₹${totalOrderAmount.toFixed(2)}`, 300, 115);
+    doc.text(`Total Discount: ₹${totalDiscount.toFixed(2)}`, 550, 115);
+
+    doc.moveDown(3);
+
+    // Table Header
+    const tableTop = 160;
+    doc.fillColor("#444").fontSize(10);
+    doc.text("S.No", 50, tableTop);
+    doc.text("Order ID", 90, tableTop);
+    doc.text("Customer", 220, tableTop);
+    doc.text("Offer Discount", 350, tableTop);
+    doc.text("Coupon Discount", 460, tableTop);
+    doc.text("Total Amount", 570, tableTop);
+    doc.text("Date", 670, tableTop);
+    doc.text("Status", 740, tableTop);
+
+    doc.moveTo(50, tableTop + 15).lineTo(790, tableTop + 15).strokeColor("#ccc").stroke();
+
+    let y = tableTop + 25;
+    orders.forEach((order, index) => {
+      // Check for page break
+      if (y > 500) {
+        doc.addPage({ layout: "landscape", margin: 50 });
+        y = 50;
+      }
+
+      doc.fillColor("#666").fontSize(9);
+      doc.text(`${index + 1}`, 50, y);
+      doc.text(`${order.orderId}`, 90, y);
+      doc.text(`${order.shippingAddress.fullname}`, 220, y, { width: 120 });
+      doc.text(`₹${(order.offerDiscount || 0).toFixed(2)}`, 350, y);
+      doc.text(`₹${(order.couponDiscount || 0).toFixed(2)}`, 460, y);
+      doc.text(`₹${(order.totalAmount || 0).toFixed(2)}`, 570, y);
+      doc.text(`${new Date(order.orderDate).toLocaleDateString("en-GB")}`, 670, y);
+      doc.text(`${order.orderStatus}`, 740, y);
+      y += 20;
+    });
+
+    doc.end();
+  } catch (error) {
+    console.error("PDF Export Error:", error);
+    res.status(500).send("Error generating PDF");
   }
-  // Add other filtering logic for weekly and monthly as needed
-
-  const orders = await Order.find(filter); 
-
-  const doc = new PDFDocument({ layout: "landscape" }); 
-  res.setHeader(
-    "Content-Disposition",
-    'attachment; filename="sales_report.pdf"'
-  );
-  res.setHeader("Content-Type", "application/pdf");
-
-  doc.pipe(res);
-
-  // PDF Header
-  doc.fontSize(25).text("Sales Report", { align: "center" });
-
-  // Summary
-  const totalSalesCount = orders.length;
-  const totalOrderAmount = orders.reduce(
-    (acc, order) => acc + order.totalAmount,
-    0
-  );
-  const totalDiscount = orders.reduce(
-    (acc, order) => acc + order.offerDiscount + order.couponDiscount,
-    0
-  );
-  doc.fontSize(12).text(`Total Sales Count: ${totalSalesCount}`, 50, 120); 
-  doc.fontSize(12).text(`Total Order Amount: ${totalOrderAmount}`, 250, 120); 
-  doc.fontSize(12).text(`Total Discount: ${totalDiscount}`, 450, 120); 
-
-  // Table Header
-  doc.fontSize(12).text("Order ID", 50, 170); 
-  doc.fontSize(12).text("Customer", 220, 170);
-  doc.fontSize(12).text("Offer Discount", 290, 170); 
-  doc.fontSize(12).text("Coupon Discount", 380, 170); 
-  doc.fontSize(12).text("Total Amount", 490, 170); 
-  doc.fontSize(12).text("Date", 580, 170); 
-  doc.fontSize(12).text("Status", 660, 170); 
-
-  let y = 190; 
-  orders.forEach((order) => {
-    doc.fontSize(12).text(`${order._id}`, 50, y, { width: 170 }); 
-    doc.fontSize(12).text(`${order.shippingAddress.fullname}`, 220, y);
-    doc.fontSize(12).text(`${order.offerDiscount || "N/A"}`, 290, y);
-    doc.fontSize(12).text(`${order.couponDiscount || "N/A"}`, 380, y);
-    doc.fontSize(12).text(`${order.totalAmount}`, 490, y);
-    doc
-      .fontSize(12)
-      .text(`${new Date(order.orderDate).toLocaleDateString("en-GB")}`, 580, y);
-    doc.fontSize(12).text(`${order.orderStatus}`, 660, y);
-    y += 20; 
-  });
-
-  doc.end();
 }
 
 async function downloadSalesReportExcel(req, res) {
-  const { reportType, startDate, endDate } = req.body; 
-  const filter = {};
+  const { reportType, startDate, endDate, sort } = req.body;
+  
+  try {
+    const dateFilter = getSalesReportFilter(reportType, startDate, endDate);
+    const sortQuery = sort === "oldest" ? { orderDate: 1 } : { orderDate: -1 };
+    const orders = await Order.find(dateFilter).sort(sortQuery);
 
-  if (reportType === "custom" && startDate && endDate) {
-    filter.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
-  } else if (reportType === "daily") {
-    const today = new Date();
-    filter.orderDate = {
-      $gte: new Date(today.setHours(0, 0, 0, 0)),
-      $lte: new Date(today.setHours(23, 59, 59, 999)),
-    };
-  } else if (reportType === "weekly") {
-    const startOfWeek = new Date();
-    const dayOfWeek = startOfWeek.getDay();
-    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Set Monday as start
-    startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
-    startOfWeek.setHours(0, 0, 0, 0); // Start of the week
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sales Report");
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(endOfWeek.getDate() + 7); // End of the week
-    filter.orderDate = {
-      $gte: startOfWeek,
-      $lt: endOfWeek,
-    };
-  } else if (reportType === "monthly") {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1); // Set to first day of the month
-    startOfMonth.setHours(0, 0, 0, 0); 
+    // Add summary row
+    const totalOrderAmount = orders.reduce((acc, order) => acc + (order.totalAmount || 0), 0);
+    const totalDiscount = orders.reduce((acc, order) => acc + (order.offerDiscount || 0) + (order.couponDiscount || 0), 0);
 
-    const endOfMonth = new Date(startOfMonth);
-    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Next month
-    endOfMonth.setHours(0, 0, 0, 0); 
-    filter.orderDate = {
-      $gte: startOfMonth,
-      $lt: endOfMonth,
-    };
-  }
-  // Add other filtering logic for weekly and monthly as needed
+    worksheet.addRow(["Sales Report Summary"]);
+    worksheet.addRow(["Total Sales", orders.length]);
+    worksheet.addRow(["Total Amount", totalOrderAmount]);
+    worksheet.addRow(["Total Discount", totalDiscount]);
+    worksheet.addRow([]); // Gap
 
-  const orders = await Order.find(filter); 
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Sales Report");
-
-  // Add header row
-  worksheet.addRow([
-    "Order ID",
-    "Customer",
-    "Offer Discount",
-    "Coupon Discount",
-    "Total Amount",
-    "Date",
-    "Status",
-  ]);
-
-  orders.forEach((order) => {
+    // Header row
     worksheet.addRow([
-      order._id,
-      order.shippingAddress.fullname,
-      order.offerDiscount || "N/A",
-      order.couponDiscount || "N/A",
-      order.totalAmount,
-      new Date(order.orderDate).toLocaleDateString("en-GB"),
-      order.orderStatus,
+      "S.No",
+      "Order ID",
+      "Customer",
+      "Offer Discount",
+      "Coupon Discount",
+      "Total Amount",
+      "Date",
+      "Status",
     ]);
-  });
 
-  res.setHeader(
-    "Content-Disposition",
-    'attachment; filename="sales_report.xlsx"'
-  );
-  res.setHeader(
-    "Content-Type",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
+    // Style the header
+    worksheet.getRow(6).font = { bold: true };
 
-  await workbook.xlsx.write(res);
-  res.end();
+    orders.forEach((order, index) => {
+      worksheet.addRow([
+        index + 1,
+        order.orderId,
+        order.shippingAddress.fullname,
+        order.offerDiscount || 0,
+        order.couponDiscount || 0,
+        order.totalAmount,
+        new Date(order.orderDate).toLocaleDateString("en-GB"),
+        order.orderStatus,
+      ]);
+    });
+
+    res.setHeader("Content-Disposition", 'attachment; filename="sales_report.xlsx"');
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Excel Export Error:", error);
+    res.status(500).send("Error generating Excel");
+  }
 }
 
 async function logout(req, res) {
-  // Check if the admin is logged in
   if (req.session.admin) {
-    // Remove admin info from the session
     delete req.session.admin;
   }
 
-  // Redirect to login after logout
   res.redirect("/admin/login");
 }
 
@@ -1444,6 +1859,7 @@ module.exports = {
   getHome,
   getUsers,
   toggleUserStatus,
+  changeOrderStatus,
   getProducts,
   addProduct,
   editProduct,
@@ -1472,4 +1888,6 @@ module.exports = {
   downloadSalesReportPdf,
   downloadSalesReportExcel,
   logout,
+  getAddProduct,
+  getEditProduct,
 };

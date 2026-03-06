@@ -26,6 +26,11 @@ const returnRequestSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
+    orderId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -64,16 +69,16 @@ const orderSchema = new mongoose.Schema(
     },
     couponDiscount: {
       type: Number,
-      default: 0, 
+      default: 0,
     },
     orderStatus: {
       type: String,
-      enum: ["Pending", "Completed", "Cancelled"],
+      enum: ["Pending", "Shipped", "Completed", "Cancelled"],
       default: "Pending",
     },
     paymentStatus: {
       type: String,
-      enum: ["Failed", "Successful"], 
+      enum: ["Failed", "Successful"],
       required: true,
       default: "Pending",
     },
@@ -91,7 +96,7 @@ const orderSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    returnRequests: [returnRequestSchema], 
+    returnRequests: [returnRequestSchema],
   },
   { timestamps: true }
 );

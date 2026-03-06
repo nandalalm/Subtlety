@@ -129,7 +129,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Attach event listeners
   firstnameInput.addEventListener("input", validateFirstName);
   lastnameInput.addEventListener("input", validateLastName);
   emailInput.addEventListener("input", validateEmail);
@@ -161,7 +160,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-  // Attach password visibility toggle functionality
   togglePassword.addEventListener("click", function () {
     togglePasswordVisibility(passwordInput, togglePassword);
   });
@@ -182,7 +180,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   };
 
-  // Initialize validation and icon visibility
   validateFirstName();
   validateLastName();
   validateEmail();

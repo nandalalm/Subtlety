@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Cart - SUBTLETY</title>
 
@@ -24,8 +25,15 @@
       margin: 0;
       padding: 0;
       font-family: 'Poppins', sans-serif !important;
-      /* Apply Poppins font globally */
       background-color: #f4f4f4 !important;
+    }
+
+    .mb-4 a {
+      color: black !important;
+    }
+
+    .mb-4 a:hover {
+      color: #9135ED !important;
     }
 
     .cart {
@@ -45,101 +53,131 @@
       justify-content: space-between;
       margin-bottom: 15px;
       border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 5px;
-      height: 100px;
+      padding: 15px;
+      border-radius: 12px;
+      background: white;
+      transition: transform 0.2s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .product-info {
       display: flex;
       align-items: center;
       flex-grow: 1;
-      margin-right: 20px;
+      min-width: 0; /* Allow text wrapping */
     }
 
     .product-info img {
-      width: 75px;
-      border-radius: 10px;
-      margin-right: 20px;
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 15px;
+      flex-shrink: 0;
     }
 
     .product-details {
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
 
     .product-details p {
       margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .controls-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-shrink: 0;
+    }
+
+    .quantity-group {
+      display: flex;
+      align-items: center;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 2px;
+      border: 1px solid #dee2e6;
+    }
+
+    .quantity-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: #495057;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .quantity-btn:hover {
+      background: #e9ecef;
+      color: #9135ED;
+    }
+
+    .quantity-input {
+      width: 40px !important;
+      height: 32px !important;
+      border: none !important;
+      background: transparent !important;
+      text-align: center;
+      font-weight: 600;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+      appearance: none;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     .delete-icon {
       cursor: pointer;
-      color: #ff0000;
-      font-size: 1em;
-      margin-left: 10px;
+      color: #ff4757;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #fff0f0;
+      transition: all 0.2s;
     }
 
-    .input-group {
-      width: 30px;
-      /* Reduced width for the input group */
-      margin-right: 10px;
+    .delete-icon:hover {
+      background: #ff4757;
+      color: white;
+      transform: scale(1.1);
     }
 
-    .quantity-input {
-      height: 30px;
-      width: 40px !important;
-      /* Reduced width for input */
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      /* Center the input text */
-    }
+    @media (max-width: 576px) {
+      .product-card {
+        flex-direction: column;
+        align-items: flex-start;
+        height: auto;
+      }
+      
+      .product-info {
+        width: 100%;
+        margin-bottom: 15px;
+      }
 
-    .input-group button {
-      height: 30px;
-      /* Match button height to input */
-      width: 30px;
-      /* Fixed width for buttons */
-      background-color: white;
-      /* Set background color to white */
-      color: #000;
-      /* Set text color to black for better visibility */
-      border: 1px solid #ced4da;
-      /* Add a border to match the input */
-    }
-
-    body>section>div>div.mb-4>a {
-      color: black !important;
-    }
-
-    body>section>div>div.mb-4>a:hover {
-      color: #9135ED !important;
-      /* Change color on hover */
-    }
-
-    .out-of-stock-text {
-      color: red;
-      font-weight: bold;
-      margin-left: 10px;
-    }
-
-    .low-stock-text {
-      color: orange;
-      font-weight: bold;
-      margin-left: 10px;
-    }
-
-    .unavailable-text {
-      color: red;
-      font-weight: bold;
-      margin-left: 10px;
-    }
-
-    /* Hide the default arrows in number input */
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+      .controls-container {
+        width: 100%;
+        justify-content: space-between;
+        padding-top: 10px;
+        border-top: 1px dashed #eee;
+      }
     }
   </style>
 </head>
@@ -161,7 +199,7 @@
         <div class="col-md-8 mt-3">
           <h4>Products</h4>
           <% cart.products.forEach(cartItem => { %>
-          <div class="product-card">
+          <div class="product-card" data-product-id="<%= cartItem.productId._id %>">
             <div class="product-info">
               <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="Product Image">
               <div class="product-details">
@@ -176,14 +214,14 @@
               <p class="low-stock-text">Currently only <%= cartItem.productId.stock %> in stock</p>
               <% } %>
             </div>
-            <div style="display: flex; align-items: center;">
-              <div class="input-group">
-                <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity(this)">-</button>
-                <input type="number" value="<%= cartItem.quantity %>" min="1" max="<%= cartItem.productId.stock %>" class="form-control quantity-input" oninput="debounceUpdateQuantity('<%= cartItem.productId._id %>', this.value, <%= cartItem.productId.stock %>)">
-                <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity(this)">+</button>
+            <div class="controls-container">
+              <div class="quantity-group">
+                <button class="quantity-btn" type="button" onclick="decreaseQuantity(this)">-</button>
+                <input type="number" value="<%= cartItem.quantity %>" min="1" max="<%= cartItem.productId.stock %>" class="quantity-input" oninput="debounceUpdateQuantity('<%= cartItem.productId._id %>', this.value, this.getAttribute('max'))">
+                <button class="quantity-btn" type="button" onclick="increaseQuantity(this)">+</button>
               </div>
               <span class="delete-icon" onclick="confirmRemoveProduct('<%= cartItem.productId._id %>')">
-                <i class="fas fa-trash"></i>
+                <i class="fas fa-trash-alt"></i>
               </span>
             </div>
           </div>
@@ -263,15 +301,55 @@
         })
         .then(response => {
           if (response.ok) {
-            location.reload(); // Reload after 3 seconds
+            return response.json();
           } else {
             return response.json().then(data => {
-              console.error('Failed to remove product:', data.message || response.statusText);
+              throw new Error(data.message || response.statusText);
             });
           }
         })
+        .then(data => {
+          const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+          if (productCard) {
+            productCard.style.opacity = '0';
+            productCard.style.transform = 'translateX(20px)';
+            productCard.style.transition = 'all 0.3s ease';
+            setTimeout(() => {
+              productCard.remove();
+              if (data.cartCount === 0) {
+                const container = document.querySelector('.cart .container');
+                container.innerHTML = `
+                  <div class="mb-4">
+                    <a href="/user/home" class="text-decoration-none">Home</a> /
+                    <a href="/user/cart" class="text-decoration-none">My Cart</a>
+                  </div>
+                  <h1>Your Cart</h1>
+                  <p class="text-center mt-5">There are no items in your cart. <a href="/user/home" class="btn btn-primary ml-2">Back to Home</a></p>
+                `;
+              }
+            }, 300);
+          }
+
+          document.getElementById('subtotal').innerText = data.subtotal.toFixed(2);
+          document.getElementById('total').innerText = data.total.toFixed(2);
+
+          Toastify({
+            text: data.message,
+            duration: 2000,
+            gravity: "bottom",
+            position: 'center',
+            backgroundColor: "linear-gradient(to right, #3097ff, #4d64f9)",
+          }).showToast();
+        })
         .catch(err => {
           console.error("Error:", err);
+          Toastify({
+            text: 'Error removing product: ' + err.message,
+            duration: 2000,
+            gravity: "bottom",
+            position: 'center',
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+          }).showToast();
         });
     }
 
@@ -285,7 +363,10 @@
     }
 
     function updateQuantity(productId, newQuantity, maxStock) {
-      if (newQuantity < 1) {
+      newQuantity = parseInt(newQuantity);
+      maxStock = parseInt(maxStock);
+      
+      if (isNaN(newQuantity) || newQuantity < 1) {
         Toastify({
           text: "Quantity cannot be less than 1",
           duration: 2000,
@@ -294,20 +375,6 @@
           position: 'center',
           backgroundColor: "#f44336",
         }).showToast();
-        setTimeout(() => location.reload(), 2000);
-        return;
-      }
-
-      if (newQuantity > maxStock) {
-        Toastify({
-          text: `Only ${maxStock} items available in stock`,
-          duration: 2000,
-          close: false,
-          gravity: "bottom",
-          position: 'center',
-          backgroundColor: "#f44336",
-        }).showToast();
-        setTimeout(() => location.reload(), 2000);
         return;
       }
 
@@ -332,17 +399,36 @@
           return response.json();
         })
         .then(data => {
+          // Update the input value with the backend's effective quantity (clamped)
+          const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+          if (productCard) {
+            const input = productCard.querySelector('.quantity-input');
+            if (input) input.value = data.newQuantity;
+
+            // Remove low stock warning if quantity is now valid
+            const lowStockText = productCard.querySelector('.low-stock-text');
+            if (lowStockText) {
+              const maxStock = parseInt(input.getAttribute('max'));
+              if (data.newQuantity <= maxStock) {
+                lowStockText.remove();
+              }
+            }
+          }
+
           if (data.message) {
             Toastify({
               text: data.message,
               duration: 2000,
               gravity: "bottom",
               position: 'center',
-              backgroundColor: "#4CAF50",
+              backgroundColor: data.message.includes('Only') || data.message.includes('Maximum') 
+                ? "linear-gradient(to right, #ff9800, #ffc371)" 
+                : "linear-gradient(to right, #3097ff, #4d64f9)",
             }).showToast();
           }
-          updateOrderSummary();
-          setTimeout(() => location.reload(), 2000);
+          
+          document.getElementById('subtotal').innerText = data.subtotal.toFixed(2);
+          document.getElementById('total').innerText = data.total.toFixed(2);
         })
         .catch(error => {
           Toastify({
@@ -351,28 +437,13 @@
             close: false,
             gravity: "bottom",
             position: 'center',
-            backgroundColor: "#f44336",
+            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
           }).showToast();
-          setTimeout(() => location.reload(), 2000);
           console.error("Error:", error);
         });
     }
 
-    function updateOrderSummary() {
-      let subtotal = 0;
 
-      document.querySelectorAll('.product-card').forEach(productCard => {
-        const priceElement = productCard.querySelector('.product-details p:nth-of-type(2)');
-        const quantityElement = productCard.querySelector('.quantity-input');
-        const price = parseFloat(priceElement.innerText.replace('₹', '').trim());
-        const quantity = parseInt(quantityElement.value);
-        const maxStock = parseInt(quantityElement.getAttribute('max'));
-        subtotal += price * Math.min(quantity, maxStock);
-      });
-
-      document.getElementById('subtotal').innerText = subtotal.toFixed(2);
-      document.getElementById('total').innerText = subtotal.toFixed(2);
-    }
 
     function checkoutHandler(event) {
       event.preventDefault();
@@ -418,21 +489,28 @@
     }
 
 
+    const MAX_ALLOWED_QUANTITY = 10;
+
     function increaseQuantity(button) {
       const input = button.previousElementSibling;
       const maxStock = parseInt(input.getAttribute('max'));
       const currentValue = parseInt(input.value);
-      if (currentValue < maxStock) {
+      const effectiveLimit = Math.min(maxStock, MAX_ALLOWED_QUANTITY);
+
+      if (currentValue < effectiveLimit) {
         input.value = currentValue + 1;
         input.dispatchEvent(new Event('input'));
       } else {
+        const msg = currentValue >= MAX_ALLOWED_QUANTITY 
+          ? `Maximum ${MAX_ALLOWED_QUANTITY} items allowed per product` 
+          : `Only ${maxStock} items available in stock`;
         Toastify({
-          text: `Only ${maxStock} items available in stock`,
+          text: msg,
           duration: 2000,
           close: false,
           gravity: "bottom",
           position: 'center',
-          backgroundColor: "#f44336",
+          backgroundColor: "linear-gradient(to right, #ff9800, #ffc371)",
         }).showToast();
       }
     }
@@ -444,14 +522,8 @@
         input.value = currentValue - 1;
         input.dispatchEvent(new Event('input'));
       } else {
-        Toastify({
-          text: "Quantity cannot be less than 1",
-          duration: 2000,
-          close: false,
-          gravity: "bottom",
-          position: 'center',
-          backgroundColor: "#f44336",
-        }).showToast();
+        const productId = button.closest('.product-card').getAttribute('data-product-id');
+        confirmRemoveProduct(productId);
       }
     }
   </script>

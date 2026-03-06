@@ -29,14 +29,6 @@
     .validation-message.invalid {
       color: #dc3545;
     }
-
-    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1) {
-      color: black;
-    }
-
-    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1):hover {
-      color: #9135ED;
-    }
   </style>
 </head>
 
@@ -47,7 +39,7 @@
     <div class="container profile">
       <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs">
         <div>
-          <a href="/user/home" class="text-decoration-none">Home</a> /
+          <a href="/user/home" class="text-decoration-none">Home</a><span class="d-none d-sm-inline"> / </span><br class="d-sm-none">
           <span style="color: #9135ED;" class="text-decoration-none">Address Book</span>
         </div>
         <div>
@@ -56,36 +48,15 @@
       </div>
 
       <div class="row">
-        <!-- Sidebar (30% width) -->
-        <div class="col-lg-3 col-md-3 col-sm-4 col-5">
-          <div class="pt-3 mb-3">
-            <h6>Manage My Account</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/profile" class="text-decoration-none">My Profile</a></li>
-              <li><a href="/user/address" class="text-decoration-none active-link">Address Book</a></li>
-            </ul>
-            <h6>Manage Orders</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/orders" class="text-decoration-none">My Orders</a></li>
-            </ul>
-            <h6>My Stuff</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/wallet" class="text-decoration-none">My Wallet</a></li>
-              <li><a href="/user/wishlist" class="text-decoration-none">My Wishlist</a></li>
-            </ul>
-
-            <form action="/user/logout" method="POST" style="display: inline;" id="logout-form">
-              <button type="button" id="logout-btn" class="btn btn-sm btn-danger">
-                <i class="fas fa-power-off"></i> Logout
-              </button>
-            </form>
-          </div>
+        <!-- Sidebar -->
+        <div class="col-md-3">
+          <%- include('partials/userSidebar', { activePage: 'address' }) %>
         </div>
 
-        <!-- Main Content (70% width) -->
-        <div class="col-lg-9 col-md-9 col-sm-8 col-7">
+        <!-- Main Content -->
+        <div class="col-lg-9 col-12">
           <div id="addressBook" class="content-section">
-            <h4>Manage Addresses</h4>
+            <h2 class="section-main-title">My Address Book</h2>
             <div class="mb-3">
               <button class="btn btn-sm btn-primary mt-2 mb-2" data-toggle="modal" data-target="#addAddressModal">
                 <span style="margin-right: 8px; color: white;">+</span><span style="color: white;">Add Address</span>
@@ -109,7 +80,15 @@
                 <button class="btn btn-sm btn-danger delete-address" data-id="<%= address._id %>">Delete</button>
               </div>
               <% }) %>
+              <% if (addresses.length === 0) { %>
+                <p>No addresses found.</p>
+              <% } %>
             </div>
+
+            <!-- Standardized Pagination -->
+            <% if (addresses.length > 0) { %>
+            <%- include('partials/pagination') %>
+            <% } %>
 
             <!-- Modal Structure for adding a new address -->
             <div class="modal fade mt-5 pt-4" id="addAddressModal" tabindex="-1" role="dialog" aria-labelledby="addAddressModalLabel" aria-hidden="true">
@@ -496,24 +475,6 @@
       });
     });
 
-    // Logout confirmation
-    document.getElementById('logout-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      Swal.fire({
-        title: 'Are you sure you want to logout?',
-        text: "You will be redirected to the login page.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, logout!',
-        cancelButtonText: 'Cancel'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          document.getElementById('logout-form').submit();
-        }
-      });
-    });
   </script>
 
 </body>

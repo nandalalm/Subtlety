@@ -1,131 +1,156 @@
 /* Sidebar Styles */
 .sidebar {
-    height: 100vh;
-    width: 250px;
-    background-color: #ffffff; /* White background */
-    color: #212529; /* Dark text color */
-    position: fixed;
-    top: 0;
-    left: 0;
-    transition: width 0.3s; /* Transition only width */
-    border-right: 1px solid #dee2e6; /* Light border for separation */
-    overflow-x: hidden; /* Prevent horizontal overflow */
+    width: 260px;
+    background-color: #ffffff;
+    color: #2D3436;
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    overflow-x: hidden;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.02);
+    min-height: calc(100vh - 60px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar.active {
-    width: 0; /* Hide the sidebar */
+/* Sidebar Overlay (backdrop behind mobile sidebar) */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 60px;
+    /* starts BELOW navbar so toggle stays visible */
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 60px);
+    /* only covers below the navbar */
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    display: block;
 }
 
 .sidebar .sidebar-header {
-    background: #ffffff; /* White background */
+    padding: 30px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.sidebar .list-unstyled {
-    padding: 0;
-    margin: 0;
+.sidebar .sidebar-header h3 {
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #9135ED !important;
+    font-size: 1.5rem;
 }
 
-.sidebar .list-unstyled li {
-    padding: 10px 15px;
+.sidebar .components {
+    padding: 20px 0;
 }
 
-.sidebar .list-unstyled li a {
-    color: #212529; /* Dark text color */
-    display: block;
+.sidebar .sidebar-item {
+    padding: 12px 25px;
+    display: flex;
+    align-items: center;
+    color: #636E72;
     text-decoration: none;
-    padding-left: 10px;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    font-weight: 500;
+    margin-bottom: 5px;
+    width: 100%;
+    text-align: left;
 }
 
-.sidebar .list-unstyled li a:hover {
-    background: #e9ecef; /* Light background on hover */
-    color: #007bff; /* Blue color on hover */
+.sidebar .sidebar-item i {
+    width: 30px;
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
 }
 
-.sidebar .list-unstyled li a.active {
-    background: #007bff; /* Blue background for active item */
-    color: #ffffff; /* White text for active item */
+.sidebar .sidebar-item:hover {
+    background: rgba(145, 53, 237, 0.05);
+    color: #9135ED;
+    border-left-color: rgba(145, 53, 237, 0.3);
 }
+
+.sidebar .sidebar-item:hover i {
+    transform: translateX(3px);
+}
+
+.sidebar .sidebar-item.active {
+    background: #9135ED;
+    color: #ffffff;
+    border-left-color: #9135ED;
+}
+
+.sidebar .sidebar-item.bg-transparent {
+    color: #dc3545 !important;
+}
+
+.sidebar .sidebar-item.bg-transparent:hover {
+    background: rgba(220, 53, 69, 0.05);
+}
+
+/* Logout form — block level so button fills width */
+.sidebar ul li form {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Admin Avatar Hover Effect */
+.admin-avatar {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.admin-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(145, 53, 237, 0.4) !important;
+}
+
 /* Page Content Styles */
 #page-content-wrapper {
-    width: calc(100% - 250px); /* Adjust width based on sidebar width */
-    transition: margin-left 0.3s, width 0.3s; /* Transition both margin-left and width */
-    margin-left: 250px; /* Initial margin-left for sidebar */
+    flex: 1;
+    padding: 20px 15px 20px 0;
+    min-height: calc(100vh - 60px);
+    transition: all 0.3s ease;
 }
 
 #page-content-wrapper.toggled {
-    margin-left: 0; /* Remove margin-left when sidebar is toggled */
-    width: 100%; /* Full width when sidebar is toggled */
+    margin-left: 0;
+    width: 100%;
 }
 
 /* Navbar Styles */
 .navbar {
-    padding: 10px 19px;
-    background-color: #ffffff; /* White background for navbar */
-    border-radius: 10px;
+    padding: 2px 25px;
+    background-color: #ffffff;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
 }
 
-.navbar .btn-primary {
-    background-color: #007bff; /* Blue button color */
-    border-color: #007bff;
+.navbar .btn-dark {
+    background-color: #2D3436;
+    border: none;
+    transition: all 0.3s ease;
 }
 
-.navbar .btn-primary:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-    border-color: #004085;
+.navbar .btn-dark:hover {
+    background-color: #9135ED;
+    transform: rotate(90deg);
 }
 
 .profile-photo {
-    width: 40px; /* Adjust size as needed */
-    height: 40px; /* Ensure it's a square */
-    border-radius: 50%; /* Circular profile photo */
-    object-fit: cover; /* Ensure the photo covers the space without distortion */
-}
-
-/* Card Styles */
-.card {
-    border: none;
-}
-
-.card-body {
-    padding: 20px;
-}
-
-.card-title {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-}
-
-.card-text {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-/* Custom Background Colors for Light Mode */
-.bg-primary {
-    background-color: #007bff !important; /* Blue background */
-}
-
-.bg-success {
-    background-color: #28a745 !important;
-}
-
-.bg-info {
-    background-color: #17a2b8 !important;
-}
-
-.bg-warning {
-    background-color: #ffc107 !important;
-}
-
-.text-white {
-    color: #ffffff !important;
+    display: none;
 }
 
 .text-dark {
     color: #212529 !important;
 }
 
-/* Form Inline Styles */
 .form-inline {
     display: flex;
     flex-flow: row nowrap;
@@ -133,12 +158,14 @@
 }
 
 .navbar-text {
-    color: #212529; /* Dark text color */
+    color: #212529;
     font-weight: bold;
 }
-.sidebar-item{
+
+.sidebar-item {
     padding-right: 15px !important;
 }
+
 .pagination {
     margin-top: 20px;
 }
@@ -163,7 +190,58 @@
     margin: 0 10px;
     font-weight: lighter !important;
 }
-#sidebar > ul > li:nth-child(9) > form > button{
-    padding-left: 10px;
-    color: red !important;
+
+/* =========================================================
+   Responsive: Sidebar off-canvas on medium screens and below
+   ========================================================= */
+@media (max-width: 991.98px) {
+
+    /* Sidebar is fixed — starts below navbar, slides in over content */
+    .sidebar {
+        position: fixed !important;
+        top: 60px;
+        /* below the navbar */
+        left: -260px;
+        height: calc(100vh - 60px) !important;
+        z-index: 1001;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+    }
+
+    /* When .show is added via JS, slide it in over the content */
+    .sidebar.show {
+        left: 0;
+        box-shadow: 6px 0 30px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Main content fills full width; never pushed by sidebar */
+    #page-content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 20px 15px !important;
+    }
+}
+
+/* =========================================================
+   Mobile only (≤ 575px): shrink navbar avatar & name,
+   hide "Admin Panel" title text
+   ========================================================= */
+@media (max-width: 575.98px) {
+
+    /* Hide "Admin Panel" text on phones */
+    .admin-panel-title {
+        display: none !important;
+    }
+
+    /* Shrink avatar circle */
+    #adminAvatarCircle {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Shrink "Nandalal" name text */
+    .admin-name-text {
+        font-size: 0.8rem !important;
+    }
 }

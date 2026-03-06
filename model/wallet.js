@@ -5,10 +5,12 @@ const walletSchema = new mongoose.Schema({
   balance: { type: Number, default: 0 },
   transactions: [
     {
+      transactionId: { type: String, required: true, unique: true },
       amount: { type: Number, required: true },
       type: { type: String, enum: ["credit", "debit"], required: true },
+      description: { type: String, required: true },
       date: { type: Date, default: Date.now },
-      orderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
+      orderId: { type: String }, // Storing unique orderId instead of ObjectId for clarity
     },
   ],
 });

@@ -41,12 +41,10 @@ passport.use(
   )
 );
 
-// Serialize user to session
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-// Deserialize user from session
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);

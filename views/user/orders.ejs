@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Orders - SUBTLETY</title>
   <!-- Bootstrap CSS -->
@@ -19,88 +20,80 @@
       object-fit: cover;
     }
 
-    .product-nav-btn {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      color: #9135ED;
-      cursor: pointer;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    .product-nav-btn.prev-btn {
-      left: 0;
-    }
-
-    .product-nav-btn.next-btn {
-      right: 0;
-    }
-
-    .product-nav-btn:disabled {
-      color: #ccc;
-      cursor: not-allowed;
-    }
-
-    .product-images-wrapper {
-      position: relative;
-      width: 100%;
-      padding: 0 30px;
-    }
-
-    .product-images {
-      display: flex;
-      justify-content: center;
-      overflow: hidden;
-      width: 100%;
-    }
-
-    .product-image-container {
-      flex: 0 0 auto;
-      width: 50px;
-      margin: 0 5px;
-    }
-
-    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1) {
-      color: black;
-    }
-
-    body>section>div>div.d-flex.justify-content-between.align-items-center.mb-4.breadcrumbs>div:nth-child(1)>a:nth-child(1):hover {
-      color: #9135ED;
-    }
-
     .status-box {
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-weight: bold;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
       text-align: center;
+      display: inline-block;
+      min-width: 90px;
     }
 
-    .status-pending {
-      background-color: #ffeeba;
-      color: #856404;
+    .status-pending { background-color: #fff3cd !important; color: #856404 !important; }
+    .status-shipped { background-color: #cfe2ff !important; color: #084298 !important; }
+    .status-completed { background-color: #d1e7dd !important; color: #0f5132 !important; }
+    .status-delivered { background-color: #d1e7dd !important; color: #0f5132 !important; }
+    .status-cancelled { background-color: #f8d7da !important; color: #842029 !important; }
+    .status-returned { background-color: #e2e3e5 !important; color: #41464b !important; }
+    .status-failed { background-color: #f8d7da !important; color: #842029 !important; }
+    .status-successful { background-color: #d1e7dd !important; color: #0f5132 !important; }
+    .status-processing { background-color: #fff3cd !important; color: #856404 !important; }
+    .status-confirmed { background-color: #cfe2ff !important; color: #084298 !important; }
+    .text-purple { color: #9135ED; }
+
+    .search-group .form-control {
+      border-radius: 20px 0 0 20px;
+      border: 1px solid #9135ED;
     }
 
-    .status-shipped {
-      background-color: #b8daff;
-      color: #004085;
+    .search-group .btn {
+      border-radius: 0 20px 20px 0;
+      background-color: #9135ED;
+      border: 1px solid #9135ED;
+      color: white;
     }
 
-    .status-delivered {
-      background-color: #c3e6cb;
-      color: #155724;
+    .filter-select {
+      border-radius: 20px !important;
+      border: 1px solid #9135ED !important;
+      padding: 5px 15px;
     }
 
-    .status-cancelled {
-      background-color: #f8d7da;
-      color: #721c24;
+    /* Responsive Table/Cards */
+    @media (max-width: 850px) {
+      .order-table-desktop { display: none; }
+      .order-cards-mobile { display: block; }
+    }
+    @media (min-width: 851px) {
+      .order-table-desktop { display: table; }
+      .order-cards-mobile { display: none; }
     }
 
-    .status-completed {
-      background-color: #d4edda;
-      color: #155724;
+    .order-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-left: 5px solid #9135ED;
+      width: 100%;
     }
+
+    .order-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .order-card-body p {
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
   </style>
 </head>
 
@@ -122,85 +115,145 @@
       </div>
 
       <div class="row">
-        <!-- Sidebar (30% width) -->
-        <div class="col-lg-3 col-md-3 col-sm-4 col-5">
-          <div class="pt-3 mb-3">
-            <h6>Manage My Account</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/profile" class="text-decoration-none ">My Profile</a></li>
-              <li><a href="/user/address" class="text-decoration-none">Address Book</a></li>
-            </ul>
-            <h6>Manage Orders</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/orders" class="text-decoration-none active-link">My Orders</a></li>
-            </ul>
-            <h6>My Stuff</h6>
-            <ul class="list-unstyled">
-              <li><a href="/user/wallet" class="text-decoration-none">My Wallet</a></li>
-              <li><a href="/user/wishlist" class="text-decoration-none">My Wishlist</a></li>
-            </ul>
-
-            <form action="/user/logout" method="POST" style="display: inline;" id="logout-form">
-              <button type="button" id="logout-btn" class="btn btn-sm btn-danger">
-                <i class="fas fa-power-off"></i> Logout
-              </button>
-            </form>
-          </div>
+        <!-- Sidebar -->
+        <div class="col-md-3">
+          <%- include('partials/userSidebar', { activePage: 'orders' }) %>
         </div>
 
-        <!-- Main Content: Orders Table -->
-        <div class="col-md-9 col-md-9 col-sm-8 col-7 order-table">
-          <h2>Your Orders</h2>
-          <% if (orders.length === 0) { %>
-          <div class="alert alert-info mt-4">
-            You currently have no orders. <a href="/user/home" class="alert-link">Back to Homepage</a>
+        <!-- Main Content -->
+        <div class="col-lg-9 col-12">
+          <h2 class="section-main-title">My Orders</h2>
+
+          <!-- Search & Filter Bar -->
+          <% if (totalOrdersUnfiltered > 0) { %>
+          <div class="row mb-4 align-items-start g-2">
+            <!-- Search -->
+            <div class="col-lg-5 col-md-12 mb-2">
+              <form action="/user/orders" method="GET" class="search-group" id="searchForm">
+                <div class="input-group">
+                  <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search by Order ID..." value="<%= search %>">
+                  <input type="hidden" name="sort" value="<%= sort %>">
+                  <input type="hidden" name="paymentStatus" value="<%= paymentStatus %>">
+                  <div class="input-group-append">
+                    <% if (search) { %>
+                    <a href="/user/orders?sort=<%= sort %>&paymentStatus=<%= paymentStatus %>" class="btn btn-outline-secondary" title="Clear search"><i class="fas fa-times"></i></a>
+                    <% } %>
+                    <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <!-- Order Status Sort/Filter -->
+            <div class="col-lg-3 col-md-6 mb-2">
+              <div class="d-flex align-items-center">
+                <select class="form-control filter-select flex-grow-1" onchange="applyFilter('sort', this.value)">
+                  <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Sort: Latest</option>
+                  <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Sort: Oldest</option>
+                  <option disabled>── Order Status ──</option>
+                  <option value="Pending" <%= sort === 'Pending' ? 'selected' : '' %>>Pending</option>
+                  <option value="Shipped" <%= sort === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                  <option value="Completed" <%= sort === 'Completed' ? 'selected' : '' %>>Completed</option>
+                  <option value="Cancelled" <%= sort === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                </select>
+                <% if (sort && sort !== 'latest') { %>
+                <a href="/user/orders?search=<%= search %>&sort=latest&paymentStatus=<%= paymentStatus %>" class="btn btn-sm ml-1" title="Clear filter" style="color:#9135ED;"><i class="fas fa-times-circle"></i></a>
+                <% } %>
+              </div>
+            </div>
+            <!-- Payment Status Filter -->
+            <div class="col-lg-3 col-md-6 mb-2">
+              <div class="d-flex align-items-center">
+                <select class="form-control filter-select flex-grow-1" onchange="applyFilter('paymentStatus', this.value)">
+                  <option value="">Payment: All</option>
+                  <option value="Pending" <%= paymentStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+                  <option value="Successful" <%= paymentStatus === 'Successful' ? 'selected' : '' %>>Successful</option>
+                  <option value="Failed" <%= paymentStatus === 'Failed' ? 'selected' : '' %>>Failed</option>
+                </select>
+                <% if (paymentStatus) { %>
+                <a href="/user/orders?search=<%= search %>&sort=<%= sort %>" class="btn btn-sm ml-1" title="Clear filter" style="color:#9135ED;"><i class="fas fa-times-circle"></i></a>
+                <% } %>
+              </div>
+            </div>
           </div>
+          <% } %>
+
+          <div class="profile-card">
+          <% if (orders.length === 0) { %>
+            <% if (totalOrdersUnfiltered === 0) { %>
+            <div class="text-center py-5">
+              <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+              <p class="text-muted">No orders found. <a href="/user/home" class="text-purple font-weight-bold">Continue Shopping</a></p>
+            </div>
+            <% } else { %>
+            <div class="text-center py-4">
+              <i class="fas fa-search fa-2x text-muted mb-2"></i>
+              <p class="text-muted">No match was found for the given criteria.<br><a href="/user/orders" class="text-purple">Clear all filters</a></p>
+            </div>
+            <% } %>
           <% } else { %>
-          <table class="table table-bordered mt-4">
-            <thead>
+          <table class="table table-hover order-table-desktop">
+            <thead class="thead-light">
               <tr>
-                <th>#</th>
+                <th>S.No</th>
+                <th>Order ID</th>
                 <th>Order Date</th>
-                <th>Order Status</th>
                 <th>Payment Method</th>
-                <th>Products</th>
-                <th>Details</th>
+                <th>Order Status</th>
+                <th>Payment Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               <% orders.forEach((order, index) => { %>
               <tr>
-                <td><%= index + 1 %></td>
+                <td><%= (currentPage - 1) * limit + (index + 1) %></td>
+                <td class="font-weight-bold"><%= order.orderId %></td>
                 <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
-                <td>
-                  <div class="status-box status-<%= order.orderStatus.toLowerCase() %>">
-                    <%= order.orderStatus %>
-                  </div>
-                </td>
                 <td><%= order.paymentMethod %></td>
                 <td>
-                  <div class="product-images-wrapper">
-                    <button class="product-nav-btn prev-btn" data-order-id="<%= order._id %>" <%= order.items.length <= 3 ? 'disabled' : '' %>><i class="fas fa-chevron-left"></i></button>
-                    <div class="product-images" data-order-id="<%= order._id %>">
-                      <% order.items.forEach((item, idx) => { %>
-                      <div class="product-image-container <%= idx >= 3 ? 'd-none' : '' %>">
-                        <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
-                        <img src="/<%= item.productId.images[0].replace(/\\/g, '/') %>" alt="<%= item.productId.name %>" class="product-image">
-                        <% } else { %>
-                        <span>No image</span>
-                        <% } %>
-                      </div>
-                      <% }) %>
-                    </div>
-                    <button class="product-nav-btn next-btn" data-order-id="<%= order._id %>" <%= order.items.length <= 3 ? 'disabled' : '' %>><i class="fas fa-chevron-right"></i></button>
-                  </div>
+                  <span class="status-box status-<%= order.orderStatus.toLowerCase() %>">
+                    <%= order.orderStatus %>
+                  </span>
                 </td>
-                <td><a href="/user/order/<%= order._id %>" class="btn btn-sm btn-primary">View Details</a></td>
+                <td>
+                  <span class="status-box status-<%= order.paymentStatus.toLowerCase() %>">
+                    <%= order.paymentStatus %>
+                  </span>
+                </td>
+                <td>
+                  <a href="/user/order/<%= order._id %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">Details</a>
+                </td>
               </tr>
               <% }) %>
             </tbody>
           </table>
+
+          <!-- Mobile Cards -->
+          <div class="order-cards-mobile">
+            <% orders.forEach((order, index) => { %>
+            <div class="order-card">
+              <div class="order-card-header">
+                <span class="font-weight-bold">#<%= (currentPage - 1) * limit + (index + 1) %></span>
+                <span class="status-box status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>
+              </div>
+              <div class="order-card-body">
+                <p><strong>Order ID:</strong> <%= order.orderId %></p>
+                <p><strong>Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                <p><strong>Payment:</strong> <%= order.paymentMethod %> (<span class="text-uppercase small <%= order.paymentStatus === 'Successful' ? 'text-success' : 'text-danger' %>"><%= order.paymentStatus %></span>)</p>
+                <div class="text-right mt-3">
+                  <a href="/user/order/<%= order._id %>" class="btn btn-sm btn-primary px-4 rounded-pill">View Details</a>
+                </div>
+              </div>
+            </div>
+            <% }) %>
+          </div>
           <% } %>
+
+          <!-- Standardized Pagination -->
+          <% if (orders.length > 0) { %>
+          <%- include('partials/pagination') %>
+          <% } %>
+          </div>
         </div>
       </div>
     </div>
@@ -209,79 +262,17 @@
   <%- include('partials/footer') %>
 
   <!-- Bootstrap JS and dependencies -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const prevBtns = document.querySelectorAll('.prev-btn');
-      const nextBtns = document.querySelectorAll('.next-btn');
+    document.addEventListener('DOMContentLoaded', function() {});
 
-      prevBtns.forEach(btn => btn.addEventListener('click', navigateProducts));
-      nextBtns.forEach(btn => btn.addEventListener('click', navigateProducts));
-
-      function navigateProducts(e) {
-        const orderId = e.target.closest('button').dataset.orderId;
-        const direction = e.target.closest('button').classList.contains('next-btn') ? 1 : -1;
-        const productImagesDiv = document.querySelector(`.product-images[data-order-id="${orderId}"]`);
-        const prevBtn = productImagesDiv.previousElementSibling;
-        const nextBtn = productImagesDiv.nextElementSibling;
-
-        const images = productImagesDiv.querySelectorAll('.product-image-container');
-        const visibleImages = Array.from(images).filter(img => !img.classList.contains('d-none'));
-        let firstVisibleIndex = Array.from(images).indexOf(visibleImages[0]);
-
-        if (direction === 1) {
-          firstVisibleIndex = Math.min(firstVisibleIndex + 1, images.length - 3);
-        } else {
-          firstVisibleIndex = Math.max(firstVisibleIndex - 1, 0);
-        }
-
-        images.forEach((img, idx) => {
-          img.classList.toggle('d-none', idx < firstVisibleIndex || idx >= firstVisibleIndex + 3);
-        });
-
-        prevBtn.disabled = (firstVisibleIndex === 0);
-        nextBtn.disabled = (firstVisibleIndex >= images.length - 3);
-      }
-
-      // Initialize button states
-      document.querySelectorAll('.product-images').forEach(productImagesDiv => {
-        const prevBtn = productImagesDiv.previousElementSibling;
-        const nextBtn = productImagesDiv.nextElementSibling;
-        const images = productImagesDiv.querySelectorAll('.product-image-container');
-
-        if (images.length <= 3) {
-          prevBtn.disabled = true;
-          nextBtn.disabled = true;
-        } else {
-          prevBtn.disabled = true;
-          nextBtn.disabled = false;
-        }
-      });
-
-      // Logout confirmation
-      document.getElementById('logout-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        Swal.fire({
-          title: 'Are you sure you want to logout?',
-          text: "You will be redirected to the login page.",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, logout!',
-          cancelButtonText: 'Cancel'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            document.getElementById('logout-form').submit();
-          }
-        });
-      });
-    });
+    function applyFilter(param, value) {
+      const url = new URL(window.location.href);
+      url.searchParams.set(param, value);
+      url.searchParams.set('page', 1);
+      window.location.href = url.toString();
+    }
   </script>
-
-</body>
-
-</html>
