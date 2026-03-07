@@ -102,9 +102,9 @@
     </div>
     <div class="row g-5">
       <% if (latestProducts && latestProducts.length > 0) { %>  <!-- Change this line to use latestProducts -->
-      <% latestProducts.forEach(({ product, bestOffer }) => { %>  <!-- Change this line as well -->
+      <% latestProducts.forEach(({ product, bestOffer, averageRating }) => { %>  <!-- Change this line as well -->
       <% if (product && product.isListed) { %>
-      <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
+      <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
       <% } %>
       <% }) %>
       <% } else { %>
@@ -131,15 +131,15 @@
     <!-- Render Best Selling Products if Available -->
     <div style="color: #3097ff #4d64f9;" class="row g-5">
       <% if (bestSellingProducts && bestSellingProducts.length) { %>
-        <% bestSellingProducts.forEach(({ product, bestOffer, count }) => { %>
+        <% bestSellingProducts.forEach(({ product, bestOffer, count, averageRating }) => { %>
           <% if (product && product.isListed) { %>
-            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
+            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
           <% } %>
         <% }) %>
       <% } else { %>
-        <% fallbackProducts.forEach(({ product, bestOffer, count }) => { %>
+        <% fallbackProducts.forEach(({ product, bestOffer, averageRating }) => { %>
           <% if (product && product.isListed) { %>
-            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
+            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
           <% } %>
         <% }) %>
       <% } %>

@@ -219,6 +219,14 @@
         <a href="/user/cart" class="text-decoration-none">Cart</a> /
         <a href="/user/checkout" class="text-decoration-none">Checkout</a>
       </div>
+      <% if (locals.message) { %>
+      <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #fff3cd; color: #856404; border-left: 5px solid #ffc107 !important;">
+        <i class="fas fa-exclamation-triangle mr-2"></i> <strong>Price Update:</strong> <%= message %>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <% } %>
       <div class="row mt-3">
         <div class="col-md-6">
           <% if(address && address.length > 0){ %>

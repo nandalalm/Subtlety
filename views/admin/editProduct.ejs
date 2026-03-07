@@ -21,8 +21,8 @@
         body { font-family: 'Poppins', sans-serif; }
         .breadcrumb { background: transparent; padding: 0; margin-bottom: 5px; }
         .breadcrumb-item { font-size: 0.95rem; }
-        .breadcrumb-item a { color: var(--primary-color); text-decoration: none; }
-        .breadcrumb-item.active { color: #6c757d; }
+        .breadcrumb-item a { color: #6c757d; text-decoration: none; }
+        .breadcrumb-item.active { color: var(--primary-color); }
         
         @media (max-width: 768px) {
             .breadcrumb-item { font-size: 0.8rem; }
@@ -365,7 +365,11 @@
 
             if (input.type === 'number') {
                 const num = parseFloat(val);
-                isValid = !isNaN(num) && num > 0;
+                if (input.name === 'stock') {
+                    isValid = !isNaN(num) && num >= 0;
+                } else {
+                    isValid = !isNaN(num) && num > 0;
+                }
             } else if (input.tagName === 'SELECT') {
                 isValid = input.value !== "";
             } else {
@@ -405,7 +409,7 @@
             descInp.addEventListener('input', () => validateInput(descInp, descRegex, 'description-error', 'Min 10 characters required'));
             catSel.addEventListener('change', () => validateInput(catSel, null, 'category-error', 'Select a category'));
             priceInp.addEventListener('input', () => validateInput(priceInp, null, 'price-error', 'Price must be > 0'));
-            stockInp.addEventListener('input', () => validateInput(stockInp, null, 'stock-error', 'Stock must be > 0'));
+            stockInp.addEventListener('input', () => validateInput(stockInp, null, 'stock-error', 'Stock must be >= 0'));
 
             document.getElementById('add-more-images-btn').onclick = () => addMoreImageSlot('edit-image-slots');
 
@@ -421,7 +425,7 @@
                                 validateInput(descInp, descRegex, 'description-error', 'Min 10 chars. Allowed symbols: , . -') &&
                                 validateInput(catSel, null, 'category-error', 'Select a category') &&
                                 validateInput(priceInp, null, 'price-error', 'Price must be > 0') &&
-                                validateInput(stockInp, null, 'stock-error', 'Stock must be > 0');
+                                validateInput(stockInp, null, 'stock-error', 'Stock must be >= 0');
                 if (!isValid) return;
 
                 Swal.fire({ title: 'Updating Product...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });

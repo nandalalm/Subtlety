@@ -11,6 +11,7 @@ const PDFDocument = require("pdfkit");
 const ExcelJS = require("exceljs");
 const bcrypt = require("bcryptjs");
 const path = require("path");
+const Review = require("../model/review");
 const fs = require("fs");
 const { generateTransactionId } = require("./userController");
 
@@ -128,7 +129,7 @@ async function getHome(req, res) {
     // Prepare best-selling products
     const bestSellingProducts = Object.entries(productSales)
       .sort((a, b) => b[1].sales - a[1].sales)
-      .slice(0, 10)
+      .slice(0, 6)
       .map(([productId, { sales, quantity, totalOfferDiscount }], index) => {
         const product = productMap[productId];
 
@@ -172,6 +173,37 @@ async function getHome(req, res) {
       })
       .filter(Boolean);
 
+    // Prepare top-rated products
+    const topRatedProducts = await Review.aggregate([
+      { $match: { isListed: true } },
+      {
+        $group: {
+          _id: "$productId",
+          avgRating: { $avg: "$rating" },
+          reviewCount: { $sum: 1 }
+        }
+      },
+      { $sort: { avgRating: -1, reviewCount: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "product"
+        }
+      },
+      { $unwind: "$product" },
+      {
+        $project: {
+          name: "$product.name",
+          image: { $arrayElemAt: ["$product.images", 0] },
+          avgRating: 1,
+          reviewCount: 1
+        }
+      }
+    ]);
+
     res.render("admin/dashboard", {
       totalUsers,
       totalOrders,
@@ -183,6 +215,7 @@ async function getHome(req, res) {
       salesByYear,
       bestSellingProducts,
       bestSellingCategories,
+      topRatedProducts,
       admin: req.session.admin
     });
   } catch (error) {
@@ -1068,6 +1101,75 @@ async function getOrderDetails(req, res) {
   }
 }
 
+async function getOrderView(req, res) {
+  try {
+    const orderId = req.params.id;
+    const order = await Order.findById(orderId).populate({
+      path: "items.productId",
+      populate: {
+        path: "category",
+        model: "Category",
+      },
+    });
+
+    if (!order) {
+      return res.status(404).render("404", { message: "Order not found" });
+    }
+
+    // Sort the items array to show products with pending return requests first
+    order.items.sort((a, b) => {
+      const aReturnRequest = order.returnRequests.find((req) =>
+        req.productId.equals(a.productId._id)
+      );
+      const bReturnRequest = order.returnRequests.find((req) =>
+        req.productId.equals(b.productId._id)
+      );
+
+      if (
+        aReturnRequest &&
+        aReturnRequest.status === "Pending" &&
+        (!bReturnRequest || bReturnRequest.status !== "Pending")
+      ) {
+        return -1;
+      }
+      if (
+        bReturnRequest &&
+        bReturnRequest.status === "Pending" &&
+        (!aReturnRequest || aReturnRequest.status !== "Pending")
+      ) {
+        return 1;
+      }
+      return 0;
+    });
+
+    res.render("admin/orderView", { order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).render("500", { message: "Server error" });
+  }
+}
+
+async function getOrderDetailsJson(req, res) {
+  try {
+    const orderId = req.params.id;
+    const order = await Order.findById(orderId)
+      .populate({
+        path: "items.productId",
+        populate: { path: "category", model: "Category" },
+      })
+      .lean();
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    return res.json({ success: true, order });
+  } catch (error) {
+    console.error("getOrderDetailsJson error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
 async function approveReturn(req, res) {
   const { orderId, productId, action } = req.body;
 
@@ -1105,7 +1207,7 @@ async function approveReturn(req, res) {
         const refundAmount = item.price * item.quantity;
         wallet.balance += refundAmount;
         wallet.transactions.push({
-          transactionId: generateTransactionId(),
+          transactionId: await generateTransactionId(),
           amount: refundAmount,
           type: "credit",
           orderId: order.orderId,
@@ -1854,6 +1956,53 @@ async function logout(req, res) {
   res.redirect("/admin/login");
 }
 
+async function getReviews(req, res) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const skip = (page - 1) * limit;
+
+    const reviews = await Review.find()
+      .populate("productId", "name")
+      .populate("userId", "firstname email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalReviews = await Review.countDocuments();
+    const totalPages = Math.ceil(totalReviews / limit);
+
+    res.render("admin/reviews", {
+      reviews,
+      currentPage: page,
+      totalPages,
+      limit,
+      admin: req.session.admin
+    });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
+async function toggleReviewStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const review = await Review.findById(id);
+    if (!review) {
+      return res.status(404).json({ success: false, message: "Review not found" });
+    }
+
+    review.isListed = !review.isListed;
+    await review.save();
+
+    res.json({ success: true, isListed: review.isListed });
+  } catch (error) {
+    console.error("Error toggling review status:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
 module.exports = {
   getLogin,
   getHome,
@@ -1890,4 +2039,8 @@ module.exports = {
   logout,
   getAddProduct,
   getEditProduct,
+  getReviews,
+  toggleReviewStatus,
+  getOrderView,
+  getOrderDetailsJson,
 };

@@ -60,9 +60,10 @@
     }
 
     .product-image {
-      width: 170px;
-      height: 170px;
+      width: 100px;
+      height: 100px;
       object-fit: cover;
+      border-radius: 8px;
     }
 
     .cancel-order-btn,
@@ -92,9 +93,10 @@
 
     .status-box {
       display: inline-block;
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.8rem;
     }
 
     .status-pending {
@@ -157,22 +159,28 @@
       color: #721c24;
     }
 
+    .return-info-box {
+      margin-top: 10px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      width: 100%;
+    }
+    .return-info-box.pending {
+      background-color: #fff9db;
+      border: 1px solid #ffe066;
+    }
+    .return-info-box.processed {
+      background-color: #f1f3f5;
+      border: 1px solid #dee2e6;
+    }
     .return-message {
-      margin-top: 5px;
-      font-size: 0.9em;
+      margin: 0;
+      font-weight: 500;
     }
-
-    .return-message-pending {
-      color: #856404;
-    }
-
-    .return-message-approved {
-      color: #155724;
-    }
-
-    .return-message-rejected {
-      color: #721c24;
-    }
+    .return-message-pending { color: #856404; }
+    .return-message-approved { color: #155724; }
+    .return-message-rejected { color: #721c24; }
 
     .validation-message {
       font-size: 0.9em;
@@ -193,6 +201,62 @@
 
     .valid-feedback {
       color: #28a745;
+    }
+    .rate-review-btn {
+      background-color: #9135ed !important;
+      color: white !important;
+      border: none;
+    }
+    .rate-review-btn:hover {
+      background-color: #7b2cc8 !important;
+    }
+    .btn-action-fixed {
+      width: 200px;
+    }
+    .rating-stars i.text-warning {
+      color: #ffc107 !important;
+    }
+
+    @media (max-width: 576px) {
+      .orderDetails {
+        padding-top: 60px !important;
+        padding-bottom: 60px !important;
+      }
+      .orderDetails h2 {
+        font-size: 1.3rem;
+      }
+      .orderDetails .btn-primary {
+        padding: 5px 12px;
+        font-size: 0.75rem;
+      }
+      .product-image {
+        width: 70px;
+        height: 70px;
+      }
+      .btn-action-fixed {
+        width: 100%;
+        max-width: 150px;
+        font-size: 0.7rem;
+        padding: 6px 10px;
+      }
+      .product-details h6 {
+        font-size: 0.85rem;
+      }
+      .product-details p.text-muted {
+        font-size: 0.7rem;
+        line-height: 1.3;
+      }
+      .status-box {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+      }
+      .return-info-box {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+      }
+      .return-info-box .badge {
+        font-size: 0.65rem;
+      }
     }
   </style>
 </head>
@@ -275,83 +339,81 @@
             <p><strong>Phone:</strong> <%= order.shippingAddress.phone %></p>
           </div>
         </div>
-      </div>
-      <div class="product-details">
-        <% order.items.forEach(item => { %>
-        <div class="row mb-3 <%= item.status === ' Cancelled' ? 'cancelled' : '' %>">
-          <div class="col-md-2">
-            <% if (item.productId && item.productId.images && item.productId.images.length> 0) { %>
+      </div>      <div class="product-details">
+        <% order.items.forEach(item => { 
+            const returnRequest = order.returnRequests.find(req => req.productId.toString() === item.productId._id.toString());
+            const rStatus = returnRequest ? returnRequest.status : null;
+            const isPending = rStatus === 'Pending';
+            const isApproved = rStatus === 'Approved';
+            const isRejected = rStatus === 'Rejected';
+            const canRate = !item.isRated && item.status === 'Delivered' && (!returnRequest || isRejected);
+        %>
+        <div class="row mb-3 pb-3 border-bottom <%= item.status === 'Cancelled' ? 'cancelled' : '' %>">
+          <div class="col-md-2 col-4">
+            <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
             <img src="/<%= item.productId.images[0].replace(/\\/g, '/') %>" alt="<%= item.productId.name %>" class="product-image" />
             <% } else { %>
-            <span>No image</span>
+            <div class="product-image d-flex align-items-center justify-content-center bg-light text-muted">No image</div>
             <% } %>
           </div>
-          <div class="col-md-8">
-            <p><strong>Product Name:</strong>
-              <%= item.productId.name %>
-            </p>
-            <p>
-              <strong>Category:</strong>
-              <%= item.productId.category.name %>
-            </p>
-            <p>
-              <strong>Description:</strong>
-              <%= item.productId.description %>
-            </p>
-            <div class="d-flex justify-content-start align-items-center">
-              <p class="mb-0">
-                <strong>Price:</strong> ₹<%= item.price.toFixed(2) %>
-              </p>
-              <p class="mb-0 pl-3">
-                <strong>Quantity:</strong> x <%= item.quantity %>
-              </p>
-              <p class="mb-0 pl-3">
-                <strong>Product Status:</strong>
-                <span class="status-box status-<%= item.status.toLowerCase() %>">
-                  <%= item.status %>
-                </span>
+          <div class="col-md-7 col-8">
+            <h6 class="mb-1" style="font-weight: 600;"><%= item.productId.name %></h6>
+            <p class="text-muted small mb-2"><%= item.productId.category.name %> | <%= item.productId.description.substring(0, 100) %>...</p>
+            <div class="d-flex flex-wrap align-items-center">
+              <span class="mr-3"><strong>₹<%= item.price.toFixed(2) %></strong> <span class="text-muted small">x <%= item.quantity %></span></span>
+              <span class="status-box status-<%= item.status.toLowerCase() %>"><%= item.status %></span>
+            </div>
+
+            <% if (returnRequest) { %>
+            <div class="return-info-box <%= isPending ? 'pending' : 'processed' %>">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="font-weight-bold" style="font-size: 0.75rem; color: #666;">RETURN STATUS</span>
+                <span class="badge badge-<%= isPending ? 'warning' : (isApproved ? 'success' : 'secondary') %>"><%= rStatus.toUpperCase() %></span>
+              </div>
+              <p class="return-message <%= isPending ? 'return-message-pending' : (isApproved ? 'return-message-approved' : 'return-message-rejected') %>">
+                <% if (isPending) { %>
+                  <i class="fas fa-clock mr-1"></i> Your request is being processed
+                <% } else if (isApproved) { %>
+                   <i class="fas fa-check-circle mr-1"></i> Your request has been approved
+                <% } else if (isRejected) { %>
+                   <i class="fas fa-times-circle mr-1"></i> Sorry, your request has been rejected (Not a valid reason for return, Contact us for further Queries)
+                <% } %>
               </p>
             </div>
+            <% } %>
           </div>
-          <div style="
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-              " class="col-md-2 text-center">
-            <% if (item.status !=='Cancelled' && item.status !=='Shipped' && item.status !=='Delivered' && item.status !=='Returned' &&
-                        order.paymentStatus !=='Failed' ) { %>
-            <button class="btn cancel-order-btn" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>">
+          <div class="col-md-3 mt-3 mt-md-0 d-flex flex-column justify-content-center align-items-md-end">
+            <h5 class="mb-3">₹<%= (item.price * item.quantity).toFixed(2) %></h5>
+            
+            <% if (item.status !== 'Cancelled' && item.status !== 'Shipped' && item.status !== 'Delivered' && item.status !== 'Returned' && order.paymentStatus !== 'Failed') { %>
+            <button class="btn btn-sm cancel-order-btn rounded-pill px-4 btn-action-fixed" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>">
               Cancel Product
             </button>
-            <% } else if (item.status==='Delivered' ) { %>
-            <% const returnRequest=order.returnRequests.find(req=>
-                            req.productId.toString() === item.productId._id.toString()); %> <% if (returnRequest) { %>
-            <span class="status-box return-status-<%= returnRequest.status.toLowerCase() %>">Return
-              Status: <%= returnRequest.status %></span>
-            <% if (returnRequest.status==='Pending' ) { %>
-            <p class="return-message return-message-pending">
-              Your request is being processed
-            </p>
-            <% } else if (returnRequest.status==='Approved' ) { %>
-            <p class="return-message return-message-approved">
-              Your request has been approved
-            </p>
-            <% } else if (returnRequest.status==='Rejected' ) { %>
-            <p class="return-message return-message-rejected">
-              Sorry, your request has been rejected (Not a valid reason for
-              return, Contact us for further Queries)
-            </p>
-            <% } %>
-            <% } else { %>
-            <button class="btn return-order-btn" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-bs-toggle="modal" data-bs-target="#returnReasonModal">
-              Return Product
-            </button>
-            <% } %>
+            <% } else if (item.status === 'Delivered') { %>
+              <% if (!returnRequest) { %>
+                <button class="btn btn-sm btn-outline-info rounded-pill px-4 btn-action-fixed" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-bs-toggle="modal" data-bs-target="#returnReasonModal">
+                  Return Product
+                </button>
+              <% } %>
+
+              <% if (canRate) { %>
+                <button class="btn btn-sm rate-review-btn mt-2 rounded-pill px-4 btn-action-fixed" 
+                        id="rateBtn-<%= item.productId._id %>"
+                        data-order-id="<%= order._id %>" 
+                        data-product-id="<%= item.productId._id %>"
+                        data-product-name="<%= item.productId.name %>"
+                        data-toggle="modal" 
+                        data-target="#rateReviewModal">
+                  <i class="fas fa-star mr-1"></i> Rate & Review
+                </button>
+              <% } else if (item.isRated) { %>
+                <span class="mt-2 text-success small font-weight-bold">
+                  <i class="fas fa-check-circle mr-1"></i> Already Reviewed
+                </span>
+              <% } %>
             <% } %>
           </div>
         </div>
-        <hr />
         <% }) %>
       </div>
     </div>
@@ -379,6 +441,45 @@
             Return Product
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rate & Review Modal -->
+  <div class="modal fade mt-5 pt-5" id="rateReviewModal" tabindex="-1" aria-labelledby="rateReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rateReviewModalLabel">Rate & Review - <span id="reviewProductName"></span></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="rateReviewForm">
+          <div class="modal-body">
+            <input type="hidden" id="reviewProductId" name="productId">
+            <input type="hidden" id="reviewOrderId" name="orderId">
+            <div class="form-group text-center">
+              <label class="d-block">Your Rating (Required)</label>
+              <div class="rating-stars" style="font-size: 2rem; color: #ddd; cursor: pointer;">
+                <i class="far fa-star star-btn" data-value="1"></i>
+                <i class="far fa-star star-btn" data-value="2"></i>
+                <i class="far fa-star star-btn" data-value="3"></i>
+                <i class="far fa-star star-btn" data-value="4"></i>
+                <i class="far fa-star star-btn" data-value="5"></i>
+              </div>
+              <input type="hidden" id="selectedRating" name="rating" value="0">
+            </div>
+            <div class="form-group">
+              <label>Comment (Optional)</label>
+              <textarea class="form-control" name="comment" rows="3" placeholder="Tell us what you like or dislike..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="submitReviewBtn" disabled>Submit Review</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -450,9 +551,9 @@
     });
 
     // Handle the return reason submission
-    document
-      .getElementById("submitReturn")
-      .addEventListener("click", function() {
+    const submitReturnBtn = document.getElementById("submitReturn");
+    if (submitReturnBtn) {
+      submitReturnBtn.addEventListener("click", function() {
         const returnButton = document.querySelector(
           `button[data-bs-target="#returnReasonModal"]`
         );
@@ -464,7 +565,7 @@
 
         const orderId = returnButton.getAttribute("data-order-id");
         const productId = returnButton.getAttribute("data-product-id");
-        const returnReason = document.getElementById("returnReason").value;
+        const returnReason = document.getElementById("returnReason")?.value;
 
         if (!returnReason) {
           Swal.fire("Error!", "Please provide a reason for return.", "error");
@@ -513,11 +614,12 @@
             );
           });
       });
+    }
 
     // Real-time validation for return reason
-    document
-      .getElementById("returnReason")
-      .addEventListener("input", function() {
+    const returnReasonInput = document.getElementById("returnReason");
+    if (returnReasonInput) {
+      returnReasonInput.addEventListener("input", function() {
         const returnReason = this.value.trim();
         const validationMessage = document.querySelector(
           ".validation-message"
@@ -529,62 +631,63 @@
 
         if (returnReason.length === 0) {
           this.classList.remove("is-valid", "is-invalid");
-          validationMessage.textContent = "";
-          validationMessage.classList.remove(
+          if (validationMessage) validationMessage.textContent = "";
+          if (validationMessage) validationMessage.classList.remove(
             "valid-feedback",
             "invalid-feedback"
           );
-          submitButton.disabled = true;
+          if (submitButton) submitButton.disabled = true;
         } else if (returnReason.length < 20) {
           this.classList.remove("is-valid");
           this.classList.add("is-invalid");
-          validationMessage.textContent =
+          if (validationMessage) validationMessage.textContent =
             "Reason must be at least 20 characters long.";
-          validationMessage.classList.remove("valid-feedback");
-          validationMessage.classList.add("invalid-feedback");
-          submitButton.disabled = true;
+          if (validationMessage) validationMessage.classList.remove("valid-feedback");
+          if (validationMessage) validationMessage.classList.add("invalid-feedback");
+          if (submitButton) submitButton.disabled = true;
         } else if (specialChars.test(returnReason)) {
           this.classList.remove("is-valid");
           this.classList.add("is-invalid");
-          validationMessage.textContent =
+          if (validationMessage) validationMessage.textContent =
             "Special characters are not allowed.";
-          validationMessage.classList.remove("valid-feedback");
-          validationMessage.classList.add("invalid-feedback");
-          submitButton.disabled = true;
+          if (validationMessage) validationMessage.classList.remove("valid-feedback");
+          if (validationMessage) validationMessage.classList.add("invalid-feedback");
+          if (submitButton) submitButton.disabled = true;
         } else if (
           returnReason.startsWith(" ") ||
           returnReason.endsWith(" ")
         ) {
           this.classList.remove("is-valid");
           this.classList.add("is-invalid");
-          validationMessage.textContent =
+          if (validationMessage) validationMessage.textContent =
             "Reason cannot start or end with spaces.";
-          validationMessage.classList.remove("valid-feedback");
-          validationMessage.classList.add("invalid-feedback");
-          submitButton.disabled = true;
+          if (validationMessage) validationMessage.classList.remove("valid-feedback");
+          if (validationMessage) validationMessage.classList.add("invalid-feedback");
+          if (submitButton) submitButton.disabled = true;
         } else if (/\d/.test(returnReason)) {
           this.classList.remove("is-valid");
           this.classList.add("is-invalid");
-          validationMessage.textContent =
+          if (validationMessage) validationMessage.textContent =
             "Numbers are not allowed in the reason.";
-          validationMessage.classList.remove("valid-feedback");
-          validationMessage.classList.add("invalid-feedback");
-          submitButton.disabled = true;
+          if (validationMessage) validationMessage.classList.remove("valid-feedback");
+          if (validationMessage) validationMessage.classList.add("invalid-feedback");
+          if (submitButton) submitButton.disabled = true;
         } else {
           this.classList.remove("is-invalid");
           this.classList.add("is-valid");
-          validationMessage.textContent = "Looks Good.";
-          validationMessage.classList.remove("invalid-feedback");
-          validationMessage.classList.add("valid-feedback");
-          submitButton.disabled = false;
+          if (validationMessage) validationMessage.textContent = "Looks Good.";
+          if (validationMessage) validationMessage.classList.remove("invalid-feedback");
+          if (validationMessage) validationMessage.classList.add("valid-feedback");
+          if (submitButton) submitButton.disabled = false;
         }
       });
+    }
   </script>
   <script>
     // Handle retrying payment
-    document
-      .getElementById("retryPaymentBtn")
-      .addEventListener("click", async function(e) {
+    const retryPaymentBtn = document.getElementById("retryPaymentBtn");
+    if (retryPaymentBtn) {
+      retryPaymentBtn.addEventListener("click", async function(e) {
         e.preventDefault();
         const orderId = this.getAttribute("data-order-id");
         const paymentMethod = this.getAttribute("data-payment-method"); // assuming payment method is passed as a data attribute
@@ -753,6 +856,101 @@
           }
         });
       });
+    }
+  </script>
+  <script>
+    // Rate & Review Logic
+    $(document).ready(function() {
+      $('.rate-review-btn').on('click', function() {
+        const productId = $(this).data('product-id');
+        const orderId = $(this).data('order-id');
+        const productName = $(this).data('product-name');
+        
+        $('#reviewProductId').val(productId);
+        $('#reviewOrderId').val(orderId);
+        $('#reviewProductName').text(productName);
+        
+        // Reset modal
+        $('#rateReviewForm')[0].reset();
+        $('.star-btn').removeClass('fas text-warning').addClass('far');
+        $('#selectedRating').val(0);
+        $('#submitReviewBtn').prop('disabled', true);
+      });
+
+      $('.star-btn').on('click', function() {
+        const value = $(this).data('value');
+        $('#selectedRating').val(value);
+        
+        $('.star-btn').each(function() {
+          if ($(this).data('value') <= value) {
+            $(this).removeClass('far').addClass('fas text-warning');
+          } else {
+            $(this).removeClass('fas text-warning').addClass('far');
+          }
+        });
+        
+        $('#submitReviewBtn').prop('disabled', false);
+      });
+
+      $('#rateReviewForm').on('submit', async function(e) {
+        e.preventDefault();
+        const productId = $('#reviewProductId').val();
+        const formData = {
+          productId,
+          orderId: $('#reviewOrderId').val(),
+          rating: $('#selectedRating').val(),
+          comment: $('textarea[name="comment"]').val()
+        };
+
+        try {
+          const response = await fetch('/user/reviews/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          });
+          const data = await response.json();
+          
+          if (data.success) {
+            // Close the modal immediately
+            $('#rateReviewModal').modal('hide');
+            
+            // Fallback for BS5 or if jQuery modal is flaky
+            const modalEl = document.getElementById('rateReviewModal');
+            if (modalEl) {
+              const modalInstance = bootstrap.Modal.getInstance(modalEl);
+              if (modalInstance) modalInstance.hide();
+              
+              // Remove backdrop manually if needed
+              document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+              document.body.classList.remove('modal-open');
+              document.body.style.paddingRight = '';
+            }
+
+            Swal.fire({
+              title: 'Thank you!',
+              text: data.message,
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false
+            }).then(() => {
+              // Swap the Rate & Review button with a Reviewed badge – no reload needed
+              const btn = document.getElementById(`rateBtn-${productId}`);
+              if (btn) {
+                const badge = document.createElement('span');
+                badge.className = 'mt-2 text-success small font-weight-bold';
+                badge.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Already Reviewed';
+                btn.replaceWith(badge);
+              }
+            });
+          } else {
+            Swal.fire('Error', data.message, 'error');
+          }
+        } catch (error) {
+          console.error(error);
+          Swal.fire('Error', 'Something went wrong', 'error');
+        }
+      });
+    });
   </script>
 </body>
 

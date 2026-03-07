@@ -179,8 +179,8 @@
 
     <div class="row g-5" id="product-grid">
       <% if (productsWithOffers && productsWithOffers.length > 0) { %>
-      <% productsWithOffers.forEach(({ product, bestOffer }) => { %>
-        <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
+      <% productsWithOffers.forEach(({ product, bestOffer, averageRating }) => { %>
+        <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
       <% }) %>
       <% } else { %>
       <div class="col-12 text-center">
@@ -294,7 +294,8 @@
             const productGrid = document.getElementById('product-grid');
             data.products.forEach(({
               product,
-              bestOffer
+              bestOffer,
+              averageRating
             }) => {
               const cartQty = (data.cartItemMap && data.cartItemMap[product._id]) ? data.cartItemMap[product._id] : 0;
               const cartControls = cartQty > 0 ? `
@@ -318,16 +319,25 @@
                     </div>
                     <div class="card-body-half">
                       <div class="product-details">
-                        <h5 class="card-title text-center">${product.name}</h5>
-                        <div class="star-rating text-center">
-                          <div class="price-container text-center">
-                            ${bestOffer ? `
-                              <span class="old-price">₹${product.price}</span>
-                              <span class="new-price text-dark">₹${bestOffer.discountedPrice.toFixed(0)}</span>
-                              <span class="discount-separator text-muted">-</span>
-                              <span class="discount-text text-success">${bestOffer.value}${bestOffer.offerType === 'percentage' ? '%' : '₹'} off</span>
-                            ` : `<span class="current-price text-dark">₹${product.price}</span>`}
-                          </div>
+                        <h5 class="card-title text-center" style="font-size: 0.9rem; font-weight: 600; color: #333; margin-bottom: 0 !important;">${product.name}</h5>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-1 px-1">
+                            <div class="star-rating d-flex align-items-center" style="color: #ffc107;">
+                                <div class="stars mr-1" style="display: flex; gap: 1px;">
+                                    ${averageRating > 0 ? 
+                                        Array.from({length: 5}, (_, i) => `<i class="${i < Math.round(averageRating) ? 'fas' : 'far'} fa-star" style="font-size: 0.75rem !important;"></i>`).join('') :
+                                        '<i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i>'
+                                    }
+                                </div>
+                                <span class="text-muted font-weight-bold" style="font-size: 0.80rem;">${averageRating > 0 ? averageRating : '(0)'}</span>
+                            </div>
+
+                            <div class="price-container d-flex align-items-center gap-2">
+                                ${bestOffer ? `
+                                    <span class="old-price mr-1" style="font-size: 0.65rem; color: #777; text-decoration: line-through;">₹${product.price}</span>
+                                    <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹${bestOffer.discountedPrice.toFixed(0)}</span>
+                                ` : `<span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹${product.price}</span>`}
+                            </div>
                         </div>
                         <div class="btn-group button-container cart-controls-container" role="group" data-product-id="${product._id}">
                           ${cartControls}

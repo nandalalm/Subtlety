@@ -13,21 +13,145 @@ body {
 }
 
 .thumbnail {
-  width: 11.7vw; /* Adjust size of thumbnails */
-  height: auto;               
-  object-fit: cover;           
+  width: 90px;
+  flex: 1 1 0; /* Dynamic expansion/contraction */
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
   cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: border-color 0.2s, transform 0.2s;
+  min-height: 70px; /* Minimum size if there are many images */
+  max-height: 160px; /* Maximum size for 3-image optimization */
+}
+
+.thumbnail:hover,
+.thumbnail.active {
+  border-color: #9135ED;
+  transform: scale(1.05);
+}
+
+.image-view {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch; /* Forces main-image and thumbnails to match height */
+  gap: 20px;
+  height: 560px;
+  background: transparent;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .main-image {
-  width: 100%;
-  padding-right: 10px;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align to top for perfect sync with thumbnails */
+  position: relative;
+  overflow: hidden;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.img-magnifier-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .product-image {
-  width: 100%; 
-  height: auto; 
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 560px; /* Match the fixed height of the side strip */
+  object-fit: contain;
+  display: block;
+}
+
+.thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%; /* Fill container height */
+  width: 105px;
+  flex-shrink: 0;
+  padding-right: 5px;
+}
+
+/* Scrollbar styling */
+.thumbnails::-webkit-scrollbar { width: 4px; }
+.thumbnails::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+.thumbnails::-webkit-scrollbar-track { background: transparent; }
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .image-view {
+    flex-direction: column;
+    height: auto;
+    gap: 20px;
+    align-items: center;
+    max-height: none;
+    padding: 0 10px;
+  }
+  .main-image {
+    width: 100%;
+    max-width: 550px;
+    height: auto;
+    margin-bottom: 0;
+  }
+  .product-image {
+    height: auto;
+    max-height: 500px;
+    width: 100%;
+  }
+  .thumbnails {
+    flex-direction: row;
+    width: 100%;
+    max-width: 550px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: auto;
+    padding-right: 0;
+    padding-bottom: 15px;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+  .thumbnails:after { content: ""; flex: 0 0 1px; }
+
+  .thumbnail {
+    flex: 0 0 calc(33.333% - 8px);
+    width: auto;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    min-width: 100px;
+    max-width: 180px;
+  }
+}
+
+/* Extreme Mobile size */
+@media (max-width: 576px) {
+  .single-product-section {
+    padding-top: 30px;
+  }
+  .image-view {
+    padding: 0 18px;
+  }
+  .related-products .container {
+    padding-left: 30px; /* Extra padding to reduce card width */
+    padding-right: 30px;
+  }
+  .main-image, .thumbnails {
+    max-width: 100%;
+  }
+  .thumbnail {
+    min-width: 80px;
+  }
 }
 
 .price {
@@ -84,17 +208,6 @@ body {
   color: white !important;
 }
 
-.image-view{
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-.thumbnails{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
 .btn-add-to-wishlist {
   background-color:transparent!important;

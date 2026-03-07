@@ -47,11 +47,11 @@
       border: 3px solid #000;
       border-radius: 50%;
       cursor: none;
-      /* Hide cursor when over the magnifier glass */
+      pointer-events: none; /* Crucial: ensures glass doesn't block mouse events */
       width: 150px;
       height: 150px;
       display: none;
-      /* Initially hidden */
+      z-index: 1000;
       border: none;
     }
 
@@ -108,13 +108,18 @@
 
       <div class="row mt-4">
         <!-- Image Column -->
-        <div class="col-md-7 image-view">
+        <div class="col-md-6 image-view">
           <div class="main-image">
-            <img id="mainImage" src="/<%= product.images[0].replace(/\\/g, '/') %>" class="product-image" alt="Product Image">
+            <div class="img-magnifier-container">
+              <img id="mainImage" src="/<%= product.images[0].replace(/\\/g, '/') %>" class="product-image" alt="Product Image">
+            </div>
           </div>
           <div class="thumbnails">
             <% product.images.forEach((image, index) => { %>
-            <img src="/<%= image.replace(/\\/g, '/') %>" class="thumbnail" alt="Thumbnail <%= index + 1 %>" onclick="changeMainImage('/<%= image.replace(/\\/g, '/') %>')">
+            <img src="/<%= image.replace(/\\/g, '/') %>" 
+                 class="thumbnail <%= index === 0 ? 'active' : '' %>" 
+                 alt="Thumbnail <%= index + 1 %>" 
+                 onclick="changeMainImage('/<%= image.replace(/\\/g, '/') %>', this)">
             <% }) %>
           </div>
         </div>
@@ -122,8 +127,14 @@
         <!-- Details Column -->
         <div style="display: flex; flex-direction: column; justify-content: start;" class="col-md-5">
           <h5 class="card-title"><%= product.name %></h5>
-          <div>
-            <span class="text-warning">★★★★☆ (4.0)</span>
+          <div class="mb-2">
+            <span class="text-warning">
+              <% for(let i=1; i<=5; i++) { %>
+                <i class="<%= i <= Math.round(averageRating) ? 'fas' : 'far' %> fa-star" style="font-size: 0.9rem;"></i>
+              <% } %>
+              <span class="ml-1 font-weight-bold" style="color: #555;"><%= averageRating %></span>
+            </span>
+            <span class="text-muted small ml-2">(<%= totalReviewsCount %> Reviews)</span>
           </div>
           <div class="price mb-2">
             <% if (bestOffer) { %>
@@ -152,9 +163,9 @@
 
           <div class="line"></div>
           <div class="">
-            <a style="font-size: small;" href="#" class="btn btn-dark btn-add-to-wishlist" data-product-id="<%= product._id %>" onclick="addToWishlist(this)">
+            <button type="button" style="font-size: small;" class="btn btn-dark btn-add-to-wishlist" data-product-id="<%= product._id %>">
               <i class="fas fa-heart"></i> Add to Wishlist
-            </a>
+            </button>
           </div>
 
           <div class="line"></div>
@@ -188,39 +199,75 @@
           <% } %>          
 
           <div class="line"></div>
-          <div class="cart-controls-container" data-product-id="<%= product._id %>">
-            <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
-              <div class="cart-quantity-controls d-flex align-items-center mb-3">
-                <button type="button" class="btn btn-dark btn-decrement m-0" data-product-id="<%= product._id %>">-</button>
-                <span class="px-4 quantity-display" style="min-width: 60px; text-align: center; font-weight: bold; font-size: 1.2rem; color: #9135ED;"><%= cartItemMap[product._id.toString()] %></span>
-                <button type="button" class="btn btn-dark btn-increment m-0" data-product-id="<%= product._id %>">+</button>
-                <button style="margin-left: 15px; background-color: #9135ED; color: white;" class="btn buy-buy" data-product-id="<%= product._id %>"><i class="fa-solid fa-bolt" style="color: #ffffff;"></i> Buy Now</button>
-              </div>
-            <% } else { %>
-              <div class="d-flex align-items-center">
-                <button style="background-color: #9135ED; color: white;" class="btn buy-buy <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fa-solid fa-bolt" style="color: #ffffff;"></i> Buy Now</button>
-                <button style="margin-left: 10px;" class="btn btn-dark cart-cart btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>"><i class="fas fa-shopping-cart "></i> Add To Cart</button>
-              </div>
-            <% } %>
+          <div class="d-flex align-items-center">
+            <!-- Buy Now is always fixed here — never moves -->
+            <button style="background-color: #9135ED; color: white;" class="btn buy-buy <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>">
+              <i class="fa-solid fa-bolt" style="color: #ffffff;"></i> Buy Now
+            </button>
+            <!-- Cart controls container only swaps Add to Cart ↔ quantity pill -->
+            <div class="cart-controls-container ml-2" data-product-id="<%= product._id %>" data-sp-layout="true">
+              <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
+                <div class="cart-quantity-controls d-flex align-items-center">
+                  <div class="d-flex align-items-center btn btn-dark p-0" style="border-radius: 6px; overflow: hidden;">
+                    <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="<%= product._id %>" style="border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 36px;">−</button>
+                    <span class="quantity-display px-3" style="font-weight: bold; font-size: 1rem; color: #fff; min-width: 36px; text-align: center;"><%= cartItemMap[product._id.toString()] %></span>
+                    <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="<%= product._id %>" style="border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 36px;">+</button>
+                  </div>
+                </div>
+              <% } else { %>
+                <button class="btn btn-dark btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>">
+                  <i class="fas fa-shopping-cart"></i> Add To Cart
+                </button>
+              <% } %>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Reviews Section -->
-      <div class="mt-5">
-        <div class="reviews mt-4 d-flex justify-content-between">
-          <h6>Reviews:</h6>
+      <div class="mt-5 pb-5 border-top pt-4">
+        <div class="reviews mt-2 d-flex justify-content-between align-items-center">
+          <h4 class="font-weight-bold">Customer Reviews</h4>
         </div>
-        <div class="review-list mt-3">
-          <div class="review-item" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-            <strong>User 1:</strong>
-            <p>This product exceeded my expectations! Highly recommend.</p>
-          </div>
-          <div class="review-item" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-            <strong>User 2:</strong>
-            <p>Great quality for the price. Will definitely buy again!</p>
-          </div>
+        <div class="review-list mt-3" id="reviewList">
+          <% if (reviews && reviews.length > 0) { %>
+              <% reviews.forEach((review, index) => { %>
+              <div class="review-item bg-white border-bottom py-3 mb-2 px-3">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="d-flex align-items-start">
+                    <span class="mr-3 font-weight-bold text-dark" style="min-width: 20px;"><%= index + 1 %>.</span>
+                    <div>
+                      <strong class="text-dark"><%= review.userId.firstname %> <%= review.userId.lastname || '' %></strong>
+                      <div class="text-warning mb-1" style="font-size: 0.8rem;">
+                        <% for(let i=1; i<=5; i++) { %>
+                          <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
+                        <% } %>
+                        <span class="badge badge-light border ml-2 text-success" style="font-size: 0.65rem; vertical-align: middle;">Verified Purchase</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="text-muted" style="font-size: 0.85rem;"><%= new Date(review.createdAt).toLocaleDateString('en-GB') %></span>
+                </div>
+                <p class="mb-0 text-muted mt-2 pl-4" style="font-size: 0.95rem; line-height: 1.5; margin-left: 10px;"><%= review.comment || 'No comment provided.' %></p>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="text-center py-5 bg-light rounded" style="border: 1px dashed #ddd;">
+              <i class="fas fa-comment-slash fa-2x text-muted mb-2"></i>
+              <p class="text-muted mb-0">No reviews yet for this product. Be the first to share your experience!</p>
+            </div>
+          <% } %>
         </div>
+        
+        <% if (hasMoreReviews) { %>
+          <div class="text-center mt-4" id="loadMoreReviewsContainer">
+            <button id="loadMoreReviewsBtn" class="btn btn-outline-dark rounded-pill px-5 py-2 font-weight-bold" 
+                    style="border-width: 2px;"
+                    data-page="2" data-product-id="<%= product._id %>">
+              Load More Reviews
+            </button>
+          </div>
+        <% } %>
       </div>
       <% } %>
     </div>
@@ -238,8 +285,8 @@
       </div>
       <div class="row g-5" id="related-product-grid">
         <% if (relatedProductsWithOffers && relatedProductsWithOffers.length > 0) { %>
-        <% relatedProductsWithOffers.forEach(({ product, bestOffer }) => { %>
-          <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap }) %>
+        <% relatedProductsWithOffers.forEach(({ product, bestOffer, averageRating }) => { %>
+          <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
         <% }) %>
         <% } else { %>
         <div class="col-12 mb-5 pb-5">
@@ -269,16 +316,27 @@
   <script src="/js/cartControls.js"></script>
 
   <script>
-    function changeMainImage(imageUrl) {
+    function changeMainImage(imageUrl, element) {
       const mainImage = document.getElementById('mainImage');
       mainImage.src = imageUrl;
+
+      // Update active state for thumbnails
+      document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+      });
+      if (element) {
+        element.classList.add('active');
+      }
+
       // Remove existing magnifier glass
       const existingGlass = document.querySelector('.img-magnifier-glass');
       if (existingGlass) {
         existingGlass.remove();
       }
-      // Re-initialize magnifier with new image
-      magnify("mainImage", 3);
+      // Re-initialize magnifier with new image (only for Large screens and above)
+      if (window.innerWidth >= 992) {
+        magnify("mainImage", 3);
+      }
     }
 
     function magnify(imgID, zoom) {
@@ -344,25 +402,21 @@
         glass.style.top = (y - h) + "px";
 
         /* Display what the magnifier glass "sees": */
-        glass.style.backgroundPosition = "-" + ((x * zoom) - w) + "px -" + ((y * zoom) - h) + "px";
+        // Calculate the center point for the background position
+        var bgX = (x * zoom) - w;
+        var bgY = (y * zoom) - h;
+        glass.style.backgroundPosition = "-" + bgX + "px -" + bgY + "px";
       }
 
       function getCursorPos(e) {
-        var a, x = 0,
-          y = 0;
+        var a, x = 0, y = 0;
         e = e || window.event;
         /* Get the x and y positions of the image: */
         a = img.getBoundingClientRect();
         /* Calculate the cursor's x and y coordinates, relative to the image: */
-        x = e.pageX - a.left;
-        y = e.pageY - a.top;
-        /* Consider any page scrolling: */
-        x = x - window.pageXOffset;
-        y = y - window.pageYOffset;
-        return {
-          x: x,
-          y: y
-        };
+        x = e.clientX - a.left;
+        y = e.clientY - a.top;
+        return { x: x, y: y };
       }
     }
   </script>
@@ -384,7 +438,8 @@
             const grid = document.getElementById('related-product-grid');
             data.products.forEach(({
               product,
-              bestOffer
+              bestOffer,
+              averageRating
             }) => {
               const cartQty = (data.cartItemMap && data.cartItemMap[product._id]) ? data.cartItemMap[product._id] : 0;
               const cartControls = cartQty > 0 ? `
@@ -408,16 +463,25 @@
                     </div>
                     <div class="card-body-half">
                       <div class="product-details">
-                        <h5 class="card-title text-center">${product.name}</h5>
-                        <div class="star-rating text-center">
-                          <div class="price-container text-center">
-                            ${bestOffer ? `
-                              <span class="old-price">₹${product.price}</span>
-                              <span class="new-price text-dark">₹${bestOffer.discountedPrice.toFixed(0)}</span>
-                              <span class="discount-separator text-muted">-</span>
-                              <span class="discount-text text-success">${bestOffer.value}${bestOffer.offerType === 'percentage' ? '%' : '₹'} off</span>
-                            ` : `<span class="current-price text-dark">₹${product.price}</span>`}
-                          </div>
+                        <h5 class="card-title text-center" style="font-size: 0.9rem; font-weight: 600; color: #333; margin-bottom: 0 !important;">${product.name}</h5>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-1 px-1">
+                            <div class="star-rating d-flex align-items-center" style="color: #ffc107;">
+                                <div class="stars mr-1" style="display: flex; gap: 1px;">
+                                    ${averageRating > 0 ? 
+                                        Array.from({length: 5}, (_, i) => `<i class="${i < Math.round(averageRating) ? 'fas' : 'far'} fa-star" style="font-size: 0.75rem !important;"></i>`).join('') :
+                                        '<i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i>'
+                                    }
+                                </div>
+                                <span class="text-muted font-weight-bold" style="font-size: 0.80rem;">${averageRating > 0 ? averageRating : '(0)'}</span>
+                            </div>
+
+                            <div class="price-container d-flex align-items-center gap-2">
+                                ${bestOffer ? `
+                                    <span class="old-price mr-1" style="font-size: 0.65rem; color: #777; text-decoration: line-through;">₹${product.price}</span>
+                                    <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹${bestOffer.discountedPrice.toFixed(0)}</span>
+                                ` : `<span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹${product.price}</span>`}
+                            </div>
                         </div>
                         <div class="btn-group button-container cart-controls-container" role="group" data-product-id="${product._id}">
                           ${cartControls}
@@ -477,8 +541,70 @@
   </script>
 
   <script>
+    // Load More Reviews Logic
+    const loadMoreReviewsBtn = document.getElementById('loadMoreReviewsBtn');
+    if (loadMoreReviewsBtn) {
+      loadMoreReviewsBtn.addEventListener('click', async () => {
+        const page = loadMoreReviewsBtn.getAttribute('data-page');
+        const productId = loadMoreReviewsBtn.getAttribute('data-product-id');
+
+        try {
+          loadMoreReviewsBtn.disabled = true;
+          loadMoreReviewsBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+          
+          const response = await fetch(`/user/reviews/load-more/${productId}?page=${page}`);
+          const data = await response.json();
+
+          if (data.success && data.reviews.length > 0) {
+            const reviewList = document.getElementById('reviewList');
+            data.reviews.forEach((review, index) => {
+              const serialNo = reviewList.children.length + 1;
+              let stars = '';
+              for (let i = 1; i <= 5; i++) {
+                stars += `<i class="${i <= review.rating ? 'fas' : 'far'} fa-star"></i>`;
+              }
+              
+              const reviewHtml = `
+                <div class="review-item bg-white border-bottom py-3 mb-2 px-3">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-start">
+                      <span class="mr-3 font-weight-bold text-dark" style="min-width: 20px;">${serialNo}</span>
+                      <div>
+                        <strong class="text-dark">${review.user}</strong>
+                        <div class="text-warning mb-1" style="font-size: 0.8rem;">
+                          ${stars}
+                          <span class="badge badge-light border ml-2 text-success" style="font-size: 0.65rem; vertical-align: middle;">Verified Purchase</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="text-muted" style="font-size: 0.85rem;">${review.date}</span>
+                  </div>
+                  <p class="mb-0 text-muted mt-2 pl-4" style="font-size: 0.95rem; line-height: 1.5; margin-left: 10px;">${review.comment || 'No comment provided.'}</p>
+                </div>
+              `;
+              reviewList.insertAdjacentHTML('beforeend', reviewHtml);
+            });
+
+            if (data.hasMore) {
+              loadMoreReviewsBtn.setAttribute('data-page', parseInt(page) + 1);
+              loadMoreReviewsBtn.disabled = false;
+              loadMoreReviewsBtn.innerHTML = 'Load More Reviews';
+            } else {
+              document.getElementById('loadMoreReviewsContainer').remove();
+            }
+          }
+        } catch (error) {
+          console.error('Error loading more reviews:', error);
+          loadMoreReviewsBtn.disabled = false;
+          loadMoreReviewsBtn.innerHTML = 'Load More Reviews';
+        }
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      magnify("mainImage", 3);
+      if (window.innerWidth >= 992) {
+        magnify("mainImage", 3);
+      }
     });
   </script>
 

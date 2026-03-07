@@ -19,26 +19,61 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const updateUI = (productId, quantity) => {
-    // Select ALL containers for this product ID across the entire page
     const containers = document.querySelectorAll(`.cart-controls-container[data-product-id="${productId}"]`);
     containers.forEach(container => {
       const cartBtn = container.querySelector('.btn-add-to-cart');
       const quantityControls = container.querySelector('.cart-quantity-controls');
 
-      // Use flex-grow-1 and w-100 to ensure it behaves well in both btn-group and custom layouts
-      const newCartHtml = quantity > 0
-        ? `
-                    <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
-                        <button type="button" class="btn btn-dark btn-decrement m-0 rounded-0" data-product-id="${productId}" style="height: 100%; border-radius: 0 !important; min-width: 40px;">-</button>
-                        <span class="quantity-display flex-grow-1 text-center" style="font-weight: bold; color: #333; background: #eee; height: 100%; display: flex; align-items: center; justify-content: center;">${quantity}</span>
-                        <button type="button" class="btn btn-dark btn-increment m-0 rounded-0" data-product-id="${productId}" style="height: 100%; border-radius: 0 !important; min-width: 40px;">+</button>
-                    </div>
-                `
-        : `
-                    <button type="button" class="btn btn-dark m-0 btn-add-to-cart h-100 w-100 rounded-0" data-product-id="${productId}" style="border-radius: 0 !important;">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </button>
-                `;
+      // Detect layout context:
+      // 1. Single product page (data-sp-layout) → replace entire container innerHTML
+      // 2. Product card (cart-controls-container IS btn-group) → flex-grow-1
+      // 3. Wishlist card (w-75 fixed-width div) → w-100 h-100
+      const isSpLayout = container.dataset.spLayout === 'true';
+      const isInBtnGroup = container.classList.contains('btn-group');
+
+      // --- Single Product Page: replace full container content ---
+      if (isSpLayout) {
+        if (quantity > 0) {
+          container.innerHTML = `
+            <div class="cart-quantity-controls d-flex align-items-center">
+              <div class="d-flex align-items-center btn btn-dark p-0" style="border-radius: 6px; overflow: hidden;">
+                <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="${productId}" style="border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 36px;">−</button>
+                <span class="quantity-display px-3" style="font-weight: bold; font-size: 1rem; color: #fff; min-width: 36px; text-align: center;">${quantity}</span>
+                <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="${productId}" style="border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 36px;">+</button>
+              </div>
+            </div>`;
+        } else {
+          container.innerHTML = `
+            <button class="btn btn-dark btn-add-to-cart" data-product-id="${productId}">
+              <i class="fas fa-shopping-cart"></i> Add To Cart
+            </button>`;
+        }
+        return; // Done — no outerHTML replacement needed
+      }
+
+      // --- Product card or Wishlist card: replace specific child ---
+      let newCartHtml;
+      if (quantity > 0) {
+        newCartHtml = `
+          <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
+            <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">
+              <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="${productId}" style="height: 100%; border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
+              <span class="quantity-display flex-grow-1 text-center" style="font-weight: bold; color: #fff;">${quantity}</span>
+              <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="${productId}" style="height: 100%; border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
+            </div>
+          </div>`;
+      } else if (isInBtnGroup) {
+        newCartHtml = `
+          <button type="button" class="btn btn-dark m-0 btn-add-to-cart flex-grow-1 rounded-0" data-product-id="${productId}" style="border-radius: 0 !important; font-size: 0.8rem;">
+            <i class="fas fa-shopping-cart"></i> Add to Cart
+          </button>`;
+      } else {
+        // Wishlist card
+        newCartHtml = `
+          <button type="button" class="btn btn-dark m-0 btn-add-to-cart w-100 h-100 rounded-0" data-product-id="${productId}" style="border-radius: 0 !important; font-size: 0.8rem;">
+            <i class="fas fa-shopping-cart"></i> Add to Cart
+          </button>`;
+      }
 
       if (quantityControls) {
         quantityControls.outerHTML = newCartHtml;
@@ -119,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // INCREMENT
     if (target.classList.contains('btn-increment')) {
       e.preventDefault();
-      const display = target.parentElement.querySelector('.quantity-display');
+      const display = target.closest('.cart-quantity-controls').querySelector('.quantity-display');
       const currentQty = parseInt(display.textContent);
       const newQty = currentQty + 1;
 
@@ -136,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // DECREMENT
     if (target.classList.contains('btn-decrement')) {
       e.preventDefault();
-      const display = target.parentElement.querySelector('.quantity-display');
+      const display = target.closest('.cart-quantity-controls').querySelector('.quantity-display');
       const currentQty = parseInt(display.textContent);
 
       if (currentQty > 1) {

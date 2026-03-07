@@ -21,7 +21,8 @@ router.post('/categories/toggle-status/:id', controller.toggleCategoryStatus);
 router.get('/orderList', isAuthenticated, controller.getOrders);
 router.post('/order/changeProductStatus', isAuthenticated, controller.changeProductStatus);
 router.post('/order/changeOrderStatus', isAuthenticated, controller.changeOrderStatus);
-router.get('/order/:id/details', isAuthenticated, controller.getOrderDetails);
+router.get('/order/:id/view', isAuthenticated, controller.getOrderView);
+router.get('/order/:id/details', isAuthenticated, controller.getOrderDetailsJson);
 router.post('/order/approveReturn', controller.approveReturn);
 router.get('/offer', isAuthenticated, controller.getOffers);
 router.post('/offers/add', controller.addOffer);
@@ -36,5 +37,9 @@ router.post('/salesReport/generate', isAuthenticated, controller.generateSalesRe
 router.post('/salesReport/download/pdf', isAuthenticated, controller.downloadSalesReportPdf);
 router.post('/salesReport/download/excel', isAuthenticated, controller.downloadSalesReportExcel);
 router.post('/logout', controller.logout);
+
+// Reviews
+router.get('/reviews', isAuthenticated, controller.getReviews);
+router.post('/reviews/toggle-listing/:id', isAuthenticated, controller.toggleReviewStatus);
 
 module.exports = router;

@@ -10,15 +10,40 @@
                     <span class="offer-badge position-absolute" style="top: 10px; left: 10px; background: rgba(40, 167, 69, 0.9); color: white; padding: 2px 8px; border-radius: 0; font-size: 10px; font-weight: bold;"><%= bestOffer.value %><%= bestOffer.offerType === 'percentage' ? '%' : '₹' %> OFF</span>
                 <% } %>
             </div>
-            <div class="card-body p-2 mt-2" style="border-top: 1px solid #eee;">
-                <h6 class="card-title text-center mb-1 text-truncate" style="font-size: 0.9rem; font-weight: 600; color: #333;"><%= product.name %></h6>
-                <div class="price-container text-center mb-2 d-flex justify-content-center align-items-center gap-2">
-                    <% if (bestOffer) { %>
-                        <span class="old-price text-muted small text-decoration-line-through" style="color: #333 !important;">₹<%= product.price %></span>
-                        <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.95rem;">₹<%= bestOffer.discountedPrice.toFixed(0) %></span>
+            <div class="card-body p-2 mt-1" style="border-top: 1px solid #eee;">
+                <h6 class="card-title text-center mb-0 text-truncate" style="font-size: 0.9rem; font-weight: 600; color: #333;"><%= product.name %></h6>
+                
+                <div class="d-flex justify-content-between align-items-center mb-1 px-1">
+                    <% if (typeof averageRating !== 'undefined' && averageRating > 0) { %>
+                        <div class="star-rating d-flex align-items-center" style="color: #ffc107;">
+                            <div class="stars mr-1" style="display: flex; gap: 1px;">
+                                <% for(let i=1; i<=5; i++) { %>
+                                    <i class="<%= i <= Math.round(averageRating) ? 'fas' : 'far' %> fa-star" style="font-size: 0.65rem !important;"></i>
+                                <% } %>
+                            </div>
+                            <span class="text-muted font-weight-bold" style="font-size: 0.70rem;"><%= averageRating %></span>
+                        </div>
                     <% } else { %>
-                        <span class="current-price font-weight-bold" style="color: #333; font-size: 0.95rem;">₹<%= product.price %></span>
+                        <div class="star-rating d-flex align-items-center" style="color: #ffc107;">
+                            <div class="stars mr-1" style="display: flex; gap: 1px;">
+                                <i class="far fa-star" style="font-size: 0.65rem !important;"></i>
+                                <i class="far fa-star" style="font-size: 0.65rem !important;"></i>
+                                <i class="far fa-star" style="font-size: 0.65rem !important;"></i>
+                                <i class="far fa-star" style="font-size: 0.65rem !important;"></i>
+                                <i class="far fa-star" style="font-size: 0.65rem !important;"></i>
+                            </div>
+                            <span class="text-muted" style="font-size: 0.70rem;">(0)</span>
+                        </div>
                     <% } %>
+
+                    <div class="price-container d-flex align-items-center gap-1">
+                        <% if (bestOffer) { %>
+                            <span class="old-price text-muted small text-decoration-line-through" style="color: #777 !important; font-size: 0.6rem;">₹<%= product.price %></span>
+                            <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.78rem;">₹<%= bestOffer.discountedPrice.toFixed(0) %></span>
+                        <% } else { %>
+                            <span class="current-price font-weight-bold" style="color: #333; font-size: 0.78rem;">₹<%= product.price %></span>
+                        <% } %>
+                    </div>
                 </div>
             </div>
         </a>
@@ -26,10 +51,12 @@
             <div class="d-flex w-100" style="height: 40px; border-radius: 0;">
                 <div class="w-75 cart-controls-container" data-product-id="<%= product._id %>" style="border-radius: 0;">
                     <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
-                        <div class="cart-quantity-controls d-flex align-items-center flex-grow-1 h-100" style="border-radius: 0;">
-                            <button type="button" class="btn btn-dark btn-decrement m-0 rounded-0" data-product-id="<%= product._id %>" style="border-radius: 0; height: 100%; min-width: 40px;">-</button>
-                            <span class="quantity-display flex-grow-1 text-center font-weight-bold" style="color: #333; background: #eee; height: 100%; display: flex; align-items: center; justify-content: center;"><%= cartItemMap[product._id.toString()] %></span>
-                            <button type="button" class="btn btn-dark btn-increment m-0 rounded-0" data-product-id="<%= product._id %>" style="border-radius: 0; height: 100%; min-width: 40px;">+</button>
+                        <div class="cart-quantity-controls d-flex align-items-center flex-grow-1 h-100">
+                            <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">
+                                <button type="button" class="btn btn-dark btn-decrement m-0 border-0 rounded-0" data-product-id="<%= product._id %>" style="height: 100%; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
+                                <span class="quantity-display flex-grow-1 text-center font-weight-bold" style="color: #fff;"><%= cartItemMap[product._id.toString()] %></span>
+                                <button type="button" class="btn btn-dark btn-increment m-0 border-0 rounded-0" data-product-id="<%= product._id %>" style="height: 100%; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
+                            </div>
                         </div>
                 <% } else { %>
                         <button type="button" class="btn btn-dark w-100 h-100 rounded-0 btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>" style="font-size: 0.8rem; border-radius: 0 !important;">

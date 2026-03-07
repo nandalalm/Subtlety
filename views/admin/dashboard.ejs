@@ -31,119 +31,201 @@
     <div id="page-content-wrapper">
 
       <div class="container-fluid">
-        <div class="row">
+        <div class="row pt-3">
           <div class="col-md-3 mb-4">
-            <div class="card bg-primary text-white">
-              <div class="card-body">
+            <div class="stat-card card-users">
+              <div class="card-icon-wrapper"><i class="fas fa-users"></i></div>
+              <div class="card-info-content">
                 <h5 class="card-title">Total Users</h5>
-                <p class="card-text"><%= totalUsers %></p>
+                <p class="card-value"><%= totalUsers %></p>
               </div>
             </div>
           </div>
 
           <div class="col-md-3 mb-4">
-            <div class="card bg-success text-white">
-              <div class="card-body">
+            <div class="stat-card card-orders">
+              <div class="card-icon-wrapper"><i class="fas fa-shopping-bag"></i></div>
+              <div class="card-info-content">
                 <h5 class="card-title">Total Orders</h5>
-                <p class="card-text"><%= totalOrders %></p>
+                <p class="card-value"><%= totalOrders %></p>
               </div>
             </div>
           </div>
 
           <div class="col-md-3 mb-4">
-            <div class="card bg-info text-white">
-              <div class="card-body">
+            <div class="stat-card card-sales">
+              <div class="card-icon-wrapper"><i class="fas fa-wallet"></i></div>
+              <div class="card-info-content">
                 <h5 class="card-title">Total Sales</h5>
-                <p class="card-text">₹ <%= totalOrderAmount %></p>
+                <p class="card-value">₹ <%= totalOrderAmount %></p>
               </div>
             </div>
           </div>
 
           <div class="col-md-3 mb-4">
-            <div class="card bg-warning text-dark">
-              <div class="card-body">
+            <div class="stat-card card-pending">
+              <div class="card-icon-wrapper"><i class="fas fa-clock"></i></div>
+              <div class="card-info-content">
                 <h5 class="card-title">Total Pending</h5>
-                <p class="card-text"><%= totalPending %></p>
+                <p class="card-value"><%= totalPending %></p>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-4 ml-1 pl-0 mb-5">
-          <div class="row pt-4">
-            <div class="col-md-7 col-12 m-0 p-0 pl-3 pr-1">
-              <div class="custom-sales-overview">
-                <h3 class="pb-2">Sales Overview</h3>
-                <select id="timeframeSelect" class="form-control w-25 mb-3">
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly" selected>Monthly</option>
-                  <option value="yearly">Yearly</option>
-                </select>
-                <canvas id="salesChart"></canvas>
+        <div class="mt-4 mb-5">
+          <div class="row">
+            <div class="col-md-7 mb-4">
+              <div class="dashboard-card">
+                <div class="card-header-custom">
+                  <h3>Sales Overview</h3>
+                  <select id="timeframeSelect" class="form-control">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly" selected>Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
+                <div class="chart-container">
+                  <canvas id="salesChart"></canvas>
+                </div>
               </div>
             </div>
 
-            <div class="col-md-5 col-12 m-0 p-0 pr-3 pl-1">
-              <h3 class="pb-3 pt-1">Best Selling Categories</h3>
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th style="width: 20%;">#</th>
-                    <th style="width: 70%;">Category Name</th>
-                    <th style="width: 10%;">Image</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% bestSellingCategories.forEach((category, index) => { %>
-                  <tr>
-                    <td><%= index + 1 %></td>
-                    <td><%= category.name %></td>
-                    <td style="text-align: center;">
-                      <% if (category.image) { %>
-                      <img src="/<%= category.image.split('/').pop() %>" alt="Category Image" style="width: 50px; height: 50px;padding-right: 5px;">
-                      <% } else { %>
-                      <span>No Image Available</span>
-                      <% } %>
-                    </td>
-                  </tr>
-                  <% }) %>
-                </tbody>
-              </table>
+            <div class="col-md-5 mb-4">
+              <div class="dashboard-card">
+                <div class="card-header-custom">
+                  <h3>Best Selling Categories</h3>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Category</th>
+                        <th class="text-center">Image</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% bestSellingCategories.forEach((category, index) => { %>
+                      <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= category.name %></td>
+                        <td class="text-center">
+                          <% if (category.image) { %>
+                          <img src="/<%= category.image.split('/').pop() %>" alt="Category Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                          <% } else { %>
+                          <span class="text-muted small">No Image</span>
+                          <% } %>
+                        </td>
+                      </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="row pt-4">
-            <div class="col-md-12">
-              <h3 class="pb-2">Best Selling Products</h3>
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Product Name</th>
-                    <th>Description</th>
-                    <th>Image</th> <!-- Change header to Image -->
-                  </tr>
-                </thead>
-                <tbody>
-                  <% bestSellingProducts.forEach(product => { %>
-                  <tr>
-                    <td><%= product.index %></td>
-                    <td><%= product.name %></td>
-                    <td><%= product.description %></td>
-                    <td>
-                      <% if (product.images.length > 0) { %>
-                      <img src="/<%= product.images[0].split('/').pop() %>" alt="Product Image" style="width: 50px; height: 50px;">
-                      <% } else { %>
-                      <span>No Image Available</span>
-                      <% } %>
-                    </td>
-                  </tr>
-                  <% }) %>
-                </tbody>
-              </table>
+          <div class="row">
+            <div class="col-md-12 mb-4">
+              <div class="dashboard-card">
+                <div class="card-header-custom">
+                  <h3>Best Selling Products</h3>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Product Name</th>
+                        <th class="hide-xs">Description</th>
+                        <th class="text-center">Image</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% bestSellingProducts.forEach(product => { %>
+                      <tr>
+                        <td><%= product.index %></td>
+                        <td class="font-weight-bold"><%= product.name %></td>
+                        <td class="text-muted small hide-xs"><%= product.description.substring(0, 100) %>...</td>
+                        <td class="text-center">
+                          <% if (product.images.length > 0) { %>
+                          <img src="/<%= product.images[0].split('/').pop() %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                          <% } else { %>
+                          <span class="text-muted small">No Image</span>
+                          <% } %>
+                        </td>
+                      </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
+
+          <div class="row">
+            <div class="col-md-12 mb-4">
+              <div class="dashboard-card">
+                <div class="card-header-custom">
+                  <h3>Top 5 Highest Rated Products</h3>
+                </div>
+                <% if (topRatedProducts && topRatedProducts.length > 0) { %>
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Product Name</th>
+                        <th>Rating</th>
+                        <th class="hide-xs">Reviews</th>
+                        <th class="text-center hide-xs">Image</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% topRatedProducts.forEach((product, index) => { %>
+                      <tr>
+                        <td><%= index + 1 %></td>
+                        <td class="font-weight-bold"><%= product.name %></td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <span class="text-warning mr-2" style="white-space: nowrap;">
+                              <% for(let i = 1; i <= 5; i++) { %>
+                              <% if (i <= Math.round(product.avgRating)) { %>
+                              <i class="fas fa-star"></i>
+                              <% } else { %>
+                              <i class="far fa-star text-muted"></i>
+                              <% } %>
+                              <% } %>
+                            </span>
+                            <span class="text-muted small">(<%= product.avgRating.toFixed(1) %>)</span>
+                          </div>
+                        </td>
+                        <td class="hide-xs"><span class="badge badge-light border"><%= product.reviewCount %> reviews</span></td>
+                        <td class="text-center hide-xs">
+                          <% if (product.image) { %>
+                          <img src="/<%= product.image.split('/').pop() %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                          <% } else { %>
+                          <span class="text-muted small">No Image</span>
+                          <% } %>
+                        </td>
+                      </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+                <% } else { %>
+                <div class="text-center py-5">
+                  <i class="fas fa-star-half-alt fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
+                  <h4 class="text-muted font-weight-light">No rated products yet</h4>
+                  <p class="text-muted small mb-0">Product rankings will appear here once users start leaving reviews.</p>
+                </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -151,15 +233,25 @@
   </div>
   </div>
 
-  <script>
+  <script id="salesData" type="application/json">
+    <%- JSON.stringify({
+      daily: salesByDay,
+      weekly: salesByWeek,
+      monthly: salesByMonth,
+      yearly: salesByYear
+    }) %>
+  </script>
 
+  <script>
     async function fetchSalesData() {
-      return {
-        daily: <%- JSON.stringify(salesByDay) %>,
-        weekly: <%- JSON.stringify(salesByWeek) %>,
-        monthly: <%- JSON.stringify(salesByMonth) %>,
-        yearly: <%- JSON.stringify(salesByYear) %>
-      };
+      const dataElement = document.getElementById('salesData');
+      if (!dataElement) return null;
+      try {
+        return JSON.parse(dataElement.textContent);
+      } catch (e) {
+        console.error('Error parsing sales data:', e);
+        return null;
+      }
     }
 
     async function renderChart(timeframe = 'monthly') {
@@ -198,15 +290,83 @@
           datasets: [{
             label: 'Total Sales',
             data: data,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderWidth: 1
+            borderColor: '#9135ED',
+            backgroundColor: (context) => {
+              const chart = context.chart;
+              const {
+                ctx,
+                chartArea
+              } = chart;
+              if (!chartArea) return null;
+              const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+              gradient.addColorStop(0, 'rgba(145, 53, 237, 0.2)');
+              gradient.addColorStop(1, 'rgba(145, 53, 237, 0.01)');
+              return gradient;
+            },
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#9135ED',
+            pointBorderWidth: 2,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#9135ED',
+            pointHoverBorderColor: '#ffffff',
+            pointHoverBorderWidth: 2,
           }]
         },
         options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: '600'
+              },
+              bodyFont: {
+                size: 13
+              },
+              displayColors: false,
+              borderRadius: 8,
+              callbacks: {
+                label: (context) => ` Sales: ₹${context.raw.toLocaleString()}`
+              }
+            }
+          },
           scales: {
             y: {
-              beginAtZero: true
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                color: '#64748b',
+                font: {
+                  size: 11
+                },
+                callback: function(value) {
+                  return '₹' + value.toLocaleString();
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#64748b',
+                font: {
+                  size: 11
+                }
+              }
             }
           }
         }

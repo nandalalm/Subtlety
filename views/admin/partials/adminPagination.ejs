@@ -1,0 +1,67 @@
+<style>
+    .pagination .btn-pagination {
+        border-radius: 5px;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #9135ED;
+        color: #9135ED;
+        background: transparent;
+        transition: all 0.3s ease;
+        text-decoration: none !important;
+        flex: none !important;
+    }
+    .pagination .btn-pagination:hover:not(.disabled) {
+        background-color: #9135ED !important;
+        color: white !important;
+    }
+    .pagination .btn-pagination.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    .pagination .page-info {
+        color: #9135ED;
+        font-weight: 600;
+        min-width: 80px;
+        text-align: center;
+        font-size: 0.95rem;
+    }
+</style>
+
+<div class="pagination d-flex justify-content-center align-items-center mt-4 mb-4" style="gap: 10px;">
+    <% 
+        // Helper to build the URL with all current query parameters preserved
+        function getPageUrl(pageNum) {
+            let params = [];
+            params.push(`page=${pageNum}`);
+            
+            if (typeof search !== 'undefined' && search) params.push(`search=${encodeURIComponent(search)}`);
+            if (typeof sort !== 'undefined' && sort) params.push(`sort=${encodeURIComponent(sort)}`);
+            if (typeof paymentStatus !== 'undefined' && paymentStatus) params.push(`paymentStatus=${encodeURIComponent(paymentStatus)}`);
+            if (typeof reportType !== 'undefined' && reportType) params.push(`reportType=${encodeURIComponent(reportType)}`);
+            if (typeof startDate !== 'undefined' && startDate) params.push(`startDate=${encodeURIComponent(startDate)}`);
+            if (typeof endDate !== 'undefined' && endDate) params.push(`endDate=${encodeURIComponent(endDate)}`);
+            
+            return '?' + params.join('&');
+        }
+    %>
+    
+    <a href="<%= currentPage > 1 ? getPageUrl(currentPage - 1) : '#' %>" 
+       class="btn-pagination <%= currentPage === 1 ? 'disabled' : '' %>"
+       title="Previous Page">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    
+    <div class="page-info mx-2">
+        <%= currentPage %> of <%= totalPages || 1 %>
+    </div>
+    
+    <a href="<%= currentPage < totalPages ? getPageUrl(currentPage + 1) : '#' %>" 
+       class="btn-pagination <%= currentPage >= totalPages ? 'disabled' : '' %>"
+       title="Next Page">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+</div>

@@ -27,14 +27,6 @@
         cursor: pointer;
     }
 
-    .page-number {
-         min-width: 35px;
-         height: 35px;
-         display: inline-flex;
-         align-items: center;
-         justify-content: center;
-         font-weight: 600;
-    }
 
     /* Classy Summary Cards */
     .summary-card {
@@ -249,14 +241,17 @@
             </div>
         </div>
 
-        <!-- Sales Report Table -->
-        <div class="bg-white rounded shadow-sm overflow-hidden">
         <% if (orders.length === 0) { %>
-        <div class="text-center py-5">
+        <div class="bg-white rounded shadow-sm py-5 text-center mb-4">
             <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-            <h4 class="text-muted">No sales records found for this period</h4>
+            <h4 class="text-muted">No sales records found</h4>
+            <p class="text-muted">We couldn't find any data for the selected period.</p>
+            <% if (reportType !== 'all') { %>
+                <button class="btn btn-link" onclick="resetFilters()" style="color: #9135ED;">Reset all filters</button>
+            <% } %>
         </div>
         <% } else { %>
+        <div class="bg-white rounded shadow-sm overflow-hidden mb-4">
         <table class="table table-hover mb-0" id="salesTable">
           <thead>
             <tr>
@@ -289,55 +284,9 @@
             <% }) %>
           </tbody>
         </table>
-        <% } %>
         </div>
 
-        <!-- Responsive Card View (for mobile/tablets) -->
-        <div class="sales-cards-container">
-            <% orders.forEach((order, index) => { %>
-            <div class="sales-mobile-card shadow-sm">
-                <div class="card-row">
-                    <span class="order-id-badge"><%= order.orderId %></span>
-                    <span class="badge badge-pill <%= order.orderStatus === 'Completed' ? 'badge-mild-success' : order.orderStatus === 'Cancelled' ? 'badge-mild-danger' : 'badge-mild-warning' %> px-2 py-1">
-                        <%= order.orderStatus %>
-                    </span>
-                </div>
-                <div class="card-row">
-                    <span class="card-label">Customer</span>
-                    <span class="card-value"><%= order.shippingAddress.fullname %></span>
-                </div>
-                <div class="card-row">
-                    <span class="card-label">Date</span>
-                    <span class="card-value"><%= new Date(order.orderDate).toLocaleDateString('en-GB') %></span>
-                </div>
-                <div class="card-row">
-                    <span class="card-label">Total Amount</span>
-                    <span class="card-value font-weight-bold">₹<%= order.totalAmount.toFixed(2) %></span>
-                </div>
-            </div>
-            <% }) %>
-            <% if (orders.length === 0) { %>
-                <div class="text-center py-4 w-100">
-                    <p class="text-muted">No sales records found</p>
-                </div>
-            <% } %>
-        </div>
-
-        <!-- Standardized Pagination -->
-        <% if (totalPages > 1) { %>
-        <div class="pagination d-flex justify-content-center align-items-center mt-4 mb-5" style="gap: 2px;">
-            <button class="btn btn-secondary" <%= currentPage === 1 ? 'disabled' : '' %> 
-                    onclick="applyFilters(<%= currentPage - 1 %>)">
-                <i class="fas fa-chevron-left text-white"></i>
-            </button>
-            
-            <span class="page-number text-center mx-2 font-weight-bold text-primary"><%= currentPage %></span>
-
-            <button class="btn btn-secondary" <%= currentPage >= totalPages ? 'disabled' : '' %> 
-                    onclick="applyFilters(<%= currentPage + 1 %>)">
-                <i class="fas fa-chevron-right text-white"></i>
-            </button>
-        </div>
+        <%- include('partials/adminPagination') %>
         <% } %>
       </div>
     </div>

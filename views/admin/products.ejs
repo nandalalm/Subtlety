@@ -47,34 +47,6 @@
             background-color: #f2f2f2 !important;
         }
 
-        /* Pagination Style */
-        .pagination {
-            gap: 2px;
-        }
-
-        .pagination .btn {
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            padding: 0;
-        }
-
-        .pagination .page-number {
-            font-weight: 600;
-            font-size: 1rem;
-            min-width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #9135ED;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
        /* Responsive Styles - Below 1350px */
     @media (max-width: 1349.98px) {
       .product-table-desktop {
@@ -296,23 +268,8 @@
                     </div>
                     <% }) %>
                 </div>
-                <% } %>
-
-                <!-- Standardized Pagination -->
-                <% if (products.length > 0 && totalPages > 1) { %>
-                <div class="pagination d-flex justify-content-center align-items-center mt-4 mb-5" style="gap: 2px;">
-                    <button class="btn btn-secondary" <%=currentPage===1 ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>'">
-                        <i class="fas fa-chevron-left text-white"></i>
-                    </button>
-
-                    <span class="page-number text-center">
-                        <%= currentPage %>
-                    </span>
-
-                    <button class="btn btn-secondary" <%= currentPage >= totalPages ? 'disabled' : '' %> onclick="window.location.href='?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>'">
-                        <i class="fas fa-chevron-right text-white"></i>
-                    </button>
-                </div>
+                
+                <%- include('partials/adminPagination') %>
                 <% } %>
             </div>
         </div>
@@ -342,7 +299,7 @@
                 text: `Do you want to ${action} this product?`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#9135ED',
+                confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 confirmButtonText: `Yes, ${action}!`
             }).then((result) => {

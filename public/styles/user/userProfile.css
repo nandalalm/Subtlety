@@ -358,3 +358,8 @@ input[disabled] {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin-top: 25px;
 }
+
+.tight-card {
+  padding: 5px 15px !important;
+  margin-top: 15px !important;
+}

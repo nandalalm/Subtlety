@@ -21,11 +21,38 @@
 
     .referral-section {
       margin-top: 20px;
-      padding: 12px 25px;
+      padding: 25px;
       background-color: #ffffff;
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       border-left: 5px solid #9135ED;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .referral-section.claimed {
+      background-color: #f8f9fa;
+      border-left-color: #adb5bd;
+      opacity: 0.5;
+      filter: grayscale(0.6);
+    }
+    .referral-section.claimed .copy-btn {
+      background-color: #adb5bd;
+      cursor: default;
+    }
+    .referral-section.claimed .copy-btn:hover {
+      background-color: #adb5bd;
+    }
+    .claimed-badge {
+      background-color: #e6ffed;
+      color: #1e7e34;
+      border: 1px solid #c3e6cb;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      position: absolute;
+      top: 20px;
+      right: 25px;
     }
 
     .copy-btn {
@@ -35,7 +62,9 @@
       padding: 8px 15px;
       border-radius: 0 5px 5px 0;
       cursor: pointer;
+      transition: background 0.3s;
     }
+    .copy-btn:hover { background-color: #7a2bc7; }
 
     .search-group .form-control {
       border-radius: 20px 0 0 20px;
@@ -55,6 +84,59 @@
       padding: 5px 15px;
     }
 
+    .wallet-toggle-container {
+      display: flex;
+      gap: 15px;
+      margin-top: 0px !important;
+      margin-left: -5px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .toggle-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      color: #777;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s;
+      outline: none !important;
+    }
+
+    .toggle-btn.active {
+      color: #9135ED;
+    }
+
+    .toggle-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #9135ED;
+    }
+
+    .wallet-content-section {
+      display: none;
+    }
+
+    .wallet-content-section.active {
+      display: block;
+    }
+
+    .balance-card {
+      background: #fff;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border-radius: 12px;
+    }
+
     /* Responsive Table/Cards */
     @media (max-width: 1020px) {
       .wallet-table-desktop { display: none; }
@@ -70,7 +152,7 @@
       border-radius: 12px;
       padding: 15px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border-left: 5px solid #9135ED;
       display: flex;
       flex-direction: column;
@@ -86,6 +168,24 @@
       margin-bottom: 12px;
     }
 
+    .profile-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+    }
+
+    .text-purple { color: #9135ED; }
+
+    @media (max-width: 576px) {
+      .toggle-btn {
+        font-size: 0.8rem;
+        padding: 10px 10px;
+      }
+      .wallet-toggle-container {
+        gap: 5px;
+      }
+    }
+
   </style>
 </head>
 
@@ -94,11 +194,11 @@
   <%- include('partials/navBar') %>
   <!-- Wallet Section -->
   <section class="profile-section">
-    <div class="container profile">
+    <div class="container profile pt-2">
       <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs">
         <div>
           <a href="/user/home" class="text-decoration-none">Home</a> /
-          <span style="color: #9135ED;" class="text-decoration-none">My Wallet</span>
+          <span style="color: #9135ED; font-weight: 500;">My Wallet</span>
         </div>
         <div>
           <h5>Welcome, <span style="color: #9135ED;"><%= user.firstname %>!</span></h5>
@@ -113,131 +213,142 @@
         <!-- Main Content -->
         <div class="col-lg-9 col-12">
             <h2 class="section-main-title">My Wallet</h2>
-            <!-- Referral Section -->
-            <div class="referral-section">
-              <h4 class="font-weight-bold">Refer a Friend and Earn ₹600!</h4>
-              <p class="text-muted">
-                Share your referral link with your friends. If they sign up using this link, you will earn a ₹600 reward in your wallet. This offer is valid only once per user.
-              </p>
-              <div class="d-flex align-items-center mt-3">
-                <input type="text" id="referral-link" class="form-control" style="border-radius: 5px 0 0 5px;" value="<%= referralBaseUrl %>/user/signup?referral=<%= user._id %>" readonly>
-                <button class="copy-btn" onclick="copyReferralLink()"><i class="far fa-copy"></i></button>
-              </div>
+
+            <div class="wallet-toggle-container">
+                <button class="toggle-btn" id="toggle-wallet" onclick="switchWalletTab('wallet')">WALLET</button>
+                <button class="toggle-btn" id="toggle-transactions" onclick="switchWalletTab('transactions')">TRANSACTION HISTORY</button>
             </div>
 
-            <!-- Search & Sort Bar -->
-            <% if (totalTransactionsUnfiltered > 0) { %>
-            <div class="row mt-4 mb-2 align-items-center">
-              <div class="col-lg-7 mb-3 mb-lg-0">
-                <form action="/user/wallet" method="GET" class="search-group">
-                  <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Search by Transaction ID..." value="<%= search %>">
-                    <input type="hidden" name="sort" value="<%= sort %>">
-                    <div class="input-group-append">
-                      <% if (search) { %>
-                      <a href="/user/wallet?sort=<%= sort %>" class="btn btn-outline-secondary" title="Clear search"><i class="fas fa-times"></i></a>
-                      <% } %>
-                      <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+            <!-- WALLET TAB CONTENT -->
+            <div id="section-wallet" class="wallet-content-section">
+                <div class="balance-card">
+                    <h5 class="text-muted text-uppercase small mb-2">Available Balance</h5>
+                    <h2 class="mb-0 font-weight-bold" style="color: #333; font-size: 2.5rem;">₹<%= wallet.balance.toFixed(2) %></h2>
+                </div>
+
+                <div class="referral-section <%= user.referralCreditsClaimed ? 'claimed' : '' %>" style="min-height: 230px;">
+                    <% if (user.referralCreditsClaimed) { %>
+                        <span class="claimed-badge"><i class="fas fa-check-circle mr-1"></i> CLAIMED</span>
+                    <% } %>
+                    <h4 class="font-weight-bold" style="color: #333;">Refer a Friend and Earn ₹600!</h4>
+                    <p class="text-muted">
+                        Share your referral link with your friends. If they sign up using this link, you will earn a ₹600 reward in your wallet. This offer is valid only once per user.
+                    </p>
+                    <div class="d-flex align-items-center mt-3">
+                        <input type="text" id="referral-link" class="form-control" style="border-radius: 5px 0 0 5px;" value="<%= referralBaseUrl %>/user/signup?referral=<%= user._id %>" readonly <%= user.referralCreditsClaimed ? 'disabled' : '' %>>
+                        <button class="copy-btn" <%= user.referralCreditsClaimed ? 'disabled' : '' %> onclick="copyReferralLink()"><i class="far fa-copy"></i></button>
                     </div>
-                  </div>
-                </form>
-              </div>
-              <div class="col-lg-5 text-lg-right">
-                <div class="d-flex align-items-center justify-content-lg-end">
-                  <select class="form-control filter-select flex-grow-1" style="max-width:180px;" onchange="applyWalletFilter('sort', this.value)">
-                    <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Sort: Latest</option>
-                    <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Sort: Oldest</option>
-                    <option value="credit" <%= sort === 'credit' ? 'selected' : '' %>>Type: Credit</option>
-                    <option value="debit" <%= sort === 'debit' ? 'selected' : '' %>>Type: Debit</option>
-                  </select>
-                  <% if (sort && sort !== 'latest') { %>
-                  <a href="/user/wallet?search=<%= search %>&sort=latest" class="btn btn-sm ml-1" title="Clear filter" style="color:#9135ED;"><i class="fas fa-times-circle"></i></a>
-                  <% } %>
                 </div>
-              </div>
             </div>
-            <% } %>
 
-          <div class="profile-card">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h2 class="mb-0">Balance: <span style="color: #9135ED;">₹<%= wallet.balance.toFixed(2) %></span></h2>
-            </div>
-            
-            <h5 class="mb-3 font-weight-bold">Transaction History</h5>
-
-            <% const isFiltered = (search || (sort && sort !== 'latest')); %>
-            <% if (transactions.length === 0) { %>
-              <% if (typeof totalTransactionsUnfiltered !== 'undefined' && totalTransactionsUnfiltered === 0) { %>
-              <div class="text-center py-5">
-                <i class="fas fa-wallet fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No transactions found. <a href="/user/home" style="color:#9135ED; font-weight:bold;">Continue Shopping</a></p>
-              </div>
-              <% } else { %>
-              <div class="text-center py-4">
-                <i class="fas fa-search fa-2x text-muted mb-2"></i>
-                <p class="text-muted">No match was found for the given criteria.<br><a href="/user/wallet" style="color:#9135ED;">Clear all filters</a></p>
-              </div>
-              <% } %>
-            <% } else { %>
-          
-          <!-- Desktop Table -->
-              <table class="table table-hover wallet-table-desktop">
-                <thead>
-                  <tr>
-                    <th>S.No</th>
-                    <th>Transaction ID</th>
-                    <th>Description</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% transactions.forEach((transaction, index) => { %>
-                  <tr>
-                    <td><%= (currentPage - 1) * limit + (index + 1) %></td>
-                    <td class="small font-weight-bold text-muted"><%= transaction.transactionId %></td>
-                    <td><%= transaction.description %></td>
-                    <td>
-                      <span class="<%= transaction.type === 'credit' ? 'credited' : 'debited' %>">
-                        <%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1).toLowerCase() %>
-                      </span>
-                    </td>
-                    <td class="font-weight-bold">
-                      <%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %>
-                    </td>
-                    <td class="small">
-                      <%= new Date(transaction.date).toLocaleDateString() %>
-                    </td>
-                  </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-              <!-- Mobile Cards -->
-              <div class="wallet-cards-mobile">
-                <% transactions.forEach((transaction, index) => { %>
-                <div class="transaction-card">
-                  <div class="transaction-card-header">
-                    <span class="font-weight-bold">#<%= (currentPage - 1) * limit + (index + 1) %></span>
-                    <span class="<%= transaction.type === 'credit' ? 'credited' : 'debited' %>"><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1).toLowerCase() %></span>
+            <!-- TRANSACTIONS TAB CONTENT -->
+            <div id="section-transactions" class="wallet-content-section">
+                <!-- Search & Sort Bar -->
+                <% if (totalTransactionsUnfiltered > 0) { %>
+                <div class="d-flex align-items-center mt-1 mb-3 flex-wrap">
+                  <div style="width: 320px; max-width: 100%; margin-right: 10px; margin-bottom: 5px;">
+                    <form action="/user/wallet" method="GET" class="search-group mb-0" id="wallet-search-form">
+                      <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search ID..." value="<%= search %>" style="font-size: 0.85rem; height: 38px;">
+                        <input type="hidden" name="sort" value="<%= sort %>">
+                        <div class="input-group-append">
+                          <% if (search) { %>
+                          <a href="/user/wallet?sort=<%= sort %>" class="btn btn-outline-secondary" title="Clear search" style="height: 38px; display: flex; align-items: center;"><i class="fas fa-times"></i></a>
+                          <% } %>
+                          <button class="btn" type="submit" style="height: 38px;"><i class="fas fa-search"></i></button>
+                        </div>
+                      </div>
+                    </form>
                   </div>
-                  <div class="transaction-card-body">
-                    <p><strong>Transaction ID:</strong> <span class="small text-muted"><%= transaction.transactionId %></span></p>
-                    <p><strong>Description:</strong> <%= transaction.description %></p>
-                    <p><strong>Amount:</strong> <span class="font-weight-bold"><%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %></span></p>
-                    <p class="text-muted small"><strong>Date:</strong> <%= new Date(transaction.date).toLocaleDateString() %></p>
+                  <div class="d-flex align-items-center" style="margin-bottom: 5px;">
+                    <div style="width: 140px;">
+                      <select class="form-control filter-select" style="font-size: 0.85rem; height: 38px; width: 100%; border-radius: 20px !important;" onchange="applyWalletFilter('sort', this.value)">
+                        <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Latest</option>
+                        <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Oldest</option>
+                        <option value="credit" <%= sort === 'credit' ? 'selected' : '' %>>Credit</option>
+                        <option value="debit" <%= sort === 'debit' ? 'selected' : '' %>>Debit</option>
+                      </select>
+                    </div>
+                    <% if (sort && sort !== 'latest') { %>
+                    <a href="/user/wallet?search=<%= search %>&sort=latest" class="btn btn-sm ml-1" title="Clear filter" style="color:#9135ED;"><i class="fas fa-times-circle"></i></a>
+                    <% } %>
                   </div>
                 </div>
-                <% }) %>
-              </div>
+                <% } %>
 
-            <% } %>
+                <div class="profile-card tight-card">
+                    <% if (transactions.length === 0) { %>
+                        <% if (typeof totalTransactionsUnfiltered !== 'undefined' && totalTransactionsUnfiltered === 0) { %>
+                        <div class="text-center py-5">
+                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No transactions recorded yet.</p>
+                        </div>
+                        <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No match was found for the given criteria.<br><a href="/user/wallet" class="text-purple font-weight-bold">Clear all filters</a></p>
+                        </div>
+                        <% } %>
+                    <% } else { %>
+                        <!-- Desktop Table -->
+                        <table class="table table-hover wallet-table-desktop">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>S.No</th>
+                                    <th>Transaction ID</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% transactions.forEach((transaction, index) => { %>
+                                <tr>
+                                    <td><%= (currentPage - 1) * limit + (index + 1) %></td>
+                                    <td class="small font-weight-bold text-muted"><%= transaction.transactionId %></td>
+                                    <td><%= transaction.description %></td>
+                                    <td>
+                                        <span class="<%= transaction.type === 'credit' ? 'credited' : 'debited' %>">
+                                            <%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1).toLowerCase() %>
+                                        </span>
+                                    </td>
+                                    <td class="font-weight-bold">
+                                        <%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %>
+                                    </td>
+                                    <td class="small">
+                                        <%= new Date(transaction.date).toLocaleDateString() %>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                        <!-- Mobile Cards -->
+                        <div class="wallet-cards-mobile">
+                            <% transactions.forEach((transaction, index) => { %>
+                            <div class="transaction-card">
+                                <div class="transaction-card-header">
+                                    <span class="font-weight-bold">#<%= (currentPage - 1) * limit + (index + 1) %></span>
+                                    <span class="<%= transaction.type === 'credit' ? 'credited' : 'debited' %>"><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1).toLowerCase() %></span>
+                                </div>
+                                <div class="transaction-card-body">
+                                    <p><strong>Transaction ID:</strong> <span class="small text-muted"><%= transaction.transactionId %></span></p>
+                                    <p><strong>Description:</strong> <%= transaction.description %></p>
+                                    <p><strong>Amount:</strong> <span class="font-weight-bold"><%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %></span></p>
+                                    <p class="text-muted small"><strong>Date:</strong> <%= new Date(transaction.date).toLocaleDateString() %></p>
+                                </div>
+                            </div>
+                            <% }) %>
+                        </div>
 
-          <!-- Standardized Pagination -->
-          <% if (transactions.length > 0) { %>
-          <%- include('partials/pagination') %>
-          <% } %>
-          </div>
+                        <!-- Standardized Pagination -->
+                        <div class="mt-4">
+                            <%- include('partials/pagination') %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
       </div>
     </div>
   </section>
@@ -249,7 +360,32 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {});
+    // Tab Switching Logic with Persistence
+    function switchWalletTab(tabName) {
+        // Save to localStorage
+        localStorage.setItem('walletActiveTab', tabName);
+
+        // Update Buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('toggle-' + tabName).classList.add('active');
+
+        // Update Content
+        document.querySelectorAll('.wallet-content-section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById('section-' + tabName).classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check for persisted tab, default to 'wallet'
+        const activeTab = localStorage.getItem('walletActiveTab') || 'wallet';
+        
+        // If sorting or searching is active, force 'transactions' tab
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('search') || urlParams.has('sort') || urlParams.has('page')) {
+            switchWalletTab('transactions');
+        } else {
+            switchWalletTab(activeTab);
+        }
+    });
 
     function applyWalletFilter(param, value) {
       const url = new URL(window.location.href);
@@ -260,6 +396,8 @@
 
     function copyReferralLink() {
       const referralLink = document.getElementById('referral-link');
+      if (referralLink.disabled) return;
+      
       const linkUrl = referralLink.value;
 
       navigator.clipboard.writeText(linkUrl).then(function() {
@@ -278,5 +416,6 @@
     }
 </script>
 
+  <% console.log('User claim status in EJS:', user.referralCreditsClaimed) %>
 </body>
 </html>

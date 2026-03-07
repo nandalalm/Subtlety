@@ -51,4 +51,8 @@ router.post('/add-to-wishlist', controller.addToWishlist);
 router.delete('/wishlist/remove/:productId', controller.deleteFromWishlist);
 router.post('/logout', controller.logout);
 
+// Reviews
+router.post('/reviews/add', userAuthenticated, controller.postReview);
+router.get('/reviews/load-more/:productId', controller.loadMoreReviews);
+
 module.exports = router;

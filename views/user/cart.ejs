@@ -57,6 +57,7 @@
       border-radius: 12px;
       background: white;
       transition: transform 0.2s;
+      position: relative;
     }
 
     .product-card:hover {
@@ -179,6 +180,51 @@
         border-top: 1px dashed #eee;
       }
     }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-top: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: fit-content;
+    }
+
+    .badge-unavailable {
+      background-color: #fff0f0;
+      color: #e53935;
+      border: 1px solid #ffcdd2;
+    }
+
+    .badge-out-of-stock {
+      background-color: #fff3e0;
+      color: #ef6c00;
+      border: 1px solid #ffe0b2;
+    }
+
+    .badge-low-stock {
+      background-color: #f1f8e9;
+      color: #2e7d32;
+      border: 1px solid #dcedc8;
+    }
+
+    .unavailable-text, .out-of-stock-text, .low-stock-text {
+      margin-bottom: 0 !important;
+    }
+
+    @media (max-width: 530px) {
+      .status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 2px 6px;
+        font-size: 0.6rem;
+        margin-top: 0;
+      }
+    }
   </style>
 </head>
 
@@ -206,13 +252,15 @@
                 <p class="font-weight-bold"><%= cartItem.productId.name %></p>
                 <p>₹ <%= cartItem.discountedPrice || cartItem.productId.price %></p>
               </div>
-              <% if (!cartItem.productId.isListed) { %>
-              <p class="unavailable-text">Product no longer available, Please remove from cart</p>
-              <% } else if (cartItem.productId.stock === 0) { %>
-              <p class="out-of-stock-text">Product Out of Stock, Please remove from cart</p>
-              <% } else if (cartItem.productId.stock < cartItem.quantity) { %>
-              <p class="low-stock-text">Currently only <%= cartItem.productId.stock %> in stock</p>
-              <% } %>
+              <div class="status-container">
+                <% if (!cartItem.productId.isListed) { %>
+                <span class="status-badge badge-unavailable unavailable-text">Unavailable</span>
+                <% } else if (cartItem.productId.stock === 0) { %>
+                <span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>
+                <% } else if (cartItem.productId.stock < cartItem.quantity) { %>
+                <span class="status-badge badge-low-stock low-stock-text">Only <%= cartItem.productId.stock %> units left</span>
+                <% } %>
+              </div>
             </div>
             <div class="controls-container">
               <div class="quantity-group">
@@ -447,13 +495,14 @@
 
     function checkoutHandler(event) {
       event.preventDefault();
+      let unlistedProducts = document.querySelectorAll('.product-card .unavailable-text');
       let outOfStockProducts = document.querySelectorAll('.product-card .out-of-stock-text');
       let lowStockProducts = document.querySelectorAll('.product-card .low-stock-text');
 
-      if (outOfStockProducts.length > 0 || lowStockProducts.length > 0) {
+      if (unlistedProducts.length > 0 || outOfStockProducts.length > 0 || lowStockProducts.length > 0) {
         Swal.fire({
-          title: 'Stock Issues',
-          text: 'Some products in your cart are out of stock or have insufficient stock. Please adjust quantities or remove these items to proceed.',
+          title: 'Items Unavailable',
+          text: 'Some products in your cart are no longer available or out of stock. Please remove these items to proceed.',
           icon: 'warning',
           confirmButtonText: 'OK'
         });
@@ -462,30 +511,58 @@
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-              'Accept': 'application/json' // Specify that we expect JSON
+              'Accept': 'application/json'
             }
           })
           .then(response => {
             if (!response.ok) {
               return response.json().then(data => {
-                throw new Error(data.message || 'An error occurred');
+                Swal.fire({
+                  title: 'Order Issue',
+                  text: data.message || 'Some products in your cart have status changes.',
+                  icon: 'error',
+                  confirmButtonText: 'OK'
+                }).then(() => {
+                  if (data.errors) {
+                    updateProductStatusUI(data.errors);
+                  }
+                });
+                return null;
               });
             }
-            return response.json(); // Handle the response as JSON
+            return response.json();
           })
           .then(data => {
-            // If you get a success response, redirect to the checkout page
-            window.location.href = '/user/checkout';
+            if (data) {
+              window.location.href = '/user/checkout';
+            }
           })
           .catch(error => {
-            Swal.fire({
-              title: 'Error',
-              text: error.message,
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
+            console.error("Checkout check failed:", error);
           });
       }
+    }
+
+    function updateProductStatusUI(errors) {
+      if (!errors || !Array.isArray(errors)) return;
+
+      errors.forEach(err => {
+        const productCard = document.querySelector(`.product-card[data-product-id="${err.productId}"]`);
+        if (productCard) {
+          const statusContainer = productCard.querySelector('.status-container');
+          if (statusContainer) {
+            let badgeHTML = '';
+            if (err.status === 'unavailable') {
+              badgeHTML = `<span class="status-badge badge-unavailable unavailable-text">Unavailable</span>`;
+            } else if (err.status === 'out-of-stock') {
+              badgeHTML = `<span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>`;
+            } else if (err.status === 'low-stock') {
+              badgeHTML = `<span class="status-badge badge-low-stock low-stock-text">Only ${err.availableStock} units left</span>`;
+            }
+            statusContainer.innerHTML = badgeHTML;
+          }
+        }
+      });
     }
 
 

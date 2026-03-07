@@ -57,6 +57,10 @@ const orderSchema = new mongoose.Schema(
           enum: ["Pending", "Shipped", "Delivered", "Cancelled", "Returned"],
           default: "Pending",
         },
+        isRated: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
     totalAmount: {

@@ -1,4 +1,5 @@
 const User = require("../model/user");
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const Product = require("../model/product");
 const Category = require("../model/category");
@@ -12,6 +13,7 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Wallet = require("../model/wallet");
 const Offer = require("../model/offer");
+const Review = require("../model/review");
 const PDFDocument = require("pdfkit");
 
 // Helper to generate unique Order ID
@@ -180,7 +182,7 @@ async function verifyOtp(req, res) {
         if (wallet) {
           wallet.balance += 600;
           wallet.transactions.push({
-            transactionId: generateTransactionId(),
+            transactionId: await generateTransactionId(),
             amount: 600,
             type: "credit",
             description: "Referral reward for referring a new user",
@@ -193,7 +195,7 @@ async function verifyOtp(req, res) {
             balance: 600,
             transactions: [
               {
-                transactionId: generateTransactionId(),
+                transactionId: await generateTransactionId(),
                 amount: 600,
                 type: "credit",
                 description: "Referral reward for referring a new user",
@@ -285,12 +287,14 @@ async function getHome(req, res) {
     // Fetch all products and categories
     const products = await Product.find({ isListed: true });
     const categories = await Category.find({ isListed: true });
+    const ratingMap = await getAverageRatingsForProducts(products);
 
     // Fetch the best offer for each product
     const productsWithOffers = await Promise.all(
       products.map(async (product) => {
         const bestOffer = await getBestOffer(product);
-        return { product, bestOffer };
+        const averageRating = ratingMap[product._id.toString()] || 0;
+        return { product, bestOffer, averageRating };
       })
     );
 
@@ -308,20 +312,22 @@ async function getHome(req, res) {
       });
 
       // Fetch best offers for the top-selling products
+      const bestSellingRatingMap = await getAverageRatingsForProducts(bestSellingProductDetails);
       bestSellingProductsWithOffers = await Promise.all(
         bestSellingProductDetails.map(async (product) => {
           const bestOffer = await getBestOffer(product);
-          return { product, bestOffer };
+          const averageRating = bestSellingRatingMap[product._id.toString()] || 0;
+          return { product, bestOffer, averageRating };
         })
       );
 
       // Sort the best-selling products by frequency count
       bestSellingProductsWithOffers = bestSellingProductsWithOffers
-        .map(({ product, bestOffer }) => {
+        .map(({ product, bestOffer, averageRating }) => {
           const count = bestSellingProducts.find(
             (f) => f._id.toString() === product._id.toString()
           ).count;
-          return { product, bestOffer, count };
+          return { product, bestOffer, count, averageRating };
         })
         .sort((a, b) => b.count - a.count);
     }
@@ -333,10 +339,12 @@ async function getHome(req, res) {
     latestProductsWithOffers.sort((a, b) => a.name.localeCompare(b.name));
 
     // Fetch offers for the latest products
+    const latestRatingMap = await getAverageRatingsForProducts(latestProductsWithOffers);
     const latestProductsWithOffersAndDetails = await Promise.all(
       latestProductsWithOffers.map(async (product) => {
         const bestOffer = await getBestOffer(product);
-        return { product, bestOffer };
+        const averageRating = latestRatingMap[product._id.toString()] || 0;
+        return { product, bestOffer, averageRating };
       })
     );
 
@@ -344,10 +352,12 @@ async function getHome(req, res) {
     const fallbackBestSellingProducts = products.slice(0, 4);
 
     // Fetch best offers for the fallback products
+    const fallbackRatingMap = await getAverageRatingsForProducts(fallbackBestSellingProducts);
     const fallbackProductsWithOffers = await Promise.all(
       fallbackBestSellingProducts.map(async (product) => {
         const bestOffer = await getBestOffer(product);
-        return { product, bestOffer };
+        const averageRating = fallbackRatingMap[product._id.toString()] || 0;
+        return { product, bestOffer, averageRating };
       })
     );
 
@@ -487,10 +497,12 @@ async function getShopPage(req, res) {
     const totalProducts = await Product.countDocuments(query);
     const hasMore = totalProducts > skip + products.length;
 
+    const ratingMap = await getAverageRatingsForProducts(products);
     const productsWithOffers = await Promise.all(
       products.map(async (product) => {
         const bestOffer = await getBestOffer(product);
-        return { product, bestOffer };
+        const averageRating = ratingMap[product._id.toString()] || 0;
+        return { product, bestOffer, averageRating };
       })
     );
 
@@ -547,11 +559,13 @@ async function getSingleProduct(req, res) {
     // Get the best offer for the main product
     const bestOffer = await getBestOffer(product);
 
-    // Get best offers for related products
+    // Get best offers and ratings for related products
+    const relatedRatingMap = await getAverageRatingsForProducts(relatedProducts);
     const relatedProductsWithOffers = await Promise.all(
       relatedProducts.map(async (relatedProduct) => {
         const bestOffer = await getBestOffer(relatedProduct);
-        return { product: relatedProduct, bestOffer };
+        const averageRating = relatedRatingMap[relatedProduct._id.toString()] || 0;
+        return { product: relatedProduct, bestOffer, averageRating };
       })
     );
 
@@ -604,6 +618,22 @@ async function getSingleProduct(req, res) {
     // Select top 2 best coupons
     const topCoupons = sortedCoupons.slice(0, 2).map(item => item.coupon);
 
+    // Fetch initial reviews (top 5)
+    const reviews = await Review.find({ productId: id, isListed: true })
+      .populate("userId", "firstname lastname")
+      .sort({ createdAt: -1 })
+      .limit(5);
+    
+    const totalReviewsCount = await Review.countDocuments({ productId: id, isListed: true });
+    const hasMoreReviews = totalReviewsCount > reviews.length;
+
+    // Calculate average rating
+    const ratingStats = await Review.aggregate([
+      { $match: { productId: new mongoose.Types.ObjectId(id), isListed: true } },
+      { $group: { _id: null, averageRating: { $avg: "$rating" } } }
+    ]);
+    const averageRating = ratingStats.length > 0 ? ratingStats[0].averageRating.toFixed(1) : 0;
+
     res.render("user/single-product", {
       user,
       cartItemMap,
@@ -615,7 +645,11 @@ async function getSingleProduct(req, res) {
       relatedProductsWithOffers,
       activeCoupons: topCoupons,
       hasMoreRelated,
-      currentPage: 1
+      currentPage: 1,
+      reviews,
+      totalReviewsCount,
+      hasMoreReviews,
+      averageRating
     });
   } catch (error) {
     console.error("Error fetching product:", error);
@@ -971,9 +1005,15 @@ async function addToCart(req, res) {
         });
       }
       cart.products[existingProductIndex].quantity = newQuantity;
+
+      // Update discountedPrice as well
+      const bestOffer = await getBestOffer(product);
+      cart.products[existingProductIndex].discountedPrice = bestOffer ? bestOffer.discountedPrice : product.price;
     } else {
       // If the product does not exist, add it to the cart
-      cart.products.push({ productId, quantity });
+      const bestOffer = await getBestOffer(product);
+      const discountedPrice = bestOffer ? bestOffer.discountedPrice : product.price;
+      cart.products.push({ productId, quantity, discountedPrice });
     }
 
     await cart.save();
@@ -1077,6 +1117,11 @@ async function updateQuantity(req, res) {
         }
 
         cart.products[productIndex].quantity = quantity;
+        
+        // Update discountedPrice during quantity change to keep baseline current
+        const bestOffer = await getBestOffer(product);
+        cart.products[productIndex].discountedPrice = bestOffer ? bestOffer.discountedPrice : product.price;
+
         await cart.save();
 
         const { subtotal, total, productsWithPrices } = await calculateCartTotals(cart);
@@ -1130,63 +1175,91 @@ async function checkoutPage(req, res) {
     }
 
     let subtotal = 0;
-    let offerChanged = false;
+    let priceChanged = false;
     let unavailableProducts = [];
+    let insufficientStockProducts = [];
+    let productAvailabilityErrors = [];
+
     const updatedProducts = await Promise.all(
       cart.products.map(async (item) => {
         const product = item.productId;
-        if (!product.isListed || product.stock === 0) {
+        
+        // Check for unlisted or totally out of stock
+        if (!product.isListed) {
           unavailableProducts.push(product.name);
+          productAvailabilityErrors.push({ productId: product._id, status: 'unavailable', name: product.name });
           return null;
         }
-        const bestOffer = await getBestOffer(product);
-        let price = product.price;
-        if (bestOffer && bestOffer.isActive) {
-          price = bestOffer.discountedPrice;
-        } else if (
-          item.discountedPrice &&
-          item.discountedPrice !== product.price
-        ) {
-          offerChanged = true;
+        if (product.stock <= 0) {
+          insufficientStockProducts.push(`${product.name} (Out of Stock)`);
+          productAvailabilityErrors.push({ productId: product._id, status: 'out-of-stock', name: product.name });
+          return null;
         }
-        subtotal += price * item.quantity;
+        // Check if requested quantity exceeds available stock
+        if (item.quantity > product.stock) {
+          insufficientStockProducts.push(`${product.name} (Only ${product.stock} left)`);
+          productAvailabilityErrors.push({ productId: product._id, status: 'low-stock', name: product.name, availableStock: product.stock });
+          return null;
+        }
+
+        const bestOffer = await getBestOffer(product);
+        let currentPrice = product.price;
+        if (bestOffer && bestOffer.isActive) {
+          currentPrice = bestOffer.discountedPrice;
+        }
+
+        // Detect if price changed since it was added to cart or last checkout visit
+        const storedPrice = item.discountedPrice !== undefined ? item.discountedPrice : product.price;
+        if (Math.abs(currentPrice - storedPrice) > 0.01) {
+          priceChanged = true;
+          // Update the stored price in the DB to match current for future loads
+          item.discountedPrice = currentPrice;
+        }
+
+        subtotal += currentPrice * item.quantity;
         return {
           ...item.toObject(),
-          discountedPrice: price,
+          discountedPrice: currentPrice,
         };
       })
     );
 
-    // Filter out null values ie; unavailable products
-    const availableProducts = updatedProducts.filter(
-      (product) => product !== null
-    );
-    if (unavailableProducts.length > 0) {
-      const message = `Some products are no longer available or out of stock. Please remove them from your cart: ${unavailableProducts.join(
-        ", "
-      )}`;
-      if (
-        req.headers.accept &&
-        req.headers.accept.includes("application/json")
-      ) {
-        return res.status(400).json({ message });
+    // Persist the updated prices to the database if changes were detected
+    // IMPORTANT: Only save if NOT an AJAX call, to ensure the notification appears on the final rendered page
+    const isAjax = req.headers.accept && req.headers.accept.includes("application/json");
+    if (priceChanged && !isAjax) {
+      await cart.save();
+    }
+
+    // If any product is unavailable or insufficient, block checkout
+    if (unavailableProducts.length > 0 || insufficientStockProducts.length > 0) {
+      let errorMsg = "";
+      if (unavailableProducts.length > 0) {
+        errorMsg += `The following products are no longer available and must be removed: ${unavailableProducts.join(", ")}. `;
+      }
+      if (insufficientStockProducts.length > 0) {
+        errorMsg += `Insufficient stock for: ${insufficientStockProducts.join(", ")}. Please adjust your cart.`;
+      }
+
+      if (req.headers.accept && req.headers.accept.includes("application/json")) {
+        return res.status(400).json({ 
+          message: errorMsg.trim(),
+          errors: productAvailabilityErrors
+        });
       }
       return res.redirect("/user/cart");
     }
 
-    const deliveryCharge = 50; // Fixed delivery charge
+    const availableProducts = updatedProducts.filter(p => p !== null);
+    const deliveryCharge = 50;
     const totalAmount = subtotal + deliveryCharge;
 
     let message = null;
-    if (offerChanged) {
-      message =
-        "Some offers are no longer valid. The prices have been updated.";
+    if (priceChanged) {
+      message = "Some items in your cart have updated prices or offers. Please review your order summary before proceeding.";
     }
 
-    if (
-      req.headers.accept &&
-      req.headers.accept.includes("application/json")
-    ) {
+    if (req.headers.accept && req.headers.accept.includes("application/json")) {
       return res.status(200).json({ success: true });
     }
 
@@ -1238,6 +1311,13 @@ async function applyCoupon(req, res) {
     return res
       .status(400)
       .json({ message: "This coupon has reached its usage limit" });
+  }
+
+  // Check minimum order value
+  if (coupon.minOrderValue && totalAmount < coupon.minOrderValue) {
+    return res.status(400).json({ 
+      message: `Minimum order value of ₹${coupon.minOrderValue} required for this coupon.` 
+    });
   }
 
   // Calculate discount
@@ -1299,13 +1379,17 @@ async function confirmOrder(req, res) {
       return res.status(400).json({ message: "Payment method is required" });
     }
 
-    // Check if all products are listed
+    // Check if products are still listed and have sufficient stock
     for (const item of items) {
       const product = await Product.findById(item.productId);
       if (!product || !product.isListed) {
         return res.status(400).json({
-          message:
-            "One or more products in your order are no longer available. Please review your cart and try again.",
+          message: `The product "${product ? product.name : 'Unknown'}" is no longer available. Please return to cart and remove it.`,
+        });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({
+          message: `Insufficient stock for "${product.name}". Only ${product.stock} items are left.`,
         });
       }
     }
@@ -1348,6 +1432,13 @@ async function confirmOrder(req, res) {
         return res
           .status(400)
           .json({ message: "This coupon has reached its usage limit" });
+      }
+
+      // Re-verify coupon validity
+      if (coupon.minOrderValue && recalculatedTotal < coupon.minOrderValue) {
+        return res.status(400).json({ 
+          message: `The order total (₹${recalculatedTotal}) is below the minimum required (₹${coupon.minOrderValue}) for coupon "${couponCode}".` 
+        });
       }
 
       // Calculate discount
@@ -1409,7 +1500,7 @@ async function confirmOrder(req, res) {
       if (wallet && wallet.balance >= finalTotalAmount) {
         wallet.balance -= finalTotalAmount;
         wallet.transactions.push({
-          transactionId: generateTransactionId(),
+          transactionId: await generateTransactionId(),
           amount: finalTotalAmount,
           type: "debit",
           description: `Payment for Order ${customOrderId}`,
@@ -1588,7 +1679,7 @@ const deductWalletAmount = async (req, res) => {
 
     // Log the wallet transaction as a debit
     wallet.transactions.push({
-      transactionId: generateTransactionId(),
+      transactionId: await generateTransactionId(),
       amount: amount,
       type: "debit",
       orderId: customOrder.orderId,
@@ -1873,7 +1964,7 @@ async function cancelProduct(req, res) {
         const refundAmount = item.price * item.quantity;
         wallet.balance += refundAmount;
         wallet.transactions.push({
-          transactionId: generateTransactionId(),
+          transactionId: await generateTransactionId(),
           amount: refundAmount,
           type: "credit",
           orderId: order.orderId,
@@ -1953,7 +2044,7 @@ async function returnProduct(req, res) {
 
 async function getWallet(req, res) {
   const userId = req.session.user._id;
-  const user = req.session.user;
+  const user = await User.findById(userId);
   const page = parseInt(req.query.page) || 1;
   const limit = 5;
   const skip = (page - 1) * limit;
@@ -2193,10 +2284,12 @@ async function getWishlist(req, res) {
 
     const categories = await Category.find({});
 
+    const ratingMap = await getAverageRatingsForProducts(user.wishlisted);
     const productsWithOffers = await Promise.all(
       user.wishlisted.map(async (product) => {
         const bestOffer = await getBestOffer(product);
-        return { product, bestOffer };
+        const averageRating = ratingMap[product._id.toString()] || 0;
+        return { product, bestOffer, averageRating };
       })
     );
 
@@ -2295,10 +2388,12 @@ async function loadMoreRelatedProducts(req, res) {
 
     const relatedProducts = await Product.find(query).skip(skip).limit(limit);
 
+    const relatedRatingMap = await getAverageRatingsForProducts(relatedProducts);
     const relatedProductsWithOffers = await Promise.all(
       relatedProducts.map(async (relatedProduct) => {
         const bestOffer = await getBestOffer(relatedProduct);
-        return { product: relatedProduct, bestOffer };
+        const averageRating = relatedRatingMap[relatedProduct._id.toString()] || 0;
+        return { product: relatedProduct, bestOffer, averageRating };
       })
     );
 
@@ -2339,10 +2434,12 @@ async function loadMoreProducts(req, res) {
       else if (sort === "zToA") products.sort((a, b) => b.name.localeCompare(a.name));
     }
 
+    const ratingMap = await getAverageRatingsForProducts(products);
     const productsWithOffers = await Promise.all(
       products.map(async (product) => {
         const bestOffer = await getBestOffer(product);
-        return { product, bestOffer };
+        const averageRating = ratingMap[product._id.toString()] || 0;
+        return { product, bestOffer, averageRating };
       })
     );
 
@@ -2354,6 +2451,125 @@ async function loadMoreProducts(req, res) {
     console.error(error);
     res.status(500).json({ message: "Error loading more products" });
   }
+}
+
+async function postReview(req, res) {
+  const { productId, orderId, rating, comment } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ success: false, message: "Please log in to review." });
+  }
+
+  try {
+    // Check if the product was delivered in this order
+    const order = await Order.findOne({
+      _id: orderId,
+      userId: user._id,
+      "items": {
+        $elemMatch: {
+          productId: productId,
+          status: "Delivered"
+        }
+      }
+    });
+
+    if (!order) {
+      return res.status(400).json({
+        success: false,
+        message: "You can only review items that have been delivered."
+      });
+    }
+
+    // Check if item was returned or has a pending return
+    const returnRequest = order.returnRequests.find(
+      (req) => req.productId.toString() === productId
+    );
+    if (returnRequest && returnRequest.status !== "Rejected") {
+      return res.status(400).json({
+        success: false,
+        message: returnRequest.status === "Pending" 
+          ? "You cannot review a product while a return request is pending." 
+          : "Returned items cannot be reviewed."
+      });
+    }
+
+    const review = new Review({
+      productId,
+      userId: user._id,
+      orderId,
+      rating: Number(rating),
+      comment
+    });
+
+    await review.save();
+
+    // Mark the item as rated so the Rate & Review button disappears
+    const orderItem = order.items.find(
+      (i) => i.productId.toString() === productId
+    );
+    if (orderItem) {
+      orderItem.isRated = true;
+      await order.save();
+    }
+
+    res.json({ success: true, message: "Review submitted successfully!" });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already reviewed this product for this order."
+      });
+    }
+    console.error("Review Error:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+}
+
+async function loadMoreReviews(req, res) {
+  const { productId } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 5;
+  const skip = (page - 1) * limit;
+
+  try {
+    const reviews = await Review.find({ productId, isListed: true })
+      .populate("userId", "firstname lastname")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Review.countDocuments({ productId, isListed: true });
+    const hasMore = total > skip + reviews.length;
+
+    res.json({
+      success: true,
+      reviews: reviews.map(r => ({
+        user: `${r.userId.firstname} ${r.userId.lastname || ""}`,
+        rating: r.rating,
+        comment: r.comment,
+        date: r.createdAt.toLocaleDateString("en-GB")
+      })),
+      hasMore
+    });
+  } catch (error) {
+    console.error("Load More Reviews Error:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+}
+
+async function getAverageRatingsForProducts(products) {
+  if (!products || products.length === 0) return {};
+  const productIds = products.map(p => new mongoose.Types.ObjectId(p._id || p.productId?._id || p));
+  const ratings = await Review.aggregate([
+    { $match: { productId: { $in: productIds }, isListed: true } },
+    { $group: { _id: "$productId", averageRating: { $avg: "$rating" } } }
+  ]);
+
+  return ratings.reduce((map, r) => {
+    map[r._id.toString()] = r.averageRating.toFixed(1);
+    return map;
+  }, {});
 }
 
 module.exports = {
@@ -2404,6 +2620,8 @@ module.exports = {
   deleteFromWishlist,
   logout,
   loadMoreProducts,
+  postReview,
+  loadMoreReviews,
   generateOrderId,
   generateTransactionId,
 };
