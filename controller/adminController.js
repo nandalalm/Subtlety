@@ -856,25 +856,7 @@ async function getOrders(req, res) {
                   $cond: {
                     if: { $eq: ["$orderStatus", "Shipped"] },
                     then: 3,
-                    else: {
-                      $cond: {
-                        if: { $eq: ["$orderStatus", "Completed"] },
-                        then: 4,
-                        else: {
-                          $cond: {
-                            if: { $and: [{ $eq: ["$orderStatus", "Pending"] }, { $eq: ["$paymentStatus", "Failed"] }] },
-                            then: 5,
-                            else: {
-                              $cond: {
-                                if: { $eq: ["$orderStatus", "Cancelled"] },
-                                then: 6,
-                                else: 7
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
+                    else: 4
                   }
                 }
               }
