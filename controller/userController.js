@@ -964,9 +964,20 @@ async function addToCart(req, res) {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Check if the product is listed
+    if (!product.isListed) {
+      return res.status(400).json({ 
+        status: 'unlisted',
+        message: "This product is no longer available" 
+      });
+    }
+
     // Check if the product is out of stock
     if (product.stock === 0) {
-      return res.status(400).json({ message: "Product out of stock" });
+      return res.status(400).json({ 
+        status: 'out-of-stock',
+        message: "Product out of stock" 
+      });
     }
 
     // Check if only 1 quantity is left and it's already in the cart
@@ -975,6 +986,7 @@ async function addToCart(req, res) {
     );
     if (product.stock === 1 && existingProductIndex > -1) {
       return res.status(400).json({
+        status: 'low-stock',
         message: "Only 1 product left and you have already added it to cart",
       });
     }
@@ -990,6 +1002,7 @@ async function addToCart(req, res) {
     // Check if adding the new quantity exceeds the stock
     if (totalQuantityInCart + quantity > product.stock) {
       return res.status(400).json({
+        status: 'low-stock',
         message: `Only ${product.stock} of this product is available.`,
       });
     }
@@ -1099,6 +1112,14 @@ async function updateQuantity(req, res) {
         const product = await Product.findById(productId);
         if (!product) {
           return res.status(404).json({ message: "Product not found" });
+        }
+
+        // Check if the product is listed
+        if (!product.isListed) {
+          return res.status(400).json({ 
+            status: 'unlisted',
+            message: "This product is no longer available" 
+          });
         }
 
         let message = null;

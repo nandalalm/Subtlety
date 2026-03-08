@@ -14,8 +14,77 @@ document.addEventListener('DOMContentLoaded', () => {
       duration: 3000,
       gravity: "bottom",
       position: "center",
-      backgroundColor: bgColor,
+      style: {
+        background: bgColor
+      }
     }).showToast();
+  };
+
+  const syncProductAvailability = (productId, status) => {
+    // Determine if we are on the single product page for this specific product
+    const isSingleProductPage = window.location.pathname.includes(`/single-product/${productId}`);
+
+    if (status === 'unlisted') {
+      if (isSingleProductPage) {
+        // On single product page: Show unavailable alert and hide controls
+        const section = document.querySelector('.single-product-section .container');
+        if (section) {
+          section.innerHTML = `
+            <div class="alert alert-warning mt-5" role="alert">
+              The product you are looking for is currently unavailable.
+            </div>
+            <div class="text-center mt-3">
+              <a href="/user/home" class="btn btn-dark">Back to Home</a>
+            </div>`;
+        }
+      } else {
+        // On other pages: Remove all card instances for this product
+        const targets = document.querySelectorAll(`[data-product-id="${productId}"]`);
+        targets.forEach(t => {
+          const card = t.closest('.card-div');
+          if (card) {
+            card.style.transition = 'opacity 0.3s ease';
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+          }
+        });
+      }
+    } else if (status === 'out-of-stock') {
+      if (isSingleProductPage) {
+        // Update single product UI to OOS
+        const stockStatus = document.querySelector('.in-stock');
+        if (stockStatus) {
+            stockStatus.classList.remove('in-stock');
+            stockStatus.classList.add('text-danger');
+            stockStatus.textContent = 'Out of Stock';
+        }
+        const buyNowBtn = document.querySelector('.buy-buy');
+        if (buyNowBtn) buyNowBtn.classList.add('disabled');
+        const addToCartBtn = document.querySelector('.btn-add-to-cart');
+        if (addToCartBtn) addToCartBtn.classList.add('disabled');
+      } else {
+        // Update all grid cards to OOS state
+        const containers = document.querySelectorAll(`[data-product-id="${productId}"]`);
+        containers.forEach(container => {
+           const card = container.closest('.card-div');
+           if (card) {
+               card.classList.add('out-of-stock');
+               // Add label if not exists
+               const imgContainer = card.querySelector('.card-img-half');
+               if (imgContainer && !imgContainer.querySelector('.out-of-stock-label')) {
+                   const label = document.createElement('span');
+                   label.className = 'out-of-stock-label position-absolute';
+                   label.style = 'top: 10px; right: 10px; background: rgba(255, 0, 0, 0.8); color: white; padding: 2px 8px; border-radius: 0; font-size: 10px; font-weight: bold;';
+                   label.textContent = 'Out of Stock';
+                   imgContainer.appendChild(label);
+               }
+               // Disable buttons
+               const addBtn = card.querySelector('.btn-add-to-cart');
+               if (addBtn) addBtn.classList.add('disabled');
+           }
+        });
+      }
+    }
   };
 
   const updateUI = (productId, quantity) => {
@@ -102,11 +171,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         showToast(data.message, 'error');
-        updateUI(productId, currentQty);
+        if (data.status === 'unlisted') {
+          syncProductAvailability(productId, 'unlisted');
+        } else if (data.status === 'out-of-stock') {
+          syncProductAvailability(productId, 'out-of-stock');
+        } else {
+          updateUI(productId, currentQty);
+        }
       }
     } catch (err) {
       console.error(err);
-      showToast("Error updating cart", 'error');
+      if (!(err instanceof ReferenceError)) {
+        showToast("Error updating cart", 'error');
+      }
       updateUI(productId, currentQty);
     }
   };
@@ -144,12 +221,22 @@ document.addEventListener('DOMContentLoaded', () => {
           updateUI(productId, 1);
         } else {
           showToast(data.message, 'error');
+          if (data.status === 'unlisted') {
+            syncProductAvailability(productId, 'unlisted');
+          } else if (data.status === 'out-of-stock') {
+            syncProductAvailability(productId, 'out-of-stock');
+          }
         }
       } catch (err) {
         console.error(err);
-        showToast("Something went wrong", 'error');
+        // Only show generic error if it wasn't a handled status change (ReferenceError fix)
+        if (!(err instanceof ReferenceError)) {
+          showToast("Something went wrong", 'error');
+        }
       }
     }
+
+  // syncProductAvailability moved to top scope
 
     // INCREMENT
     if (target.classList.contains('btn-increment')) {
@@ -220,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(data.message, res.ok ? 'success' : 'error');
       } catch (err) {
         console.error(err);
+        showToast("Error adding to wishlist", 'error');
       }
     }
 
@@ -259,6 +347,34 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       });
+    }
+
+    // BUY NOW (Specific to single product page)
+    if (target.classList.contains('buy-buy')) {
+        e.preventDefault();
+        try {
+            const res = await fetch('/user/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: userId, productId, quantity: 1 })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                window.location.href = '/user/cart';
+            } else {
+                showToast(data.message, 'error');
+                if (data.status === 'unlisted') {
+                    syncProductAvailability(productId, 'unlisted');
+                } else if (data.status === 'out-of-stock') {
+                    syncProductAvailability(productId, 'out-of-stock');
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            if (!(err instanceof ReferenceError)) {
+                showToast("Something went wrong", 'error');
+            }
+        }
     }
   });
 });

@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="user-id" content="<%= user ? user._id : '' %>">
   <title>Product View - SUBTLETY</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
@@ -509,33 +510,6 @@
         }
       });
     }
-
-    // Buy Now logic specifically for single product page
-    document.addEventListener('click', async (e) => {
-        if (e.target.closest('.buy-buy')) {
-            const button = e.target.closest('.buy-buy');
-            const productId = button.getAttribute('data-product-id');
-            const userId = '<%= user ? user._id : null %>';
-
-            if (!userId) {
-                showToast("Please log in to buy items", true);
-                return;
-            }
-
-            try {
-                const response = await fetch('/user/cart/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user: userId, productId, quantity: 1 })
-                });
-                if (response.ok) {
-                    window.location.href = '/user/cart';
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-    });
 
     // Zoom and thumbnail logic stays here
   </script>
