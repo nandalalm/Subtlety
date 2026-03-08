@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 const walletSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
   balance: { type: Number, default: 0 },
   transactions: [
     {
-      transactionId: { type: String, required: true },
+      transactionId: { type: String, required: true, unique: true, sparse: true },
       amount: { type: Number, required: true },
       type: { type: String, enum: ["credit", "debit"], required: true },
       description: { type: String, required: true },
