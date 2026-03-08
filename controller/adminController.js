@@ -7,6 +7,7 @@ const Order = require("../model/order");
 const Wallet = require("../model/wallet");
 const Offer = require("../model/offer");
 const Coupon = require("../model/coupon");
+const Transaction = require("../model/transaction");
 const PDFDocument = require("pdfkit");
 const ExcelJS = require("exceljs");
 const bcrypt = require("bcryptjs");
@@ -1206,13 +1207,16 @@ async function approveReturn(req, res) {
       if (wallet && returnedProduct) {
         const refundAmount = item.price * item.quantity;
         wallet.balance += refundAmount;
-        wallet.transactions.push({
+        
+        const newTransaction = new Transaction({
+          userId: order.userId,
           transactionId: await generateTransactionId(),
           amount: refundAmount,
           type: "credit",
           orderId: order.orderId,
           description: `Refund for returning of order ${order.orderId}`,
         });
+        await newTransaction.save();
         await wallet.save();
       }
 
@@ -1484,7 +1488,7 @@ async function toggleOfferStatus(req, res) {
 }
 
 async function getCoupons(req, res) {
-  const limit = 5;
+  const limit = 6;
   const currentPage = parseInt(req.query.page) || 1;
   const skip = (currentPage - 1) * limit;
   const search = req.query.search || "";
@@ -1744,7 +1748,7 @@ const getSalesReportFilter = (reportType, startDate, endDate) => {
 };
 
 async function getSalesReport(req, res) {
-  const limit = 7;
+  const limit = 6;
   const currentPage = parseInt(req.query.page) || 1;
   const skip = (currentPage - 1) * limit;
   
@@ -1842,42 +1846,62 @@ async function downloadSalesReportPdf(req, res) {
     doc.rect(50, 100, 700, 40).fill("#f8f9fa");
     doc.fillColor("#333").fontSize(12);
     doc.text(`Total Sales: ${totalSalesCount}`, 70, 115);
-    doc.text(`Total Amount: ₹${totalOrderAmount.toFixed(2)}`, 300, 115);
-    doc.text(`Total Discount: ₹${totalDiscount.toFixed(2)}`, 550, 115);
+    doc.text(`Total Amount: Rs. ${totalOrderAmount.toFixed(2)}`, 300, 115);
+    doc.text(`Total Discount: Rs. ${totalDiscount.toFixed(2)}`, 550, 115);
 
     doc.moveDown(3);
 
     // Table Header
     const tableTop = 160;
-    doc.fillColor("#444").fontSize(10);
+    doc.fillColor("#444").fontSize(10).font("Helvetica-Bold");
     doc.text("S.No", 50, tableTop);
-    doc.text("Order ID", 90, tableTop);
-    doc.text("Customer", 220, tableTop);
-    doc.text("Offer Discount", 350, tableTop);
-    doc.text("Coupon Discount", 460, tableTop);
-    doc.text("Total Amount", 570, tableTop);
-    doc.text("Date", 670, tableTop);
-    doc.text("Status", 740, tableTop);
+    doc.text("Order ID", 75, tableTop);
+    doc.text("Customer", 190, tableTop);
+    doc.text("Offer Disc.", 350, tableTop);
+    doc.text("Coupon Disc.", 430, tableTop);
+    doc.text("Amount", 510, tableTop);
+    doc.text("Date", 600, tableTop);
+    doc.text("Status", 680, tableTop);
 
     doc.moveTo(50, tableTop + 15).lineTo(790, tableTop + 15).strokeColor("#ccc").stroke();
 
     let y = tableTop + 25;
+    doc.font("Helvetica");
     orders.forEach((order, index) => {
+      // Zebra striping
+      if (index % 2 === 0) {
+        doc.rect(50, y - 5, 740, 20).fill("#fbfbfb");
+      }
+
       // Check for page break
       if (y > 500) {
         doc.addPage({ layout: "landscape", margin: 50 });
         y = 50;
+        
+        // Redraw Header on new page
+        doc.fillColor("#444").fontSize(10).font("Helvetica-Bold");
+        doc.text("S.No", 50, y);
+        doc.text("Order ID", 75, y);
+        doc.text("Customer", 190, y);
+        doc.text("Offer Disc.", 350, y);
+        doc.text("Coupon Disc.", 430, y);
+        doc.text("Amount", 510, y);
+        doc.text("Date", 600, y);
+        doc.text("Status", 680, y);
+        doc.moveTo(50, y + 15).lineTo(790, y + 15).strokeColor("#ccc").stroke();
+        y += 25;
+        doc.font("Helvetica");
       }
 
       doc.fillColor("#666").fontSize(9);
       doc.text(`${index + 1}`, 50, y);
-      doc.text(`${order.orderId}`, 90, y);
-      doc.text(`${order.shippingAddress.fullname}`, 220, y, { width: 120 });
-      doc.text(`₹${(order.offerDiscount || 0).toFixed(2)}`, 350, y);
-      doc.text(`₹${(order.couponDiscount || 0).toFixed(2)}`, 460, y);
-      doc.text(`₹${(order.totalAmount || 0).toFixed(2)}`, 570, y);
-      doc.text(`${new Date(order.orderDate).toLocaleDateString("en-GB")}`, 670, y);
-      doc.text(`${order.orderStatus}`, 740, y);
+      doc.text(`${order.orderId}`, 75, y, { width: 110 });
+      doc.text(`${order.shippingAddress.fullname}`, 190, y, { width: 150 });
+      doc.text(`Rs. ${(order.offerDiscount || 0).toFixed(2)}`, 350, y, { width: 75 });
+      doc.text(`Rs. ${(order.couponDiscount || 0).toFixed(2)}`, 430, y, { width: 75 });
+      doc.text(`Rs. ${(order.totalAmount || 0).toFixed(2)}`, 510, y, { width: 85 });
+      doc.text(`${new Date(order.orderDate).toLocaleDateString("en-GB")}`, 600, y, { width: 75 });
+      doc.text(`${order.orderStatus}`, 680, y, { width: 110 });
       y += 20;
     });
 
@@ -1899,6 +1923,18 @@ async function downloadSalesReportExcel(req, res) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Sales Report");
 
+    // Define columns with explicit widths
+    worksheet.columns = [
+      { header: "S.No", key: "sno", width: 5 },
+      { header: "Order ID", key: "orderId", width: 25 },
+      { header: "Customer", key: "customer", width: 25 },
+      { header: "Offer Discount (Rs.)", key: "offerDiscount", width: 18 },
+      { header: "Coupon Discount (Rs.)", key: "couponDiscount", width: 18 },
+      { header: "Total Amount (Rs.)", key: "totalAmount", width: 18 },
+      { header: "Date", key: "date", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+    ];
+
     // Add summary row
     const totalOrderAmount = orders.reduce((acc, order) => acc + (order.totalAmount || 0), 0);
     const totalDiscount = orders.reduce((acc, order) => acc + (order.offerDiscount || 0) + (order.couponDiscount || 0), 0);
@@ -1909,23 +1945,37 @@ async function downloadSalesReportExcel(req, res) {
     worksheet.addRow(["Total Discount", totalDiscount]);
     worksheet.addRow([]); // Gap
 
-    // Header row
-    worksheet.addRow([
+    // Style the summary rows
+    worksheet.getRow(1).font = { bold: true, size: 14 };
+    [2, 3, 4].forEach(rowNum => {
+        worksheet.getRow(rowNum).font = { bold: true };
+    });
+
+    // Add table header manually since we already added rows
+    const headerRow = worksheet.addRow([
       "S.No",
       "Order ID",
       "Customer",
-      "Offer Discount",
-      "Coupon Discount",
-      "Total Amount",
+      "Offer Discount (Rs.)",
+      "Coupon Discount (Rs.)",
+      "Total Amount (Rs.)",
       "Date",
       "Status",
     ]);
 
     // Style the header
-    worksheet.getRow(6).font = { bold: true };
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    headerRow.eachCell(cell => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF444444" }
+      };
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+    });
 
     orders.forEach((order, index) => {
-      worksheet.addRow([
+      const row = worksheet.addRow([
         index + 1,
         order.orderId,
         order.shippingAddress.fullname,
@@ -1935,6 +1985,7 @@ async function downloadSalesReportExcel(req, res) {
         new Date(order.orderDate).toLocaleDateString("en-GB"),
         order.orderStatus,
       ]);
+      row.alignment = { vertical: "middle", horizontal: "left" };
     });
 
     res.setHeader("Content-Disposition", 'attachment; filename="sales_report.xlsx"');
@@ -1959,24 +2010,105 @@ async function logout(req, res) {
 async function getReviews(req, res) {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 8;
+    const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+    const sort = req.query.sort || "latest";
+    const rating = req.query.rating || "";
 
-    const reviews = await Review.find()
-      .populate("productId", "name")
-      .populate("userId", "firstname email")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    // Base pipeline
+    const pipeline = [
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      { $unwind: "$userDetails" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" }
+    ];
 
-    const totalReviews = await Review.countDocuments();
+    // Search Match
+    if (search) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { "userDetails.firstname": { $regex: search, $options: "i" } },
+            { "userDetails.email": { $regex: search, $options: "i" } }
+          ]
+        }
+      });
+    }
+
+    // Sort/Filter logic
+    const matchStage = {};
+    if (sort === "listed") matchStage.isListed = true;
+    if (sort === "unlisted") matchStage.isListed = false;
+    
+    if (Object.keys(matchStage).length > 0) {
+      pipeline.push({ $match: matchStage });
+    }
+
+    // Define Sort
+    let sortStage = { createdAt: -1 };
+    if (sort === "oldest") sortStage = { createdAt: 1 };
+    
+    // Rating sort overrides date sort if present
+    if (rating === "rating-low") sortStage = { rating: 1 };
+    if (rating === "rating-high") sortStage = { rating: -1 };
+
+    pipeline.push({ $sort: sortStage });
+
+    // Execute count for pagination
+    const countPipeline = [...pipeline, { $count: "total" }];
+    const totalCountResult = await Review.aggregate(countPipeline);
+    const totalReviews = totalCountResult.length > 0 ? totalCountResult[0].total : 0;
     const totalPages = Math.ceil(totalReviews / limit);
+
+    // Apply pagination
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    // Project results for consistency with previous populate structure
+    pipeline.push({
+      $project: {
+        _id: 1,
+        rating: 1,
+        comment: 1,
+        isListed: 1,
+        createdAt: 1,
+        productId: {
+          _id: "$productDetails._id",
+          name: "$productDetails.name"
+        },
+        userId: {
+          _id: "$userDetails._id",
+          firstname: "$userDetails.firstname",
+          email: "$userDetails.email"
+        }
+      }
+    });
+
+    const reviews = await Review.aggregate(pipeline);
 
     res.render("admin/reviews", {
       reviews,
       currentPage: page,
       totalPages,
       limit,
+      search,
+      sort,
+      rating,
       admin: req.session.admin
     });
   } catch (error) {

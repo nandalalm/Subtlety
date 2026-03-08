@@ -391,7 +391,7 @@
             </button>
             <% } else if (item.status === 'Delivered') { %>
               <% if (!returnRequest) { %>
-                <button class="btn btn-sm btn-outline-info rounded-pill px-4 btn-action-fixed" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-bs-toggle="modal" data-bs-target="#returnReasonModal">
+                <button class="btn btn-sm btn-outline-info rounded-pill px-4 btn-action-fixed" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-toggle="modal" data-target="#returnReasonModal">
                   Return Product
                 </button>
               <% } %>
@@ -427,14 +427,16 @@
           <h5 class="modal-title" id="returnReasonModalLabel">
             Return Reason
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
           <textarea id="returnReason" class="form-control" rows="3" placeholder="Please enter your reason for return..."></textarea>
           <div class="validation-message"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
             Close
           </button>
           <button type="button" id="submitReturn" class="btn btn-primary" disabled>
@@ -555,7 +557,7 @@
     if (submitReturnBtn) {
       submitReturnBtn.addEventListener("click", function() {
         const returnButton = document.querySelector(
-          `button[data-bs-target="#returnReasonModal"]`
+          `button[data-target="#returnReasonModal"]`
         );
 
         if (!returnButton) {
@@ -911,21 +913,6 @@
           const data = await response.json();
           
           if (data.success) {
-            // Close the modal immediately
-            $('#rateReviewModal').modal('hide');
-            
-            // Fallback for BS5 or if jQuery modal is flaky
-            const modalEl = document.getElementById('rateReviewModal');
-            if (modalEl) {
-              const modalInstance = bootstrap.Modal.getInstance(modalEl);
-              if (modalInstance) modalInstance.hide();
-              
-              // Remove backdrop manually if needed
-              document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-              document.body.classList.remove('modal-open');
-              document.body.style.paddingRight = '';
-            }
-
             Swal.fire({
               title: 'Thank you!',
               text: data.message,
@@ -933,6 +920,23 @@
               timer: 1500,
               showConfirmButton: false
             }).then(() => {
+              // Robust Modal Closing
+              const modal = $('#rateReviewModal');
+              // 1. Try standard hide
+              modal.modal('hide');
+              
+              // 2. Programmatically click the close button if it's still visible
+              const closeBtn = modal.find('.close');
+              if (closeBtn.length) closeBtn.click();
+              
+              // 3. Manual cleanup as ultimate fallback
+              setTimeout(() => {
+                if ($('.modal-backdrop').length) {
+                  $('.modal-backdrop').remove();
+                  $('body').removeClass('modal-open').css('padding-right', '');
+                }
+              }, 300);
+              
               // Swap the Rate & Review button with a Reviewed badge – no reload needed
               const btn = document.getElementById(`rateBtn-${productId}`);
               if (btn) {

@@ -12,6 +12,7 @@ const path = require("path");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Wallet = require("../model/wallet");
+const Transaction = require("../model/transaction");
 const Offer = require("../model/offer");
 const Review = require("../model/review");
 const PDFDocument = require("pdfkit");
@@ -177,33 +178,23 @@ async function verifyOtp(req, res) {
       // Check if the referral user exists and hasn't already been credited
       if (referralUser && !referralUser.referralCreditsClaimed) {
 
-        const wallet = await Wallet.findOne({ userId: referralUser });
-
-        if (wallet) {
-          wallet.balance += 600;
-          wallet.transactions.push({
-            transactionId: await generateTransactionId(),
-            amount: 600,
-            type: "credit",
-            description: "Referral reward for referring a new user",
-          });
-          await wallet.save();
-        } else {
-          // If the wallet does not exist, create a new one for the referral user
-          const newWallet = new Wallet({
-            userId: referralUser._id,
-            balance: 600,
-            transactions: [
-              {
-                transactionId: await generateTransactionId(),
-                amount: 600,
-                type: "credit",
-                description: "Referral reward for referring a new user",
-              },
-            ],
-          });
-          await newWallet.save();
+        let wallet = await Wallet.findOne({ userId: referralUser });
+        if (!wallet) {
+          wallet = new Wallet({ userId: referralUser._id, balance: 0 });
         }
+
+        const amount = 600;
+        wallet.balance += amount;
+
+        const newTransaction = new Transaction({
+          userId: referralUser._id,
+          transactionId: await generateTransactionId(),
+          amount: amount,
+          type: "credit",
+          description: "Referral reward for referring a new user",
+        });
+
+        await Promise.all([wallet.save(), newTransaction.save()]);
 
         referralUser.referralCreditsClaimed = true;
         await referralUser.save();
@@ -1520,15 +1511,17 @@ async function confirmOrder(req, res) {
       // Balance was already checked above, but let's be safe
       if (wallet && wallet.balance >= finalTotalAmount) {
         wallet.balance -= finalTotalAmount;
-        wallet.transactions.push({
+        
+        const newTransaction = new Transaction({
+          userId: userId,
           transactionId: await generateTransactionId(),
           amount: finalTotalAmount,
           type: "debit",
           description: `Payment for Order ${customOrderId}`,
-          date: new Date(),
           orderId: customOrderId,
         });
-        await wallet.save();
+
+        await Promise.all([wallet.save(), newTransaction.save()]);
         newOrder.paymentStatus = "Successful";
       } else {
         return res.status(400).json({
@@ -1699,7 +1692,8 @@ const deductWalletAmount = async (req, res) => {
     }
 
     // Log the wallet transaction as a debit
-    wallet.transactions.push({
+    const newTransaction = new Transaction({
+      userId: user._id,
       transactionId: await generateTransactionId(),
       amount: amount,
       type: "debit",
@@ -1707,7 +1701,7 @@ const deductWalletAmount = async (req, res) => {
       description: `Payment for Order ${customOrder.orderId}`,
     });
 
-    await wallet.save();
+    await Promise.all([wallet.save(), newTransaction.save()]);
 
     const order = await Order.findById(orderId);
     if (!order) {
@@ -1984,14 +1978,16 @@ async function cancelProduct(req, res) {
       if (wallet) {
         const refundAmount = item.price * item.quantity;
         wallet.balance += refundAmount;
-        wallet.transactions.push({
+        const newTransaction = new Transaction({
+          userId: order.userId,
           transactionId: await generateTransactionId(),
           amount: refundAmount,
           type: "credit",
           orderId: order.orderId,
           description: `Refund for cancellation of order ${order.orderId}`,
         });
-        await wallet.save();
+
+        await Promise.all([wallet.save(), newTransaction.save()]);
       }
     }
 
@@ -2072,7 +2068,6 @@ async function getWallet(req, res) {
   const { search, sort } = req.query;
 
   try {
-    const mongoose = require("mongoose");
     let walletDoc = await Wallet.findOne({ userId });
 
     if (!walletDoc) {
@@ -2080,39 +2075,26 @@ async function getWallet(req, res) {
       await walletDoc.save();
     }
 
-    // Use aggregation to paginate, search, and sort transactions
-    const result = await Wallet.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-      { $unwind: "$transactions" },
-      {
-        $match: {
-          $and: [
-            search ? { "transactions.transactionId": { $regex: search.trim(), $options: "i" } } : {},
-            sort === "credit" ? { "transactions.type": "credit" } : {},
-            sort === "debit" ? { "transactions.type": "debit" } : {}
-          ]
-        }
-      },
-      {
-        $sort: {
-          "transactions.date": sort === "oldest" ? 1 : -1
-        }
-      },
-      {
-        $facet: {
-          metadata: [{ $count: "total" }],
-          data: [{ $skip: skip }, { $limit: limit }]
-        }
-      }
+    // Prepare search filter
+    const query = { userId: new mongoose.Types.ObjectId(userId) };
+    if (search) {
+      query.transactionId = { $regex: search.trim(), $options: "i" };
+    }
+    if (sort === "credit" || sort === "debit") {
+      query.type = sort;
+    }
+
+    // Sort options
+    const sortOption = { date: sort === "oldest" ? 1 : -1 };
+
+    // Fetch total count and paginated data using Transactions collection
+    const [transactions, totalTransactions, totalTransactionsUnfiltered] = await Promise.all([
+      Transaction.find(query).sort(sortOption).skip(skip).limit(limit).lean(),
+      Transaction.countDocuments(query),
+      Transaction.countDocuments({ userId: new mongoose.Types.ObjectId(userId) })
     ]);
 
-    const transactions = result[0].data.map(item => item.transactions);
-    const totalTransactions = result[0].metadata[0] ? result[0].metadata[0].total : 0;
     const totalPages = Math.max(1, Math.ceil(totalTransactions / limit));
-
-    // Count all transactions (unfiltered) to distinguish "no transactions at all" vs "no match"
-    const walletForCount = await Wallet.findOne({ userId });
-    const totalTransactionsUnfiltered = walletForCount ? (walletForCount.transactions ? walletForCount.transactions.length : 0) : 0;
 
     res.render("user/userWallet", {
       wallet: walletDoc,

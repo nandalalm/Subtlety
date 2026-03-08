@@ -40,6 +40,7 @@
             
             if (typeof search !== 'undefined' && search) params.push(`search=${encodeURIComponent(search)}`);
             if (typeof sort !== 'undefined' && sort) params.push(`sort=${encodeURIComponent(sort)}`);
+            if (typeof rating !== 'undefined' && rating) params.push(`rating=${encodeURIComponent(rating)}`);
             if (typeof paymentStatus !== 'undefined' && paymentStatus) params.push(`paymentStatus=${encodeURIComponent(paymentStatus)}`);
             if (typeof reportType !== 'undefined' && reportType) params.push(`reportType=${encodeURIComponent(reportType)}`);
             if (typeof startDate !== 'undefined' && startDate) params.push(`startDate=${encodeURIComponent(startDate)}`);
