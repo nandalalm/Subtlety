@@ -212,7 +212,7 @@
                                             <hr class="my-4">
                                             
                                             <div class="d-flex justify-content-end">
-                                                <button type="button" class="btn btn-light mr-3" onclick="window.location.href='/admin/products'">Cancel</button>
+                                                <button type="button" class="btn btn-light mr-3" onclick="window.location.href='/admin/products?page=<%= page %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>'">Cancel</button>
                                                 <button type="submit" class="btn btn-success">
                                                     <i class="fas fa-save mr-2"></i> Update Product
                                                 </button>
@@ -459,7 +459,7 @@
                     const data = await res.json();
                     Swal.close();
                     if (data.success) {
-                        Swal.fire('Success', 'Product updated!', 'success').then(() => window.location.href = '/admin/products');
+                        Swal.fire('Success', 'Product updated!', 'success').then(() => window.location.href = '/admin/products?page=<%= page %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>');
                     } else {
                         Toastify({ text: data.message || "Error", backgroundColor: "#ff5f6d", duration: 3000 }).showToast();
                     }

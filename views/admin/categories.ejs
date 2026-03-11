@@ -362,7 +362,8 @@
           Swal.close(); // Close loading indicator
           if (result.status || result.success) { // Handle variations in server response
             localStorage.setItem(successMsg, 'true');
-            window.location.href = '/admin/categories';
+            const url = new URL(window.location.href);
+            window.location.href = '/admin/categories' + url.search;
           } else {
             Toastify({
               text: result.message || "Error processing request",
@@ -481,7 +482,8 @@
             })
             .then(res => {
               if (res.ok) {
-                location.reload();
+                const url = new URL(window.location.href);
+                window.location.href = '/admin/categories' + url.search;
               } else {
                 Swal.fire('Error', 'Could not update status.', 'error');
               }

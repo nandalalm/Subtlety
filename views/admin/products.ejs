@@ -226,7 +226,7 @@
                                 <% } %>
                             </td>
                             <td>
-                                <a href="/admin/products/edit/<%= product._id %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <a href="/admin/products/edit/<%= product._id %>?page=<%= currentPage %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                     Edit
                                 </a>
                                 <button class="btn btn-sm <%= product.isListed ? 'btn-outline-secondary' : 'btn-outline-success' %> rounded-pill px-3 ml-1" onclick="toggleProductStatus('<%= product._id %>', '<%= product.isListed %>')">
@@ -263,7 +263,7 @@
                                 <% } %>
                             </div>
                             <div class="text-right">
-                                <a href="/admin/products/edit/<%= product._id %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <a href="/admin/products/edit/<%= product._id %>?page=<%= currentPage %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                     Edit
                                 </a>
                                 <button class="btn btn-sm <%= product.isListed ? 'btn-outline-secondary' : 'btn-outline-success' %> rounded-pill px-3 ml-1" onclick="toggleProductStatus('<%= product._id %>', '<%= product.isListed %>')">
@@ -324,7 +324,8 @@
                             throw new Error('Network response was not ok.');
                         })
                         .then(data => {
-                            location.reload();
+                            const url = new URL(window.location.href);
+                            window.location.href = '/admin/products' + url.search;
                         })
                         .catch(err => console.error('Fetch error:', err));
                 }

@@ -276,7 +276,7 @@
                     </span>
                   </td>
                   <td class="text-center">
-                    <a href="/admin/order/<%= order._id %>/view" class="btn btn-outline-primary btn-sm rounded-pill px-3">View</a>
+                    <a href="/admin/order/<%= order._id %>/view?page=<%= currentPage %>&sort=<%= sort %>&search=<%= encodeURIComponent(search) %>&paymentStatus=<%= paymentStatus %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">View</a>
                   </td>
                 </tr>
                 <% }) %>
@@ -304,7 +304,7 @@
                 </span>
               </p>
               <div class="mt-4 text-right">
-                <a href="/admin/order/<%= order._id %>/view" class="btn btn-outline-primary btn-sm rounded-pill px-4">View</a>
+                <a href="/admin/order/<%= order._id %>/view?page=<%= currentPage %>&sort=<%= sort %>&search=<%= encodeURIComponent(search) %>&paymentStatus=<%= paymentStatus %>" class="btn btn-outline-primary btn-sm rounded-pill px-4">View</a>
               </div>
             </div>
             <% if (order.returnRequests && order.returnRequests.some(req => req.status === 'Pending')) { %>

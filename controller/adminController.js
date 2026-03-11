@@ -475,7 +475,10 @@ async function getEditProduct(req, res) {
       return res.status(404).send("Product not found");
     }
     const categories = await Category.find({ isListed: true });
-    res.render("admin/editProduct", { product, categories });
+    const page = req.query.page || 1;
+    const search = req.query.search || '';
+    const sort = req.query.sort || 'latest';
+    res.render("admin/editProduct", { product, categories, page, search, sort });
   } catch (error) {
     console.error("Error rendering edit product page:", error);
     res.status(500).send("Internal Server Error");
@@ -1100,7 +1103,14 @@ async function getOrderView(req, res) {
       return 0;
     });
 
-    res.render("admin/orderView", { order });
+    // Build back-navigation query string from params passed via the View link
+    const page = req.query.page || 1;
+    const sort = req.query.sort || 'default';
+    const search = req.query.search || '';
+    const paymentStatus = req.query.paymentStatus || '';
+    const backQuery = `page=${page}&sort=${sort}&search=${encodeURIComponent(search)}&paymentStatus=${paymentStatus}`;
+
+    res.render("admin/orderView", { order, backQuery });
   } catch (error) {
     console.error(error);
     res.status(500).render("500", { message: "Server error" });

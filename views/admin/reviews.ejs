@@ -346,7 +346,8 @@
                     timer: 1500,
                     showConfirmButton: false
                   }).then(() => {
-                    location.reload();
+                    const url = new URL(window.location.href);
+                    window.location.href = '/admin/reviews' + url.search;
                   });
                 } else {
                   Swal.fire('Error', response.message || 'Failed to update status', 'error');
