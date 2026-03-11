@@ -289,7 +289,7 @@
                 <span>x <%= cartItem.quantity %></span>
               </div>
               <div class="product-price">
-                <span>₹ <%= price * cartItem.quantity %></span>
+                <span>₹ <%= (price * cartItem.quantity).toFixed(2) %></span>
               </div>
             </div>
             <% } else if (!cartItem.productId.isListed) { %> <%
@@ -316,7 +316,7 @@
               <ul class="list-group">
                 <li class="list-group-item d-flex justify-content-between">
                   <span>Subtotal:</span>
-                  <span id="subtotal">₹ <%= subtotal %></span>
+                  <span id="subtotal">₹ <%= subtotal.toFixed(2) %></span>
                   <!-- Add an ID here -->
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
@@ -330,7 +330,7 @@
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
                   <strong>Total:</strong>
-                  <strong id="totalAmount">₹ <%= subtotal + 50 %></strong>
+                  <strong id="totalAmount">₹ <%= (subtotal + 50).toFixed(2) %></strong>
                   <!-- Update this to reflect the new total -->
                 </li>
               </ul>
@@ -585,9 +585,10 @@
           if (response.ok) {
             discount = data.discount;
             appliedCouponCode = couponCode; // Set the applied coupon code
-            discountAmountDisplay.textContent = `₹ ${discount}`;
+            discountAmountDisplay.textContent = `₹ ${Number(discount).toFixed(2)}`;
             const newTotal = subtotal + 50 - discount;
-            document.getElementById("totalAmount").textContent = `₹ ${newTotal}`;
+            const roundedTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
+            document.getElementById("totalAmount").textContent = `₹ ${roundedTotal.toFixed(2)}`;
             couponMessage.textContent = "Coupon applied successfully!";
             couponMessage.classList.remove("error-message");
             // Show the remove coupon button when a coupon is applied
@@ -606,11 +607,12 @@
       removeCouponButton.addEventListener("click", () => {
         discount = 0;
         appliedCouponCode = "";
-        discountAmountDisplay.textContent = `₹ ${discount}`;
+        discountAmountDisplay.textContent = `₹ ${Number(discount).toFixed(2)}`;
 
         const subtotal = parseFloat(subtotalElement.textContent.replace("₹ ", ""));
         const newTotal = subtotal + 50; // Recalculate total without discount
-        document.getElementById("totalAmount").textContent = `₹ ${newTotal}`;
+        const roundedTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
+        document.getElementById("totalAmount").textContent = `₹ ${roundedTotal.toFixed(2)}`;
 
         // Hide the remove coupon button
         removeCouponButton.style.display = 'none';

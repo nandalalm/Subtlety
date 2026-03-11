@@ -935,6 +935,9 @@ async function changeProductStatus(req, res) {
 
     if (allDelivered) {
       order.orderStatus = "Completed";
+      if (order.paymentMethod === "CashOnDelivery") {
+        order.paymentStatus = "Successful";
+      }
     } else if (allCancelled) {
       order.orderStatus = "Cancelled";
     } else if (allReturned) {
@@ -996,7 +999,10 @@ async function changeOrderStatus(req, res) {
         (item) => item.status !== "Cancelled" && item.status !== "Returned"
       );
       const allActiveDelivered = activeItems.length > 0 && activeItems.every((item) => item.status === "Delivered");
-
+  if (order.paymentMethod === "CashOnDelivery") {
+          order.paymentStatus = "Successful";
+        }
+      
       if (allActiveDelivered) {
         order.orderStatus = "Completed";
       } else {

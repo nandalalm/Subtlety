@@ -179,7 +179,7 @@
                         <th>#</th>
                         <th>Product Name</th>
                         <th>Rating</th>
-                        <th class="hide-xs">Reviews</th>
+                        <th class="hide-xs">No. of Ratings</th>
                         <th class="text-center hide-xs">Image</th>
                       </tr>
                     </thead>
@@ -202,7 +202,7 @@
                             <span class="text-muted small">(<%= product.avgRating.toFixed(1) %>)</span>
                           </div>
                         </td>
-                        <td class="hide-xs"><span class="badge badge-light border"><%= product.reviewCount %> reviews</span></td>
+                        <td class="hide-xs"><span class="badge badge-light border"><%= product.reviewCount %> ratings</span></td>
                         <td class="text-center hide-xs">
                           <% if (product.image) { %>
                           <img src="<%= product.image %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">

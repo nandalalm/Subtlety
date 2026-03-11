@@ -260,7 +260,7 @@ async function loginUser(req, res) {
       return res.redirect("/user/login");
     }
 
-    if (!(await bcrypt.compare(password, user.password))) {
+    if (!password || !user.password || !(await bcrypt.compare(password, user.password))) {
       req.session.errorMessage = "Invalid email or password";
       return res.redirect("/user/login");
     }
@@ -388,6 +388,11 @@ async function getHome(req, res) {
 
 const aggregateProductFrequency = async () => {
   const productFrequency = await Order.aggregate([
+    {
+      $match: {
+        orderStatus: "Completed",
+      },
+    },
     { $unwind: "$items" },
     {
       $match: {
@@ -397,11 +402,11 @@ const aggregateProductFrequency = async () => {
     {
       $group: {
         _id: "$items.productId",
-        count: { $sum: 1 },
+        count: { $sum: "$items.quantity" },
       },
     },
     { $sort: { count: -1 } },
-    { $limit: 6 },
+    { $limit: 4 },
   ]);
 
   return productFrequency;
@@ -448,8 +453,9 @@ function calculateDiscountedPrice(offer, product) {
     if (offer.offerType === OFFER_TYPES.FLAT) {
       discountedPrice -= offer.value;
     } else if (offer.offerType === OFFER_TYPES.PERCENTAGE) {
-      discountedPrice *= 1 - offer.value / 100;
+      discountedPrice *= 1 - (offer.value / 100);
     }
+    discountedPrice = roundToTwo(discountedPrice);
   } else if (offer.offerFor === OFFER_FOR.CATEGORY) {
     if (
       offer.offerType === OFFER_TYPES.FLAT &&
@@ -461,6 +467,7 @@ function calculateDiscountedPrice(offer, product) {
       const maxDiscount = offer.maxDiscount;
       discountedPrice -= Math.min(potentialDiscount, maxDiscount);
     }
+    discountedPrice = roundToTwo(discountedPrice);
   }
 
   // Ensure price doesn't go below zero and round to 2 decimals
@@ -630,13 +637,21 @@ async function getSingleProduct(req, res) {
     // Select top 2 best coupons
     const topCoupons = sortedCoupons.slice(0, 2).map(item => item.coupon);
 
-    // Fetch initial reviews (top 5)
-    const reviews = await Review.find({ productId: id, isListed: true })
+    // Fetch initial reviews (top 5) - only those with non-empty comments
+    const reviews = await Review.find({ 
+      productId: id, 
+      isListed: true,
+      comment: { $exists: true, $ne: "" }
+    })
       .populate("userId", "firstname lastname")
       .sort({ createdAt: -1 })
       .limit(5);
 
-    const totalReviewsCount = await Review.countDocuments({ productId: id, isListed: true });
+    const totalReviewsCount = await Review.countDocuments({ 
+      productId: id, 
+      isListed: true,
+      comment: { $exists: true, $ne: "" }
+    });
     const hasMoreReviews = totalReviewsCount > reviews.length;
 
     // Calculate average rating
@@ -1360,6 +1375,8 @@ async function applyCoupon(req, res) {
       ? coupon.discountAmount
       : (coupon.discountAmount / 100) * totalAmount;
 
+  discountAmount = roundToTwo(discountAmount);
+
   // Ensure discount does not exceed maxDiscount
   if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
     discountAmount = coupon.maxDiscount;
@@ -1480,6 +1497,8 @@ async function confirmOrder(req, res) {
         coupon.discountType === "flat"
           ? coupon.discountAmount
           : (coupon.discountAmount / 100) * recalculatedTotal;
+      
+      discount = roundToTwo(discount);
 
       // Ensure discount does not exceed maxDiscount
       if (coupon.maxDiscount && discount > coupon.maxDiscount) {
@@ -1509,7 +1528,7 @@ async function confirmOrder(req, res) {
     const paymentStatus =
       paymentMethod === "Razorpay" || paymentMethod === "Wallet"
         ? "Failed"
-        : "Successful";
+        : "Pending";
 
     const customOrderId = generateOrderId();
 
@@ -1618,7 +1637,7 @@ async function createRazorpayOrder(req, res) {
 
   // Create a Razorpay order
   const options = {
-    amount: order.totalAmount * 100, // Convert amount to paise
+    amount: Math.round(order.totalAmount * 100), // Convert amount to paise and ensure it's an integer
     currency: "INR",
     receipt: `receipt_order_${orderId}`,
   };
@@ -1846,6 +1865,25 @@ async function getOrderDetails(req, res) {
       return res.status(404).send("Order not found");
     }
 
+    // Calculate return window for each item in the backend
+    const returnWindowDays = 7;
+    const returnWindowMs = returnWindowDays * 24 * 60 * 60 * 1000;
+    const now = new Date();
+
+    order.items.forEach((item) => {
+      const returnRequest = order.returnRequests.find(req => req.productId.toString() === item.productId._id.toString());
+      const rStatus = returnRequest ? returnRequest.status : null;
+      item.isPending = rStatus === 'Pending';
+      item.isApproved = rStatus === 'Approved';
+
+      if (item.status === "Delivered") {
+        const deliveryDate = order.updatedAt || order.orderDate;
+        item.isReturnWindowClosed = now - new Date(deliveryDate) > returnWindowMs;
+      } else {
+        item.isReturnWindowClosed = true;
+      }
+    });
+
     res.render("user/orderDetails", { order, user: req.session.user });
   } catch (error) {
     console.error("Error fetching order details:", error);
@@ -2053,6 +2091,23 @@ async function returnProduct(req, res) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found in order" });
+    }
+
+    // 7-day return window validation
+    const deliveryDate = order.items[itemIndex].status === 'Delivered' ? (order.updatedAt || order.orderDate) : null;
+    if (deliveryDate && (new Date() - new Date(deliveryDate) > 7 * 24 * 60 * 60 * 1000)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "The return window for this product has closed (7 days from delivery)." 
+      });
+    }
+
+    // Coupon applied validation
+    if (order.couponDiscount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Returns are not allowed for orders where a coupon was applied."
+      });
     }
 
     // Create a return request instead of updating status
@@ -2558,13 +2613,21 @@ async function loadMoreReviews(req, res) {
   const skip = (page - 1) * limit;
 
   try {
-    const reviews = await Review.find({ productId, isListed: true })
+    const reviews = await Review.find({ 
+      productId, 
+      isListed: true,
+      comment: { $exists: true, $ne: "" }
+    })
       .populate("userId", "firstname lastname")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Review.countDocuments({ productId, isListed: true });
+    const total = await Review.countDocuments({ 
+      productId, 
+      isListed: true,
+      comment: { $exists: true, $ne: "" }
+    });
     const hasMore = total > skip + reviews.length;
 
     res.json({

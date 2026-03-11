@@ -217,6 +217,13 @@
       color: #ffc107 !important;
     }
 
+    .btn-action-fixed span.full-text {
+      display: inline;
+    }
+    .btn-action-fixed span.short-text {
+      display: none;
+    }
+
     @media (max-width: 576px) {
       .orderDetails {
         padding-top: 60px !important;
@@ -235,9 +242,15 @@
       }
       .btn-action-fixed {
         width: 100%;
-        max-width: 150px;
-        font-size: 0.7rem;
-        padding: 6px 10px;
+        max-width: 110px;
+        font-size: 0.6rem;
+        padding: 3px 6px;
+      }
+      .btn-action-fixed span.full-text {
+        display: none;
+      }
+      .btn-action-fixed span.short-text {
+        display: inline;
       }
       .product-details h6 {
         font-size: 0.85rem;
@@ -343,9 +356,11 @@
         <% order.items.forEach(item => { 
             const returnRequest = order.returnRequests.find(req => req.productId.toString() === item.productId._id.toString());
             const rStatus = returnRequest ? returnRequest.status : null;
-            const isPending = rStatus === 'Pending';
-            const isApproved = rStatus === 'Approved';
             const isRejected = rStatus === 'Rejected';
+            const isPending = item.isPending;
+            const isApproved = item.isApproved;
+            const isReturnWindowClosed = item.isReturnWindowClosed;
+            const isCouponApplied = order.couponDiscount > 0;
             const canRate = !item.isRated && item.status === 'Delivered' && (!returnRequest || isRejected);
         %>
         <div class="row mb-3 pb-3 border-bottom <%= item.status === 'Cancelled' ? 'cancelled' : '' %>">
@@ -390,10 +405,15 @@
               Cancel Product
             </button>
             <% } else if (item.status === 'Delivered') { %>
-              <% if (!returnRequest) { %>
+              <% if (!returnRequest && !isReturnWindowClosed && !isCouponApplied) { %>
                 <button class="btn btn-sm btn-outline-info rounded-pill px-4 btn-action-fixed" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-toggle="modal" data-target="#returnReasonModal">
-                  Return Product
+                  <span class="full-text">Return Product</span>
+                  <span class="short-text">Return</span>
                 </button>
+              <% } %>
+
+              <% if (isCouponApplied && item.status === 'Delivered' && !returnRequest) { %>
+                <span class="text-muted small font-italic">Returns not available (Coupon applied)</span>
               <% } %>
 
               <% if (canRate) { %>
@@ -404,7 +424,8 @@
                         data-product-name="<%= item.productId.name %>"
                         data-toggle="modal" 
                         data-target="#rateReviewModal">
-                  <i class="fas fa-star mr-1"></i> Rate & Review
+                  <span class="full-text"><i class="fas fa-star mr-1"></i> Rate & Review</span>
+                  <span class="short-text"><i class="fas fa-star mr-1"></i> Rate</span>
                 </button>
               <% } else if (item.isRated) { %>
                 <span class="mt-2 text-success small font-weight-bold">

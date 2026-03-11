@@ -38,6 +38,54 @@
       font-size: 12px;
       font-weight: bold;
     }
+
+    .view-more-btn:hover {
+      background-color: #7b2cc8;
+      border-color: #7b2cc8;
+    }
+
+    /* Return Policy Section Styles */
+    .return-policy {
+      padding: 60px 0;
+      background-color: #f9f9f9;
+    }
+
+    .policy-card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+      height: 100%;
+      border: 1px solid #eee;
+    }
+
+    .policy-card:hover {
+      transform: translateY(-10px);
+    }
+
+    .policy-icon {
+      font-size: 3rem;
+      color: #9135ED;
+      margin-bottom: 20px;
+    }
+
+    .policy-title {
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .policy-text {
+      color: #666;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .policy-highlight {
+      color: #9135ED;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -95,21 +143,21 @@
 <section id="new-arrivals"  class="new-arrivals">
   <div class="container new-arrival-container">
     <div class="this-month">
-      <div class="this-month-box ml-3">
+      <div class="this-month-box">
         <div class="this-month-square"></div>
         <span style="color: #9135ED;">Latest Arrivals</span>
       </div>
-      <h2 class="text-left mt-3 ml-3">SHOP BY LATEST ARRIVALS</h2>
+      <h2 class="text-left mt-3">SHOP BY LATEST ARRIVALS</h2>
     </div>
     <div class="row g-5">
-      <% if (latestProducts && latestProducts.length > 0) { %>  <!-- Change this line to use latestProducts -->
-      <% latestProducts.forEach(({ product, bestOffer, averageRating }) => { %>  <!-- Change this line as well -->
+      <% if (latestProducts && latestProducts.length > 0) { %>
+      <% latestProducts.forEach(({ product, bestOffer, averageRating }) => { %>
       <% if (product && product.isListed) { %>
       <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
       <% } %>
       <% }) %>
       <% } else { %>
-      <p>No new arrivals available.</p>
+      <p class="ml-3">No new arrivals available.</p>
       <% } %>
     </div>
     <div class="text-center my-4 mt-5 pt-3">
@@ -122,11 +170,11 @@
 <section id="top-selling" class="top-selling">
   <div class="container top-selling-container">
     <div class="this-month">
-      <div class="this-month-box ml-3">
+      <div class="this-month-box">
         <div class="this-month-square"></div>
         <span style="color: #9135ED;">Best Selling</span>
       </div>
-      <h2 class="text-left mt-3 ml-3">SHOP BY BEST SELLING PRODUCTS</h2>
+      <h2 class="text-left mt-3">SHOP BY BEST SELLING PRODUCTS</h2>
     </div>
     
     <!-- Render Best Selling Products if Available -->
@@ -152,6 +200,68 @@
   </div>
 </section>
 
+<!-- RETURN POLICY Section -->
+<section id="return-policy" class="return-policy">
+  <div class="container">
+    <div class="this-month mb-5">
+      <div class="this-month-box">
+        <div class="this-month-square"></div>
+        <span style="color: #9135ED;">Customer Protection</span>
+      </div>
+      <h2 class="text-left mt-3">OUR RETURN POLICY</h2>
+    </div>
+
+    <div class="row text-center g-4">
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="policy-card">
+          <div class="policy-icon">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <h4 class="policy-title">7-Day Window</h4>
+          <p class="policy-text">
+            Changed your mind? No worries! We offer a <span class="policy-highlight">7-day return window</span> from the date of delivery for all eligible items.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="policy-card">
+          <div class="policy-icon">
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+          <h4 class="policy-title">Coupon Restriction</h4>
+          <p class="policy-text">
+            To maintain our best prices, returns are <span class="policy-highlight">not available</span> for orders where a coupon was applied.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="policy-card">
+          <div class="policy-icon">
+            <i class="fas fa-box-open"></i>
+          </div>
+          <h4 class="policy-title">Easy Process</h4>
+          <p class="policy-text">
+            Simply head to your <span class="policy-highlight">Order Details</span> page and click the Return button. Our team will review your request promptly.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="policy-card">
+          <div class="policy-icon">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <h4 class="policy-title">Quick Refunds</h4>
+          <p class="policy-text">
+            Once approved, your refund will be credited back to your <span class="policy-highlight">Wallet</span> instantly, ready for your next anime merch haul!
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
   <%-include('partials/footer')%>
 
