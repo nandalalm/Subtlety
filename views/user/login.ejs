@@ -122,8 +122,8 @@
       // Demo login functionality
       document.getElementById('demoLoginButton').onclick = function() {
         // Fill the email and password fields with demo credentials
-        document.getElementById('email').value = 'demoUser@gmail.com';
-        document.getElementById('password').value = 'Demo@123';
+        document.getElementById('email').value = '<%= demoEmail %>';
+        document.getElementById('password').value = '<%= demoPassword %>';
   
         // Hide the Demo Login button
         document.getElementById('demoLoginButton').style.display = 'none';

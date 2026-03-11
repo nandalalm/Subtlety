@@ -17,6 +17,11 @@ const Offer = require("../model/offer");
 const Review = require("../model/review");
 const PDFDocument = require("pdfkit");
 
+// Helper to round to 2 decimal places
+const roundToTwo = (num) => {
+  return +(Math.round(num + "e+2") + "e-2");
+};
+
 // Helper to generate unique Order ID
 const generateOrderId = () => {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -47,7 +52,11 @@ function getLogin(req, res) {
   }
   const errorMessage = req.session.errorMessage || null;
   req.session.errorMessage = null;
-  res.render("user/login", { errorMessage });
+  res.render("user/login", { 
+    errorMessage, 
+    demoEmail: process.env.DEMO_USER_EMAIL || 'demoUser@gmail.com',
+    demoPassword: process.env.DEMO_USER_PASSWORD || ''
+  });
 }
 
 async function getSignup(req, res) {
@@ -184,7 +193,7 @@ async function verifyOtp(req, res) {
         }
 
         const amount = 600;
-        wallet.balance += amount;
+        wallet.balance = roundToTwo(wallet.balance + amount);
 
         const newTransaction = new Transaction({
           userId: referralUser._id,
@@ -426,7 +435,7 @@ async function getBestOffer(product) {
   });
 
   if (bestOffer) {
-    bestOffer.discountedPrice = bestDiscountedPrice;
+    bestOffer.discountedPrice = roundToTwo(bestDiscountedPrice);
   }
 
   return bestOffer;
@@ -454,8 +463,8 @@ function calculateDiscountedPrice(offer, product) {
     }
   }
 
-  // Ensure price doesn't go below zero
-  return Math.max(discountedPrice, 0);
+  // Ensure price doesn't go below zero and round to 2 decimals
+  return roundToTwo(Math.max(discountedPrice, 0));
 }
 
 async function getShopPage(req, res) {
@@ -626,7 +635,7 @@ async function getSingleProduct(req, res) {
       .populate("userId", "firstname lastname")
       .sort({ createdAt: -1 })
       .limit(5);
-    
+
     const totalReviewsCount = await Review.countDocuments({ productId: id, isListed: true });
     const hasMoreReviews = totalReviewsCount > reviews.length;
 
@@ -682,8 +691,8 @@ async function getAddresses(req, res) {
     const totalPages = Math.ceil(totalAddresses / limit);
     const addresses = await Address.find({ userId }).skip(skip).limit(limit);
     const user = req.session.user;
-    res.render("user/address", { 
-      addresses, 
+    res.render("user/address", {
+      addresses,
       user,
       currentPage: page,
       totalPages: totalPages || 1
@@ -846,7 +855,7 @@ async function deleteAddress(req, res) {
 }
 
 async function changePassword(req, res) {
-  const { currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword, confirmPassword } = req.body;
   const userId = req.session.user._id;
 
   try {
@@ -969,17 +978,17 @@ async function addToCart(req, res) {
 
     // Check if the product is listed
     if (!product.isListed) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         status: 'unlisted',
-        message: "This product is no longer available" 
+        message: "This product is no longer available"
       });
     }
 
     // Check if the product is out of stock
     if (product.stock === 0) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         status: 'out-of-stock',
-        message: "Product out of stock" 
+        message: "Product out of stock"
       });
     }
 
@@ -1119,9 +1128,9 @@ async function updateQuantity(req, res) {
 
         // Check if the product is listed
         if (!product.isListed) {
-          return res.status(400).json({ 
+          return res.status(400).json({
             status: 'unlisted',
-            message: "This product is no longer available" 
+            message: "This product is no longer available"
           });
         }
 
@@ -1141,7 +1150,7 @@ async function updateQuantity(req, res) {
         }
 
         cart.products[productIndex].quantity = quantity;
-        
+
         // Update discountedPrice during quantity change to keep baseline current
         const bestOffer = await getBestOffer(product);
         cart.products[productIndex].discountedPrice = bestOffer ? bestOffer.discountedPrice : product.price;
@@ -1207,7 +1216,7 @@ async function checkoutPage(req, res) {
     const updatedProducts = await Promise.all(
       cart.products.map(async (item) => {
         const product = item.productId;
-        
+
         // Check for unlisted or totally out of stock
         if (!product.isListed) {
           unavailableProducts.push(product.name);
@@ -1267,7 +1276,7 @@ async function checkoutPage(req, res) {
       }
 
       if (req.headers.accept && req.headers.accept.includes("application/json")) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: errorMsg.trim(),
           errors: productAvailabilityErrors
         });
@@ -1277,7 +1286,7 @@ async function checkoutPage(req, res) {
 
     const availableProducts = updatedProducts.filter(p => p !== null);
     const deliveryCharge = 50;
-    const totalAmount = subtotal + deliveryCharge;
+    const totalAmount = roundToTwo(subtotal + deliveryCharge);
 
     let message = null;
     if (priceChanged) {
@@ -1290,7 +1299,7 @@ async function checkoutPage(req, res) {
 
     res.render("user/checkout", {
       cart: { ...cart.toObject(), products: availableProducts },
-      subtotal,
+      subtotal: roundToTwo(subtotal),
       deliveryCharge,
       totalAmount,
       user: req.session.user,
@@ -1340,8 +1349,8 @@ async function applyCoupon(req, res) {
 
   // Check minimum order value
   if (coupon.minOrderValue && totalAmount < coupon.minOrderValue) {
-    return res.status(400).json({ 
-      message: `Minimum order value of ₹${coupon.minOrderValue} required for this coupon.` 
+    return res.status(400).json({
+      message: `Minimum order value of ₹${coupon.minOrderValue} required for this coupon.`
     });
   }
 
@@ -1356,7 +1365,7 @@ async function applyCoupon(req, res) {
     discountAmount = coupon.maxDiscount;
   }
 
-  return res.status(200).json({ discount: discountAmount });
+  return res.status(200).json({ discount: roundToTwo(discountAmount) });
 }
 
 async function confirmOrder(req, res) {
@@ -1461,8 +1470,8 @@ async function confirmOrder(req, res) {
 
       // Re-verify coupon validity
       if (coupon.minOrderValue && recalculatedTotal < coupon.minOrderValue) {
-        return res.status(400).json({ 
-          message: `The order total (₹${recalculatedTotal}) is below the minimum required (₹${coupon.minOrderValue}) for coupon "${couponCode}".` 
+        return res.status(400).json({
+          message: `The order total (₹${recalculatedTotal}) is below the minimum required (₹${coupon.minOrderValue}) for coupon "${couponCode}".`
         });
       }
 
@@ -1478,7 +1487,7 @@ async function confirmOrder(req, res) {
       }
     }
 
-    const finalTotalAmount = recalculatedTotal - discount;
+    const finalTotalAmount = roundToTwo(recalculatedTotal - discount);
 
     if (Math.abs(finalTotalAmount - totalAmount) > 0.01) {
       return res.status(400).json({
@@ -1523,8 +1532,8 @@ async function confirmOrder(req, res) {
       const wallet = await Wallet.findOne({ userId });
       // Balance was already checked above, but let's be safe
       if (wallet && wallet.balance >= finalTotalAmount) {
-        wallet.balance -= finalTotalAmount;
-        
+        wallet.balance = roundToTwo(wallet.balance - finalTotalAmount);
+
         const newTransaction = new Transaction({
           userId: userId,
           transactionId: await generateTransactionId(),
@@ -1697,7 +1706,7 @@ const deductWalletAmount = async (req, res) => {
       return res.status(400).json({ message: "Insufficient wallet balance" });
     }
 
-    wallet.balance -= amount;
+    wallet.balance = roundToTwo(wallet.balance - amount);
 
     const customOrder = await Order.findById(orderId);
     if (!customOrder) {
@@ -1989,8 +1998,8 @@ async function cancelProduct(req, res) {
     if (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet") {
       const wallet = await Wallet.findOne({ userId: order.userId });
       if (wallet) {
-        const refundAmount = item.price * item.quantity;
-        wallet.balance += refundAmount;
+        const refundAmount = roundToTwo(item.price * item.quantity);
+        wallet.balance = roundToTwo(wallet.balance + refundAmount);
         const newTransaction = new Transaction({
           userId: order.userId,
           transactionId: await generateTransactionId(),
@@ -2504,8 +2513,8 @@ async function postReview(req, res) {
     if (returnRequest && returnRequest.status !== "Rejected") {
       return res.status(400).json({
         success: false,
-        message: returnRequest.status === "Pending" 
-          ? "You cannot review a product while a return request is pending." 
+        message: returnRequest.status === "Pending"
+          ? "You cannot review a product while a return request is pending."
           : "Returned items cannot be reviewed."
       });
     }
