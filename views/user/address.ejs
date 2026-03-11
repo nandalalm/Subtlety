@@ -63,25 +63,29 @@
               </button>
             </div>
             <div id="address-list">
-              <% addresses.forEach(function(address) { %>
-              <div class="address-item mb-3 p-3 border rounded">
-                <h5 style="color: rgb(123, 123, 123) !important;">
-                  <%= address.addressType.charAt(0).toUpperCase() + address.addressType.slice(1) %>
-                </h5>
-                <div class="d-flex pt-2">
-                  <p><strong>Name:</strong> <%= address.username %></p>
-                  <p style="margin-left: 10px;"><strong>Phone:</strong> <%= address.phoneNo %></p>
+              <% if (addresses.length > 0) { %>
+                <% addresses.forEach(function(address) { %>
+                <div class="address-item mb-3 p-3 border rounded">
+                  <h5 style="color: rgb(123, 123, 123) !important;">
+                    <%= address.addressType.charAt(0).toUpperCase() + address.addressType.slice(1) %>
+                  </h5>
+                  <div class="d-flex pt-2">
+                    <p><strong>Name:</strong> <%= address.username %></p>
+                    <p style="margin-left: 10px;"><strong>Phone:</strong> <%= address.phoneNo %></p>
+                  </div>
+                  <p>
+                    <strong>Address:</strong> Building No. <%= address.houseFlatNo %>, <%= address.address %>, <%= address.district %>, <%= address.state %>, <%= address.country %>
+                  </p>
+                  <p><strong>Pincode:</strong> <%= address.pincode %></p>
+                  <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editAddressModal" data-id="<%= address._id %>" data-username="<%= address.username %>" data-phone="<%= address.phoneNo %>" data-address="<%= address.address %>" data-country="<%= address.country %>" data-state="<%= address.state %>" data-district="<%= address.district %>" data-pincode="<%= address.pincode %>" data-house-flat-no="<%= address.houseFlatNo %>" data-address-type="<%= address.addressType %>">Edit</button>
+                  <button class="btn btn-sm btn-danger delete-address" data-id="<%= address._id %>">Delete</button>
                 </div>
-                <p>
-                  <strong>Address:</strong> Building No. <%= address.houseFlatNo %>, <%= address.address %>, <%= address.district %>, <%= address.state %>, <%= address.country %>
-                </p>
-                <p><strong>Pincode:</strong> <%= address.pincode %></p>
-                <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editAddressModal" data-id="<%= address._id %>" data-username="<%= address.username %>" data-phone="<%= address.phoneNo %>" data-address="<%= address.address %>" data-country="<%= address.country %>" data-state="<%= address.state %>" data-district="<%= address.district %>" data-pincode="<%= address.pincode %>" data-house-flat-no="<%= address.houseFlatNo %>" data-address-type="<%= address.addressType %>">Edit</button>
-                <button class="btn btn-sm btn-danger delete-address" data-id="<%= address._id %>">Delete</button>
-              </div>
-              <% }) %>
-              <% if (addresses.length === 0) { %>
-                <p>No addresses found.</p>
+                <% }) %>
+              <% } else { %>
+                <div class="text-center py-5 shadow-sm bg-white rounded border mb-3">
+                  <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                  <p class="text-muted mb-0">No addresses found.</p>
+                </div>
               <% } %>
             </div>
 

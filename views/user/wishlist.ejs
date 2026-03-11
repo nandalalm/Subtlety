@@ -45,8 +45,11 @@
                   <%- include('partials/wishlistCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
                 <% }) %>
               <% } else { %>
-                <div class="col-12 py-3">
-                  <h5 class="text-muted">Your wishlist is empty</h5>
+                <div class="col-12">
+                  <div class="text-center py-5 shadow-sm bg-white rounded">
+                    <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">No wishlist items found. <a href="/user/home" style="font-weight: bold; color: #9135ED;">Continue Shopping</a></p>
+                  </div>
                 </div>
               <% } %>
             </div>

@@ -241,7 +241,17 @@ async function loginUser(req, res) {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
+      req.session.errorMessage = "Invalid email or password";
+      return res.redirect("/user/login");
+    }
+
+    if (!user.password) {
+      req.session.errorMessage = "This account was created via Google. Please use 'Login with Google'.";
+      return res.redirect("/user/login");
+    }
+
+    if (!(await bcrypt.compare(password, user.password))) {
       req.session.errorMessage = "Invalid email or password";
       return res.redirect("/user/login");
     }
@@ -256,7 +266,7 @@ async function loginUser(req, res) {
     return res.redirect("/user/home");
   } catch (error) {
     console.error(error);
-    return res.status(500).send("Error logging in");
+    return res.status(500).render("500", { message: "An unexpected error occurred during login." });
   }
 }
 
