@@ -9,7 +9,6 @@
   <title>Explore Our Products - SUBTLETY</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles/user/shop.css">
   <link rel="stylesheet" href="/styles/user/home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -334,7 +333,7 @@
                             </div>
 
                             <div class="price-container d-flex align-items-center gap-2">
-                                ${bestOffer ? `
+                                ${bestOffer && bestOffer.discountedPrice !== undefined ? `
                                     <span class="old-price mr-1" style="font-size: 0.65rem; color: #777; text-decoration: line-through;">₹${product.price}</span>
                                     <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹${bestOffer.discountedPrice.toFixed(0)}</span>
                                 ` : `<span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹${product.price}</span>`}
@@ -364,7 +363,9 @@
           Toastify({
             text: "Error loading more products",
             duration: 3000,
-            backgroundColor: "linear-gradient(to right, #ff416c, #ff4b2b)",
+            style: {
+              background: "linear-gradient(to right, #ff416c, #ff4b2b)"
+            }
           }).showToast();
         }
       });

@@ -414,11 +414,13 @@ async function getBestOffer(product) {
   let bestDiscountedPrice = product.price;
 
   offers.forEach((offer) => {
-    if (offer.expiresAt && new Date(offer.expiresAt) > new Date()) {
+    // Check if offer is active and not expired
+    const isExpired = offer.expiresAt && new Date(offer.expiresAt) <= new Date();
+    if (offer.isActive && !isExpired) {
       const discountedPrice = calculateDiscountedPrice(offer, product);
       if (discountedPrice < bestDiscountedPrice) {
         bestDiscountedPrice = discountedPrice;
-        bestOffer = offer;
+        bestOffer = offer.toObject ? offer.toObject() : { ...offer };
       }
     }
   });
@@ -1226,7 +1228,7 @@ async function checkoutPage(req, res) {
 
         const bestOffer = await getBestOffer(product);
         let currentPrice = product.price;
-        if (bestOffer && bestOffer.isActive) {
+        if (bestOffer) {
           currentPrice = bestOffer.discountedPrice;
         }
 
@@ -1241,6 +1243,7 @@ async function checkoutPage(req, res) {
         subtotal += currentPrice * item.quantity;
         return {
           ...item.toObject(),
+          productId: product.toObject ? product.toObject() : product,
           discountedPrice: currentPrice,
         };
       })
@@ -1423,12 +1426,12 @@ async function confirmOrder(req, res) {
       const product = await Product.findById(item.productId);
       const bestOffer = await getBestOffer(product);
       const price =
-        bestOffer && bestOffer.isActive
+        bestOffer
           ? bestOffer.discountedPrice
           : product.price;
       recalculatedTotal += price * item.quantity;
 
-      if (bestOffer && bestOffer.isActive) {
+      if (bestOffer) {
         totalOfferDiscount +=
           (product.price - bestOffer.discountedPrice) * item.quantity;
       }
