@@ -24,7 +24,8 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Local uploads no longer needed (moved to Cloudinary)
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(cors());
 
@@ -48,7 +49,6 @@ app.use((req, res, next) => {
   if (
     !req.url.startsWith("/styles") &&
     !req.url.startsWith("/scripts") &&
-    !req.url.startsWith("/uploads") &&
     !req.url.startsWith("/images") &&
     !req.url.startsWith("/favicon")
   ) {

@@ -351,7 +351,7 @@
         <div class="row mb-3 pb-3 border-bottom <%= item.status === 'Cancelled' ? 'cancelled' : '' %>">
           <div class="col-md-2 col-4">
             <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
-            <img src="/<%= item.productId.images[0].replace(/\\/g, '/') %>" alt="<%= item.productId.name %>" class="product-image" />
+            <img src="<%= item.productId.images[0] %>" alt="<%= item.productId.name %>" class="product-image" />
             <% } else { %>
             <div class="product-image d-flex align-items-center justify-content-center bg-light text-muted">No image</div>
             <% } %>

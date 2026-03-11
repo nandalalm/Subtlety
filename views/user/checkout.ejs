@@ -281,7 +281,7 @@
               cartItem.productId.price %> <% subtotal += price *
               cartItem.quantity %>
             <div class="product-summary">
-              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="product img" width="50" />
+              <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
               </div>
@@ -295,7 +295,7 @@
             <% } else if (!cartItem.productId.isListed) { %> <%
               hasUnlistedProduct = true %>
             <div class="product-summary product-unavailable">
-              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="product img" width="50" />
+              <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
                 <span>Product no longer available</span>
@@ -304,7 +304,7 @@
             <% } else if (cartItem.productId.stock < 1) { %> <%
               hasOutOfStockProduct = true %>
             <div class="product-summary product-unavailable">
-              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="product img" width="50" />
+              <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
                 <span>Product out of stock</span>

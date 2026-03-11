@@ -112,15 +112,15 @@
         <div class="col-md-6 image-view">
           <div class="main-image">
             <div class="img-magnifier-container">
-              <img id="mainImage" src="/<%= product.images[0].replace(/\\/g, '/') %>" class="product-image" alt="Product Image">
+              <img id="mainImage" src="<%= product.images[0] %>" class="product-image" alt="Product Image">
             </div>
           </div>
           <div class="thumbnails">
             <% product.images.forEach((image, index) => { %>
-            <img src="/<%= image.replace(/\\/g, '/') %>" 
+            <img src="<%= image %>" 
                  class="thumbnail <%= index === 0 ? 'active' : '' %>" 
                  alt="Thumbnail <%= index + 1 %>" 
-                 onclick="changeMainImage('/<%= image.replace(/\\/g, '/') %>', this)">
+                 onclick="changeMainImage('<%= image %>', this)">
             <% }) %>
           </div>
         </div>
@@ -459,7 +459,7 @@
                 <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 ${product.stock === 0 ? 'out-of-stock' : ''}">
                   <a href="/user/single-product/${product._id}" class="card-link">
                     <div class="card-img-half position-relative">
-                      <img src="/${product.images[0].replace(/\\/g, '/')}" class="card-img-top fixed-height" alt="${product.name}">
+                      <img src="${product.images[0]}" class="card-img-top fixed-height" alt="${product.name}">
                       ${product.stock === 0 ? '<span class="out-of-stock-label">Out of Stock</span>' : ''}
                     </div>
                     <div class="card-body-half">

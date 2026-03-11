@@ -39,7 +39,7 @@
 
 
     /* Responsive Styles */
-    @media (max-width: 575.98px) {
+    @media (max-width: 679.98px) {
       .user-table-desktop {
         display: none !important;
       }
@@ -49,7 +49,7 @@
       }
     }
 
-    @media (min-width: 576px) {
+    @media (min-width: 680px) {
       .user-table-desktop {
         display: table !important;
       }
@@ -153,6 +153,7 @@
               <th>S.No</th>
               <th>Name</th>
               <th>Email</th>
+              <th>Phone Number</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
@@ -169,6 +170,9 @@
               </td>
               <td>
                 <%= user.email %>
+              </td>
+              <td>
+                <%= user.phoneNo || 'N/A' %>
               </td>
               <td>
                 <span class="badge <%= user.isBlocked ? 'badge-danger' : 'badge-success' %>">
@@ -198,6 +202,7 @@
             <div class="user-card-body">
               <p><strong>Name:</strong> <%= user.firstname %> <%= user.lastname %></p>
               <p><strong>Email:</strong> <%= user.email %></p>
+              <p><strong>Phone:</strong> <%= user.phoneNo || 'N/A' %></p>
               <div class="text-right mt-3">
                 <button class="btn <%= user.isBlocked ? 'btn-outline-success' : 'btn-outline-danger' %> btn-sm rounded-pill px-4" data-user-id="<%= user._id %>" data-blocked="<%= user.isBlocked %>" onclick="toggleUserStatus(this)">
                   <%= user.isBlocked ? 'Unblock' : 'Block' %>

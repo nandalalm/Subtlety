@@ -159,7 +159,7 @@
                   <td><%= category.name %></td>
                   <td>
                     <% if (category.image) { %>
-                    <img src="/<%= category.image.split('/').pop() %>" alt="Category Image" class="rounded" style="max-width: 50px; max-height: 50px; object-fit: cover;">
+                    <img src="<%= category.image %>" alt="Category Image" class="rounded" style="max-width: 50px; max-height: 50px; object-fit: cover;">
                     <% } else { %>
                     <span class="text-muted small">No image</span>
                     <% } %>
@@ -189,7 +189,7 @@
               <div class="row align-items-center">
                 <div class="col-auto">
                   <% if (category.image) { %>
-                  <img src="/<%= category.image.split('/').pop() %>" class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                  <img src="<%= category.image %>" class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
                   <% } else { %>
                   <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
                     <i class="fas fa-image text-muted"></i>
@@ -240,11 +240,12 @@
                     <div id="imagePreviewEdit<%= category._id %>" class="mt-3" style="display:none;">
                       <img id="cropImageEdit<%= category._id %>" class="img-fluid rounded" style="max-height: 300px;">
                     </div>
+                    <div id="error-message-edit<%= category._id %>" class="text-danger mt-2 small" style="display: none;"></div>
                   </div>
                   <% if (category.image) { %>
                   <div class="text-center mt-3">
                     <p class="small text-muted mb-2">Current Image</p>
-                    <img src="/<%= category.image.split('/').pop() %>" class="img-thumbnail" style="max-height: 100px;">
+                    <img src="<%= category.image %>" class="img-thumbnail" style="max-height: 100px;">
                   </div>
                   <% } %>
                   <input type="hidden" name="isListed" value="<%= category.isListed %>">
@@ -288,20 +289,23 @@
         
         if (!file) return;
 
+        const categoryId = isEdit ? this.id.replace('imageEdit', '') : '';
+        const errorId = isAdd ? 'error-message-add' : `error-message-edit${categoryId}`;
+        const errorEl = document.getElementById(errorId);
+
         // Validation for image types
         const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (!validImageTypes.includes(file.type)) {
-          const errorId = isAdd ? 'error-message-add' : 'error-message'; // Simple fallback
-          const errorEl = document.getElementById(errorId) || document.getElementById('error-message');
           if (errorEl) {
             errorEl.textContent = 'Please select a valid image file (jpg, png, gif, webp).';
             errorEl.style.display = 'block';
           }
           this.value = '';
           return;
+        } else if (errorEl) {
+          errorEl.style.display = 'none';
         }
 
-        const categoryId = isEdit ? this.id.replace('imageEdit', '') : '';
         const previewImgId = isEdit ? `cropImageEdit${categoryId}` : `cropImageAdd`;
         const previewContainerId = isEdit ? `imagePreviewEdit${categoryId}` : `imagePreviewAdd`;
         
@@ -339,12 +343,23 @@
     }
 
     function performSubmit(action, formData, successMsg, callback) {
+      // Show loading indicator
+      Swal.fire({
+        title: 'Processing...',
+        text: 'Please wait while we upload the image.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       fetch(action, {
           method: 'POST',
           body: formData
         })
         .then(response => response.json())
         .then(result => {
+          Swal.close(); // Close loading indicator
           if (result.status || result.success) { // Handle variations in server response
             localStorage.setItem(successMsg, 'true');
             window.location.href = '/admin/categories';
@@ -360,6 +375,7 @@
           }
         })
         .catch(error => {
+          Swal.close(); // Close loading indicator
           console.error('Fetch error:', error);
           Toastify({
             text: "An error occurred",

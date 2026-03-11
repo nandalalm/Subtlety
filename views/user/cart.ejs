@@ -247,7 +247,7 @@
           <% cart.products.forEach(cartItem => { %>
           <div class="product-card" data-product-id="<%= cartItem.productId._id %>">
             <div class="product-info">
-              <img src="/<%= cartItem.productId.images[0].replace(/\\/g, '/') %>" alt="Product Image">
+              <img src="<%= cartItem.productId.images[0] %>" alt="Product Image">
               <div class="product-details">
                 <p class="font-weight-bold"><%= cartItem.productId.name %></p>
                 <p>₹ <%= cartItem.discountedPrice || cartItem.productId.price %></p>

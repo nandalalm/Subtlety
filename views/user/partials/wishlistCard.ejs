@@ -2,7 +2,7 @@
     <div class="wishlist-card h-100 shadow-sm border-0" style="border-radius: 0; overflow: hidden; transition: transform 0.3s ease; background: #f4f4f4;">
         <a href="/user/single-product/<%= product._id %>" class="card-link text-decoration-none color-inherit">
             <div class="card-img-half border-0" style="border-radius: 0;">
-                <img src="/<%= product.images[0].replace(/\\/g, '/') %>" alt="<%= product.name %>" style="border-radius: 0;">
+                <img src="<%= product.images[0] %>" alt="<%= product.name %>" style="border-radius: 0;">
                 <% if (product.stock === 0) { %>
                     <span class="out-of-stock-label position-absolute" style="top: 10px; right: 10px; background: rgba(255, 0, 0, 0.8); color: white; padding: 2px 8px; border-radius: 0; font-size: 10px; font-weight: bold;">Out of Stock</span>
                 <% } %>

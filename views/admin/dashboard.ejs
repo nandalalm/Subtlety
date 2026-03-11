@@ -113,7 +113,7 @@
                         <td><%= category.name %></td>
                         <td class="text-center">
                           <% if (category.image) { %>
-                          <img src="/<%= category.image.split('/').pop() %>" alt="Category Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                          <img src="<%= category.image %>" alt="Category Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
                           <% } else { %>
                           <span class="text-muted small">No Image</span>
                           <% } %>
@@ -151,7 +151,7 @@
                         <td class="text-muted small hide-xs"><%= product.description.substring(0, 100) %>...</td>
                         <td class="text-center">
                           <% if (product.images.length > 0) { %>
-                          <img src="/<%= product.images[0].split('/').pop() %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                          <img src="<%= product.images[0] %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
                           <% } else { %>
                           <span class="text-muted small">No Image</span>
                           <% } %>
@@ -205,7 +205,7 @@
                         <td class="hide-xs"><span class="badge badge-light border"><%= product.reviewCount %> reviews</span></td>
                         <td class="text-center hide-xs">
                           <% if (product.image) { %>
-                          <img src="/<%= product.image.split('/').pop() %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+                          <img src="<%= product.image %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
                           <% } else { %>
                           <span class="text-muted small">No Image</span>
                           <% } %>

@@ -381,7 +381,7 @@
               %>
               <div class="product-card flex-column align-items-stretch" <%- returnRequest ? 'style="margin-bottom: 20px;"' : 'style="margin-bottom: 12px;"' %>>
                 <div class="d-flex align-items-center w-100 flex-wrap flex-md-nowrap">
-                  <img src="/<%= imgPath %>" alt="<%= item.productId.name %>" class="product-img">
+                  <img src="<%= imgPath %>" alt="<%= item.productId.name %>" class="product-img">
                   <div class="product-info">
                     <h6 class="mb-1" style="font-weight: 600;"><%= item.productId.name %></h6>
                     <p class="text-muted mb-1">Price: ₹<%= item.price.toFixed(2) %> | Qty: <%= item.quantity %></p>
@@ -539,7 +539,7 @@
           const cardHTML = `
             <div class="product-card flex-column align-items-stretch" style="margin-bottom: ${returnRequest ? '20px' : '12px'};">
               <div class="d-flex align-items-center w-100 flex-wrap flex-md-nowrap">
-                <img src="/${item.productId.images[0].replace(/\\/g, '/')}" class="product-img">
+                <img src="${item.productId.images[0]}" class="product-img">
                 <div class="product-info">
                   <h6 class="mb-1" style="font-weight: 600;">${item.productId.name}</h6>
                   <p class="text-muted mb-1">Price: ₹${item.price.toFixed(2)} | Qty: ${item.quantity}</p>

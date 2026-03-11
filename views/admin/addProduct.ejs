@@ -429,7 +429,14 @@
                                 validateInput(stockInp, null, 'stock-error', 'Stock must be >= 0');
                 if (!isValid) return;
 
-                Swal.fire({ title: 'Saving Product...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait while we upload the image.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
                 const formData = new FormData();
                 formData.append('name', nameInp.value.trim());
                 formData.append('description', descInp.value.trim());

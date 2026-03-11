@@ -13,8 +13,8 @@ const ExcelJS = require("exceljs");
 const bcrypt = require("bcryptjs");
 const path = require("path");
 const Review = require("../model/review");
-const fs = require("fs");
 const { generateTransactionId } = require("./userController");
+const { productStorage, categoryStorage } = require("../config/cloudinary");
 
 function getLogin(req, res) {
   if (req.session.admin) {
@@ -243,26 +243,7 @@ async function loginadmin(req, res) {
   }
 }
 
-const productStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/products/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
-  },
-});
-
-// Storage configuration for categories
-const categoryStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/categories/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
-  },
-});
-
-// Initialize multer for products
+// Initialize multer for products using Cloudinary storage
 const productUpload = multer({
   storage: productStorage,
   fileFilter: (req, file, cb) => {
@@ -284,7 +265,7 @@ const productUpload = multer({
   },
 });
 
-// Initialize multer for categories
+// Initialize multer for categories using Cloudinary storage
 const categoryUpload = multer({
   storage: categoryStorage,
   fileFilter: (req, file, cb) => {
@@ -584,15 +565,9 @@ async function editProduct(req, res) {
       }
     }
 
-    // Optional: Cleanup old images that are NO LONGER in finalImages
-    existingProduct.images.forEach(oldImg => {
-      if (!finalImages.includes(oldImg)) {
-        const oldPath = path.join(__dirname, "..", oldImg);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
-      }
-    });
+    // For Cloudinary, we don't need to manually unlink files from the server's disk
+    // Cloudinary manages its own storage. 
+    // For now, we follow the fresh start approach.
 
     const images = finalImages;
 

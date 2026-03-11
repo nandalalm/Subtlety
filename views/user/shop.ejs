@@ -314,7 +314,7 @@
                 <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 ${product.stock === 0 ? 'out-of-stock' : ''}">
                   <a href="/user/single-product/${product._id}" class="card-link">
                     <div class="card-img-half position-relative">
-                      <img src="/${product.images[0].replace(/\\/g, '/')}" class="card-img-top fixed-height" alt="${product.name}">
+                      <img src="${product.images[0]}" class="card-img-top fixed-height" alt="${product.name}">
                       ${product.stock === 0 ? '<span class="out-of-stock-label">Out of Stock</span>' : ''}
                     </div>
                     <div class="card-body-half">

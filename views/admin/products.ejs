@@ -213,10 +213,13 @@
                             <td><%= product.stock %></td>
                             <td>
                                 <% if (product.images && product.images.length > 0) { %>
-                                <div class="d-flex">
+                                <div class="d-flex align-items-center">
                                     <% product.images.slice(0, 3).forEach(image => { %>
-                                    <img src="/<%= image.split('/').pop() %>" alt="Product" class="product-card-img" style="width: 40px; height: 40px;">
+                                    <img src="<%= image %>" alt="Product" class="product-card-img" style="width: 40px; height: 40px;">
                                     <% }) %>
+                                    <% if (product.images.length > 3) { %>
+                                    <span class="badge badge-pill badge-light ml-1" style="border: 1px solid #dee2e6; color: #666; font-size: 0.75rem; padding: 4px 6px;">+<%= product.images.length - 3 %></span>
+                                    <% } %>
                                 </div>
                                 <% } else { %>
                                 <span class="text-muted small">No images</span>
@@ -251,10 +254,13 @@
                             <p><strong>Category:</strong> <%= product.category ? product.category.name : 'N/A' %></p>
                             <p><strong>Price:</strong> ₹<%= product.price %></p>
                             <p><strong>Stock:</strong> <%= product.stock %></p>
-                            <div class="d-flex mb-3">
+                            <div class="d-flex align-items-center mb-3">
                                 <% product.images.slice(0, 3).forEach(image => { %>
-                                <img src="/<%= image.split('/').pop() %>" class="product-card-img" alt="Product">
+                                <img src="<%= image %>" class="product-card-img" alt="Product">
                                 <% }) %>
+                                <% if (product.images.length > 3) { %>
+                                <span class="badge badge-pill badge-light" style="border: 1px solid #dee2e6; color: #666; font-size: 0.75rem; padding: 4px 6px;">+<%= product.images.length - 3 %></span>
+                                <% } %>
                             </div>
                             <div class="text-right">
                                 <a href="/admin/products/edit/<%= product._id %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">

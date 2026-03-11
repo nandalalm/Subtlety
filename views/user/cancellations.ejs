@@ -170,7 +170,7 @@
                       <% cancellation.items.forEach((item, idx) => { %>
                       <div class="product-image-container <%= idx >= 3 ? 'd-none' : '' %>">
                         <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
-                        <img src="/<%= item.productId.images[0].replace(/\\/g, '/') %>" alt="<%= item.productId.name %>" class="product-image">
+                        <img src="<%= item.productId.images[0] %>" alt="<%= item.productId.name %>" class="product-image">
                         <% } else { %>
                         <span>No image</span>
                         <% } %>
