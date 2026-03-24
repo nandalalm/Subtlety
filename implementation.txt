@@ -1,0 +1,39 @@
+# Implementation Plan: Centralized Infrastructure Refactor
+
+## Stage 1: Infrastructure Setup
+- Create `Constants/httpStatus.js` (Export status code constants).
+- Create `Constants/messages.js` (Export response and error message constants).
+- Create `middleware/logger.js` (Request logging middleware).
+- Create `middleware/errorHandler.js` (Centralized error handling middleware).
+- Create `utils/otpHelper.js` (Moving OTP HTML templates and generation logic).
+
+## Stage 2: Core Refactor
+- Update `app.js` to integrate new middlewares and replace hardcoded 404/500 handlers.
+- Update `config/db.js` to use centralized messages and logger.
+- Update `passport-setup.js` to use constants for messages and logging.
+
+## Stage 3: Refactor Auth & Identity
+- `authController.js` (OTP logic migration, status codes, messages, error handling).
+
+## Stage 4: Refactor Admin & Management
+- `adminController.js`
+- `categoryController.js`
+- `offerController.js`
+
+## Stage 5: Refactor Product & Review
+- `productController.js`
+- `reviewController.js`
+
+## Stage 6: Refactor User & Profile
+- `userController.js`
+- `profileController.js`
+
+## Stage 7: Refactor Shopping & Order
+- `cartController.js`
+- `wishlistController.js`
+- `orderController.js`
+
+## Stage 8: Verification & Global Testing
+- Verify all major application flows (Login, Admin, Orders, Products).
+- Verify consistency of error responses and log outputs.
+- Cleanup any remaining hardcoded strings.

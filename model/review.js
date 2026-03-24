@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -40,4 +40,4 @@ const reviewSchema = new mongoose.Schema(
 reviewSchema.index({ userId: 1, productId: 1, orderId: 1 }, { unique: true });
 
 const Review = mongoose.model("Review", reviewSchema);
-module.exports = Review;
+export default Review;

@@ -1,7 +1,9 @@
-const passport = require("passport");
-require("dotenv").config();
-const GoogleStrategy = require("passport-google-oauth2").Strategy;
-const User = require("./model/user"); 
+import passport from "passport";
+import "dotenv/config";
+import { Strategy as GoogleStrategy } from "passport-google-oauth2";
+import User from "./model/user.js"; 
+import MESSAGES from "./Constants/messages.js";
+
 passport.use(
   new GoogleStrategy(
     {
@@ -20,7 +22,7 @@ passport.use(
 
         if (existingUser) {
           if (existingUser.isBlocked) {
-            return done(null, false, { message: "User is blocked" }); 
+            return done(null, false, { message: MESSAGES.AUTH.USER_BLOCKED }); 
           }
           return done(null, existingUser);
         }
@@ -34,7 +36,7 @@ passport.use(
         await newUser.save();
         done(null, newUser);
       } catch (error) {
-        console.error("Error handling user:", error);
+        console.error(MESSAGES.AUTH.PASSPORT_STRATEGY_ERROR, error);
         done(error, null);
       }
     }
@@ -50,7 +52,7 @@ passport.deserializeUser(async (id, done) => {
     const user = await User.findById(id);
     done(null, user);
   } catch (error) {
-    console.error("Error deserializing user:", error);
+    console.error(MESSAGES.AUTH.PASSPORT_DESERIALIZE_ERROR, error);
     done(error, null);
   }
 });

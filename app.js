@@ -1,18 +1,35 @@
-const express = require("express");
-const path = require("path");
-const session = require("express-session");
-const passport = require("passport");
-const cors = require("cors");
-const MongoStore = require("connect-mongo");
+import express from "express";
+import path from "path";
+import session from "express-session";
+import passport from "passport";
+import cors from "cors";
+import MongoStore from "connect-mongo";
 
-const userRoute = require("./routes/user");
-const adminRoute = require("./routes/admin");
-const authRoute = require("./routes/auth");
+import userRoute from "./routes/userRoutes.js";
+import adminRoute from "./routes/adminRoutes.js";
+import authRoute from "./routes/authRoutes.js";
+import orderRoute from "./routes/orderRoutes.js";
+import productRoute from "./routes/productRoutes.js";
+import categoryRoute from "./routes/categoryRoutes.js";
+import cartRoute from "./routes/cartRoutes.js";
+import wishlistRoute from "./routes/wishlistRoutes.js";
+import profileRoute from "./routes/profileRoutes.js";
+import reviewRoute from "./routes/reviewRoutes.js";
+import offerRoute from "./routes/offerRoutes.js";
 
-require("dotenv").config();
-require("./passport-setup");
+import "dotenv/config";
+import "./passport-setup.js";
 
-const connectDB = require("./config/db");
+import connectDB from "./config/db.js";
+import { fileURLToPath } from 'url';
+
+import logger from "./middleware/logger.js";
+import errorHandler from "./middleware/errorHandler.js";
+import HTTP_STATUS from "./Constants/httpStatus.js";
+import MESSAGES from "./Constants/messages.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -20,6 +37,8 @@ connectDB();
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+app.use(logger);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -65,18 +84,23 @@ app.get("/", (req, res) => {
 });
 
 app.use("/user", userRoute);
+app.use("/user", cartRoute);
+app.use("/user", wishlistRoute);
+app.use("/user", profileRoute);
 app.use("/admin", adminRoute);
-app.use("/auth", authRoute);
+app.use("/admin", productRoute);
+app.use("/admin", categoryRoute);
+app.use("/admin", offerRoute);
+app.use("/", reviewRoute);
+app.use("/", authRoute);
+app.use("/", orderRoute);
 
 app.use((req, res, next) => {
-  res.status(404).render("404", { message: "Page not found!" });
+  res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: MESSAGES.GENERAL.PAGE_NOT_FOUND });
 });
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).render("500", { message: "Something went wrong!" });
-});
+app.use(errorHandler);
 
-module.exports = app;
+export default app;
 
-app.listen(3000, () => { console.log('Server running on http://localhost:3000') });
+app.listen(3000, () => { console.log('Server running on http://localhost:3000') });

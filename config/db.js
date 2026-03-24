@@ -1,10 +1,12 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import { dbLogger } from "../middleware/logger.js";
+import MESSAGES from "../Constants/messages.js";
 
 let isConnected = false; 
 
 const connectDB = async () => {
   if (isConnected) {
-    console.log("MongoDB already connected ✔️");
+    dbLogger(MESSAGES.DB.ALREADY_CONNECTED);
     return;
   }
 
@@ -12,11 +14,12 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGO_URL);
 
     isConnected = conn.connections[0].readyState === 1;
-    console.log("MongoDB connected successfully ✔️");
+    dbLogger(MESSAGES.DB.CONNECTED);
   } catch (error) {
-    console.error("MongoDB connection error ❌", error);
+    dbLogger(MESSAGES.DB.ERROR, true);
+    console.error(error);
     throw error;
   }
 };
 
-module.exports = connectDB;
+export default connectDB;

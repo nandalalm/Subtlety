@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -10,4 +10,5 @@ const transactionSchema = new mongoose.Schema({
   orderId: { type: String }, // Storing unique orderId (the human-readable one) for clarity
 });
 
-module.exports = mongoose.model("Transaction", transactionSchema);
+const Transaction = mongoose.model("Transaction", transactionSchema);
+export default Transaction;
