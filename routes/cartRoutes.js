@@ -3,9 +3,10 @@ const router = express.Router();
 import * as cartController from '../controller/cartController.js';
 import { userAuthenticated } from '../middleware/authentication.js';
 
-router.get('/cart', userAuthenticated, cartController.getCart);
-router.post('/cart/add', userAuthenticated, cartController.addToCart);
-router.delete('/cart/remove', userAuthenticated, cartController.removeFromCart);
-router.put('/cart/update', userAuthenticated, cartController.updateQuantity);
+// Base: /cart
+router.get('/', userAuthenticated, cartController.getCart);
+router.post('/add', userAuthenticated, cartController.addToCart);
+router.delete('/remove', userAuthenticated, cartController.removeFromCart);
+router.put('/update', userAuthenticated, cartController.updateQuantity);
 
 export default router;

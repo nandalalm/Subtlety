@@ -91,7 +91,7 @@
 <body>
 
   <!-- Navbar -->
-  <%- include('partials/navBar') %>
+  <%- include('../partials/User/navBar') %>
 
   <section class="profile-section">
     <div class="container profile">
@@ -111,12 +111,12 @@
           <div class="pt-3 mb-3">
             <h6>Manage My Account</h6>
             <ul class="list-unstyled">
-              <li><a href="/user/profile" class="text-decoration-none">My Profile</a></li>
-              <li><a href="/user/address" class="text-decoration-none">Address Book</a></li>
+              <li><a href="/profile" class="text-decoration-none">My Profile</a></li>
+              <li><a href="/profile/address" class="text-decoration-none">Address Book</a></li>
             </ul>
             <h6>Manage Orders</h6>
             <ul class="list-unstyled">
-              <li><a href="/user/orders" class="text-decoration-none">My Orders</a></li>
+              <li><a href="/orders" class="text-decoration-none">My Orders</a></li>
               <li><a href="/user/cancellations" class="text-decoration-none active-link">My Cancellations</a></li>
             </ul>
             <h6>My Stuff</h6>
@@ -125,7 +125,7 @@
               <li><a href="#myWishlist" class="text-decoration-none">My Wishlist</a></li>
             </ul>
 
-            <form action="/user/logout" method="POST" style="display: inline;" id="logout-form">
+            <form action="/auth/logout" method="POST" style="display: inline;" id="logout-form">
               <button type="button" id="logout-btn" class="btn btn-sm btn-danger">
                 <i class="fas fa-power-off"></i> Logout
               </button>
@@ -180,7 +180,7 @@
                     <button class="product-nav-btn next-btn" data-order-id="<%= cancellation._id %>" <%= cancellation.items.length <= 3 ? 'disabled' : '' %>><i class="fas fa-chevron-right"></i></button>
                   </div>
                 </td>
-                <td><a href="/user/order/<%= cancellation._id %>" class="btn btn-sm btn-primary">View Details</a></td>
+                <td><a href="/orders/<%= cancellation._id %>" class="btn btn-sm btn-primary">View Details</a></td>
               </tr>
               <% }) %>
             </tbody>
@@ -191,7 +191,7 @@
     </div>
   </section>
 
-  <%- include('partials/footer') %>
+  <%- include('../partials/User/footer') %>
 
   <!-- Bootstrap JS and dependencies -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

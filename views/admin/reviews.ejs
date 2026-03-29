@@ -11,134 +11,14 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  
-  <style>
-    .star-rating i {
-      font-size: 0.85rem;
-    }
-    .table td {
-      vertical-align: middle;
-    }
-    .review-comment {
-      max-width: 250px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: pointer;
-    }
-    .review-comment:hover {
-      white-space: normal;
-      overflow: visible;
-      background: #f8f9fa;
-      position: absolute;
-      z-index: 10;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 1199.98px) {
-      .review-table-desktop {
-        display: none !important;
-      }
-      .review-cards-mobile {
-        display: block !important;
-      }
-    }
-
-    @media (min-width: 1200px) {
-      .review-table-desktop {
-        display: block !important;
-      }
-      .review-cards-mobile {
-        display: none !important;
-      }
-    }
-
-    .review-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      border: 1px solid #eee;
-    }
-
-    .review-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #f0f0f0;
-      padding-bottom: 8px;
-      margin-bottom: 10px;
-    }
-
-    .review-card-body p {
-      margin-bottom: 5px;
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-
-    .review-card-footer {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      margin-top: 8px;
-      padding-top: 6px;
-      border-top: 1px solid #f5f5f5;
-    }
-
-    .toggle-review-btn-mobile {
-      width: 120px;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-
-    /* Standardized Filter Select Style */
-    .filter-select {
-        border-radius: 20px;
-        padding: 5px 15px;
-        border: 1px solid #9135ED !important;
-        height: 40px;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background-image: none !important;
-        width: 100%;
-        cursor: pointer;
-    }
-
-    .sort-group {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .clear-sort {
-        position: absolute;
-        right: 15px;
-        color: #9135ED;
-        cursor: pointer;
-        font-size: 1rem;
-        z-index: 5;
-        transition: color 0.2s;
-        background: white;
-        padding-left: 5px;
-    }
-
-    .clear-sort:hover {
-        color: #dc3545;
-    }
-  </style>
 </head>
 
 <body class="bg-light text-dark">
-  <%- include('partials/adminNavbar') %>
+  <%- include('../partials/Admin/adminNavbar') %>
   <div class="d-flex" id="wrapper">
-    <%- include('partials/adminSidebar', { activePage: 'reviews' }) %>
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'reviews' }) %>
 
     <div id="page-content-wrapper">
       <div class="container-fluid">
@@ -149,217 +29,126 @@
         <div class="row mb-3 align-items-center">
             <!-- Search -->
             <div class="col-lg-5 col-md-12 mb-3">
-                <form action="/admin/reviews" method="GET" class="search-group" id="searchForm">
-                    <div class="input-group shadow-sm" style="border-radius: 20px; overflow: hidden;">
-                        <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search by name or email..." style="border-radius: 20px 0 0 20px; border: 1px solid #9135ED; height: 40px;" value="<%= typeof search !== 'undefined' ? search : '' %>">
-                        <input type="hidden" name="sort" value="<%= sort %>">
-                        <input type="hidden" name="rating" value="<%= typeof rating !== 'undefined' ? rating : '' %>">
-                        <div class="input-group-append">
-                            <% if (typeof search !== 'undefined' && search) { %>
-                            <a href="/admin/reviews?sort=<%= sort %>&rating=<%= typeof rating !== 'undefined' ? rating : '' %>" class="btn btn-outline-secondary d-flex align-items-center px-2" title="Clear search" style="border-radius:0; border-color: #9135ED; color: #9135ED; height: 40px; border-left: none;">
-                                <i class="fas fa-times"></i>
-                            </a>
-                            <% } %>
-                            <button class="btn" type="submit" style="border-radius: 0 20px 20px 0; background-color: #9135ED; border: 1px solid #9135ED; color: white; height: 40px;"><i class="fas fa-search"></i></button>
-                        </div>
-                    </div>
-                </form>
+                <%- include('../partials/Common/searchBar', {
+                  searchInputId: 'reviewSearchInput',
+                  searchContainerId: 'reviewTableContainer',
+                  searchPlaceholder: 'Search by name or email...',
+                  searchValue: (typeof search !== 'undefined' ? search : '') || '',
+                  searchBasePath: 'admin/reviews'
+                }) %>
             </div>
 
             <!-- Sort By -->
             <div class="col-lg-3 col-md-6 mb-3">
-                <div class="sort-group shadow-sm" style="border-radius: 20px;">
-                    <select id="reviewSort" class="form-control filter-select" onchange="handleFilterUpdate('sort', this.value)">
+                <div class="filter-sort-pill">
+                    <select id="reviewSort" onchange="applyAjaxFilter('reviewTableContainer', 'sort', this.value, 'admin/reviews'); document.getElementById('clearReviewSortBtn').style.display=this.value!=='latest'?'flex':'none';">
                         <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Sort by: Latest</option>
                         <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Sort by: Oldest</option>
                         <option disabled>── Status ──</option>
                         <option value="listed" <%= sort === 'listed' ? 'selected' : '' %>>Status: Listed</option>
                         <option value="unlisted" <%= sort === 'unlisted' ? 'selected' : '' %>>Status: Unlisted</option>
                     </select>
-                    <% if (typeof sort !== 'undefined' && sort !== 'latest') { %>
-                        <i class="fas fa-times clear-sort" onclick="handleFilterUpdate('sort', 'latest')" title="Clear Sort"></i>
-                    <% } %>
+                    <button id="clearReviewSortBtn" type="button" class="sort-clear-inner" title="Clear sort"
+                      style="display:<%= (typeof sort !== 'undefined' && sort !== 'latest') ? 'flex' : 'none' %>;"
+                      onclick="clearAjaxFilter('reviewTableContainer', 'sort', 'admin/reviews'); this.style.display='none'; document.getElementById('reviewSort').value='latest';">
+                      <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
 
             <!-- Filter Rating -->
             <div class="col-lg-3 col-md-6 mb-3">
-                <div class="sort-group shadow-sm" style="border-radius: 20px;">
-                    <select id="ratingFilter" class="form-control filter-select" onchange="handleFilterUpdate('rating', this.value)">
-                        <option value="" <%= typeof rating === 'undefined' || !rating ? 'selected' : '' %>>Filter Rating</option>
-                        <option value="rating-high" <%= typeof rating !== 'undefined' && rating === 'rating-high' ? 'selected' : '' %>>High to Low</option>
-                        <option value="rating-low" <%= typeof rating !== 'undefined' && rating === 'rating-low' ? 'selected' : '' %>>Low to High</option>
+                <div class="filter-sort-pill">
+                    <select id="ratingFilter" onchange="applyAjaxFilter('reviewTableContainer', 'rating', this.value, 'admin/reviews'); document.getElementById('clearRatingFilterBtn').style.display=this.value?'flex':'none';">
+                        <option value="" <%= !rating ? 'selected' : '' %>>All Ratings</option>
+                        <option value="rating-high" <%= rating === 'rating-high' ? 'selected' : '' %>>High to Low</option>
+                        <option value="rating-low" <%= rating === 'rating-low' ? 'selected' : '' %>>Low to High</option>
                     </select>
-                    <% if (typeof rating !== 'undefined' && rating) { %>
-                        <i class="fas fa-times clear-sort" onclick="handleFilterUpdate('rating', '')" title="Clear Filter"></i>
-                    <% } %>
-                </div>
-            </div>
-        </div>
-
-        <% if (reviews && reviews.length > 0) { %>
-        <!-- Card shadows and card-body padding removed for better integration of responsive views -->
-        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden; background: transparent;">
-          <div class="card-body p-0">
-            <!-- Desktop Table View -->
-            <div class="table-responsive review-table-desktop">
-              <table class="table table-hover mb-0 bg-white">
-                <thead  class="thead-light">
-                  <tr>
-                    <th>S.No</th>
-                    <th class="px-4">Reviewer</th>
-                    <th>Product</th>
-                    <th>Rating</th>
-                    <th>Review</th>
-                    <th>Date</th>
-                    <th class="text-center px-4">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% reviews.forEach((review, index) => { %>
-                    <tr>
-                      <td><%= (currentPage - 1) * limit + (index + 1) %></td>
-                      <td class="px-4">
-                        <div class="font-weight-600 text-dark"><%= review.userId.firstname %></div>
-                        <small class="text-muted"><%= review.userId.email %></small>
-                      </td>
-                      <td>
-                        <div class="font-weight-600 text-dark"><%= review.productId.name %></div>
-                      </td>
-                      <td>
-                        <div class="star-rating text-warning">
-                          <% for(let i=1; i<=5; i++) { %>
-                            <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
-                          <% } %>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="review-comment text-muted" title="Click to expand">
-                          <%= review.comment || 'No review' %>
-                        </div>
-                      </td>
-                      <td class="text-muted small">
-                        <%= new Date(review.createdAt).toLocaleDateString('en-GB') %>
-                      </td>
-                      <td class="text-center px-4">
-                        <button class="btn btn-sm toggle-review-btn <%= review.isListed ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill px-3" 
-                                data-id="<%= review._id %>" 
-                                data-status="<%= review.isListed %>"
-                                style="min-width: 85px; font-weight: 500;">
-                          <%= review.isListed ? 'Unlist' : 'List' %>
-                        </button>
-                      </td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Mobile Card View -->
-            <div class="review-cards-mobile px-2">
-              <% reviews.forEach((review, index) => { %>
-                <div class="review-card">
-                  <div class="review-card-header">
-                    <span class="font-weight-bold text-dark">#<%= (currentPage - 1) * limit + (index + 1) %></span>
-                    <span class="badge <%= review.isListed ? 'badge-success' : 'badge-danger' %>">
-                      <%= review.isListed ? 'Listed' : 'Unlisted' %>
-                    </span>
-                  </div>
-                  <div class="review-card-body">
-                    <p><strong>Product:</strong> <%= review.productId.name %> | <strong>Rating:</strong> 
-                      <span class="text-warning">
-                        <% for(let i=1; i<=5; i++) { %>
-                          <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
-                        <% } %>
-                      </span>
-                    </p>
-                    <p><strong>Review:</strong> <span class="text-muted"><%= review.comment || 'No review' %></span></p>
-                    <p class="small text-muted mb-0"><%= new Date(review.createdAt).toLocaleDateString('en-GB') %></p>
-                  </div>
-                  <div class="review-card-footer">
-                    <button class="btn toggle-review-btn toggle-review-btn-mobile <%= review.isListed ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill" 
-                            data-id="<%= review._id %>" 
-                            data-status="<%= review.isListed %>">
-                      <%= review.isListed ? 'Unlist' : 'List' %>
+                    <button id="clearRatingFilterBtn" type="button" class="sort-clear-inner" title="Clear rating"
+                        style="display:<%= rating ? 'flex' : 'none' %>;"
+                        onclick="clearAjaxFilter('reviewTableContainer', 'rating', 'admin/reviews'); this.style.display='none'; document.getElementById('ratingFilter').value='';">
+                        <i class="fas fa-times"></i>
                     </button>
-                  </div>
                 </div>
-              <% }) %>
             </div>
-          </div>
         </div>
 
-        <!-- Pagination -->
-        <div class="mt-2 d-flex justify-content-center">
-          <%- include('partials/adminPagination', { currentPage: currentPage, totalPages: totalPages }) %>
-        </div>
-        <% } else { %>
-        <div class="text-center py-5 bg-white rounded shadow-sm border mt-3">
-          <i class="fas fa-search fa-3x text-muted mb-3 opacity-25"></i>
-          <h4 class="text-muted">No matching reviews found</h4>
-          <p class="text-muted">We couldn't find any reviews matching your current criteria.</p>
-          <% if (search || (typeof sort !== 'undefined' && sort !== 'latest') || (typeof rating !== 'undefined' && rating)) { %>
-          <a href="/admin/reviews" class="btn btn-primary rounded-pill mt-2 px-4 shadow-sm" style="background-color: #9135ED; border-color: #9135ED;">Clear all filters</a>
-          <% } %>
-        </div>
-        <% } %>
+        <%- include('../partials/Admin/reviewTable') %>
 
       </div>
     </div>
   </div>
 
-  <%- include('partials/adminScripts') %>
+  <%- include('../partials/Admin/adminScripts') %>
   <script>
-    function handleFilterUpdate(param, value) {
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set(param, value);
-        urlParams.set('page', '1');
-        window.location.href = `?${urlParams.toString()}`;
+    // AJAX Search, Sort, and Pagination is now handled by /js/ajaxTable.js
+
+    function toggleReviewStatus(button) {
+      const reviewId = button.getAttribute('data-id');
+      const isCurrentlyListed = button.getAttribute('data-status') === 'true';
+      const action = isCurrentlyListed ? 'unlist' : 'list';
+
+      Swal.fire({
+        title: `Confirm Moderation`,
+        text: `Are you sure you want to ${action} this review?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#9135ED',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: `Yes, ${action} it!`
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/reviews/toggle-listing/${reviewId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const isListed = data.review.isListed;
+              
+              // Update mobile badge
+              const mobileCard = document.querySelector(`.shared-item-card[data-card-id="${reviewId}"]`);
+              if (mobileCard) {
+                const badge = mobileCard.querySelector('.status-box');
+                if (badge) {
+                  badge.textContent = isListed ? 'Listed' : 'Unlisted';
+                  badge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
+                }
+              }
+
+              // Update ALL toggle buttons for this review
+              const buttons = document.querySelectorAll(`button[data-id="${reviewId}"]`);
+              buttons.forEach(btn => {
+                if (btn.classList.contains('toggle-review-btn')) {
+                  btn.textContent = isListed ? 'Unlist' : 'List';
+                  btn.setAttribute('data-status', isListed.toString());
+                  btn.className = `btn btn-sm toggle-review-btn ${isListed ? 'btn-outline-danger' : 'btn-outline-success'} rounded-pill ${btn.classList.contains('px-4') ? 'px-4' : 'px-3'}`;
+                }
+              });
+
+              Swal.fire({
+                icon: 'success',
+                title: 'Updated!',
+                text: `The review has been successfully ${isListed ? 'listed' : 'unlisted'}.`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000
+              });
+            } else {
+              Swal.fire('Error', data.message || 'Failed to update status', 'error');
+            }
+          })
+          .catch(() => Swal.fire('Error', 'Network error. Please try again.', 'error'));
+        }
+      });
     }
 
     $(document).ready(function() {
-      // Toggle Review Display status
-      $('.toggle-review-btn').on('click', function() {
-        const btn = $(this);
-        const reviewId = btn.data('id');
-        const isCurrentlyListed = btn.data('status');
-        const action = isCurrentlyListed ? 'unlist' : 'list';
-        Swal.fire({
-          title: `Confirm Moderation`,
-          text: `Are you sure you want to ${action} this review?`,
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#6c757d',
-          confirmButtonText: `Yes, ${action} it!`
-        }).then((result) => {
-          if (result.isConfirmed) {
-            $.ajax({
-              url: `/admin/reviews/toggle-listing/${reviewId}`,
-              method: 'POST',
-              success: function(response) {
-                if (response.success) {
-                  Swal.fire({
-                    icon: 'success',
-                    title: 'Updated!',
-                    text: `The review has been successfully ${action}ed.`,
-                    timer: 1500,
-                    showConfirmButton: false
-                  }).then(() => {
-                    const url = new URL(window.location.href);
-                    window.location.href = '/admin/reviews' + url.search;
-                  });
-                } else {
-                  Swal.fire('Error', response.message || 'Failed to update status', 'error');
-                }
-              },
-              error: function() {
-                Swal.fire('Error!', 'A server error occurred. Please try again.', 'error');
-              }
-            });
-          }
-        });
-      });
+      // Logic handled via onclick toggleReviewStatus(this)
     });
   </script>
 </body>

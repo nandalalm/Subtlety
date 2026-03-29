@@ -82,7 +82,7 @@
     </div>
     <% } %>
 
-    <form id="loginForm" action="/user/login" method="post">
+    <form id="loginForm" action="/auth/login" method="post">
       <div class="form-group">
         <label for="usermail"><small>Email</small></label>
         <input type="email" class="form-control " id="email" name="email" placeholder="Enter email" required>
@@ -107,10 +107,10 @@
     </button>
   </p>
 
-    <p class="text-center mt-3"><small>Already have an account? </small><a href="/user/signup"><small>Signup here</small></a></p>
+    <p class="text-center mt-3"><small>Already have an account? </small><a href="/auth/signup"><small>Signup here</small></a></p>
 
     <div class="mt-3 text-center">
-      <a href="/user/forgot-password" style="text-decoration: none; color: #9135ED;" class="mb-1"><small>Forgot Password?</small></a>
+      <a href="/auth/forgot-password" style="text-decoration: none; color: #9135ED;" class="mb-1"><small>Forgot Password?</small></a>
     </div>
 
     <script src="/js/login.js"></script>

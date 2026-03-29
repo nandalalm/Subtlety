@@ -93,7 +93,7 @@
 
 <body>
 
-  <%- include('partials/navBar') %>
+  <%- include('../partials/User/navBar') %>
   <section class="single-product-section">
     <div class="container mt-5">
       <% if (!product.isListed) { %>
@@ -139,14 +139,14 @@
           </div>
           <div class="price mb-2">
             <% if (bestOffer) { %>
-                <span class="old-price text-muted">₹<%= product.price %></span>
-                <span class="new-price">₹<%= bestOffer.discountedPrice.toFixed(0) %></span>
+                <span class="old-price text-muted">₹<%= Math.floor(product.price) %></span>
+                <span class="new-price">₹<%= Math.floor(bestOffer.discountedPrice) %></span>
                 <span class="discount-separator">-</span>
                 <span class="discount-text text-success">
                   <%= bestOffer.value %><%= bestOffer.offerType === 'percentage' ? '%' : '₹' %> off
                 </span>
             <% } else { %>
-                <span class="current-price">₹<%= product.price %></span>
+                <span class="current-price">₹<%= Math.floor(product.price) %></span>
             <% } %>
           </div>
           <div class="line"></div>
@@ -163,9 +163,15 @@
           <p class="description" style="font-size: 1.1em;"><%= product.description %></p>
 
           <div class="line"></div>
-          <div class="">
-            <button type="button" style="font-size: small;" class="btn btn-dark btn-add-to-wishlist" data-product-id="<%= product._id %>">
-              <i class="fas fa-heart"></i> Add to Wishlist
+          <style>
+            .btn-add-to-wishlist:focus, .btn-dark:focus, .buy-buy:focus {
+              outline: none !important;
+              box-shadow: none !important;
+            }
+          </style>
+          <div class="wishlist-container mb-3">
+            <button type="button" class="btn btn-outline-dark btn-add-to-wishlist px-4 py-2 font-weight-bold" data-product-id="<%= product._id %>" style="border-radius: 8px; width: auto; min-width: 180px;">
+              <i class="fas fa-heart mr-2"></i> Add to Wishlist
             </button>
           </div>
 
@@ -200,26 +206,28 @@
           <% } %>          
 
           <div class="line"></div>
-          <div class="d-flex align-items-center">
+          <div class="d-flex align-items-center" style="gap: 12px;">
             <!-- Buy Now is always fixed here — never moves -->
-            <button style="background-color: #9135ED; color: white;" class="btn buy-buy <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>">
+            <button style="background-color: #9135ED; color: white; height: 42px; width: 170px; border-radius: 8px;" class="btn buy-buy font-weight-bold <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>">
               <i class="fa-solid fa-bolt" style="color: #ffffff;"></i> Buy Now
             </button>
-            <!-- Cart controls container only swaps Add to Cart ↔ quantity pill -->
-            <div class="cart-controls-container ml-2" data-product-id="<%= product._id %>" data-sp-layout="true">
-              <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
-                <div class="cart-quantity-controls d-flex align-items-center">
-                  <div class="d-flex align-items-center btn btn-dark p-0" style="border-radius: 6px; overflow: hidden;">
-                    <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="<%= product._id %>" style="border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 36px;">−</button>
-                    <span class="quantity-display px-3" style="font-weight: bold; font-size: 1rem; color: #fff; min-width: 36px; text-align: center;"><%= cartItemMap[product._id.toString()] %></span>
-                    <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="<%= product._id %>" style="border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 36px;">+</button>
+            <!-- Cart controls container swaps Add to Cart ↔ quantity pill -->
+            <div class="cart-controls-container d-flex align-items-center" data-product-id="<%= product._id %>" data-sp-layout="true" style="width: 170px;">
+              <div class="cart-action-wrapper w-100">
+                <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
+                  <div class="cart-quantity-controls d-flex align-items-center" style="height: 42px;">
+                    <div class="d-flex align-items-center btn btn-dark p-0 h-100 w-100" style="border-radius: 8px; overflow: hidden;">
+                      <button type="button" class="btn btn-dark btn-decrement m-0 border-0 h-100" data-product-id="<%= product._id %>" style="border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
+                      <span class="quantity-display flex-grow-1 text-center font-weight-bold" style="font-size: 1rem; color: #fff;"><%= cartItemMap[product._id.toString()] %></span>
+                      <button type="button" class="btn btn-dark btn-increment m-0 border-0 h-100" data-product-id="<%= product._id %>" style="border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
+                    </div>
                   </div>
-                </div>
-              <% } else { %>
-                <button class="btn btn-dark btn-add-to-cart <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>">
-                  <i class="fas fa-shopping-cart"></i> Add To Cart
-                </button>
-              <% } %>
+                <% } else { %>
+                  <button class="btn btn-dark btn-add-to-cart w-100 font-weight-bold <%= product.stock === 0 ? 'disabled' : '' %>" data-product-id="<%= product._id %>" style="height: 42px; border-radius: 8px;">
+                    <i class="fas fa-shopping-cart mr-1"></i> Add To Cart
+                  </button>
+                <% } %>
+              </div>
             </div>
           </div>
         </div>
@@ -287,7 +295,7 @@
       <div class="row g-5" id="related-product-grid">
         <% if (relatedProductsWithOffers && relatedProductsWithOffers.length > 0) { %>
         <% relatedProductsWithOffers.forEach(({ product, bestOffer, averageRating }) => { %>
-          <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
+          <%- include('../partials/User/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
         <% }) %>
         <% } else { %>
         <div class="col-12 mb-5 pb-5">
@@ -307,7 +315,7 @@
     </div>
   </section>
 
-  <%- include('partials/footer') %>
+  <%- include('../partials/User/footer') %>
 
   <!-- Bootstrap JS and dependencies -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -443,17 +451,19 @@
               averageRating
             }) => {
               const cartQty = (data.cartItemMap && data.cartItemMap[product._id]) ? data.cartItemMap[product._id] : 0;
-              const cartControls = cartQty > 0 ? `
-                <div class="cart-quantity-controls d-flex align-items-center">
-                  <button type="button" class="btn btn-dark btn-decrement m-0" data-product-id="${product._id}">-</button>
-                  <span class="px-3 quantity-display" style="min-width: 40px; text-align: center; font-weight: bold; color: #9135ED;">${cartQty}</span>
-                  <button type="button" class="btn btn-dark btn-increment m-0" data-product-id="${product._id}">+</button>
+               const cartControls = cartQty > 0 ? `
+                 <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
+                    <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">
+                        <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="${product._id}" style="height: 100%; border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
+                        <span class="quantity-display flex-grow-1 text-center" style="font-weight: bold; color: #fff;">${cartQty}</span>
+                        <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="${product._id}" style="height: 100%; border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
+                    </div>
                 </div>
-              ` : `
-                <button type="button" class="btn btn-dark m-0 btn-add-to-cart ${product.stock === 0 ? 'disabled' : ''}" data-product-id="${product._id}">
-                  <i class="fas fa-shopping-cart"></i> Add to Cart
-                </button>
-              `;
+               ` : `
+                 <button type="button" class="btn btn-dark m-0 btn-add-to-cart ${product.stock === 0 ? 'disabled' : ''} flex-grow-1" data-product-id="${product._id}" style="border-radius: 0;">
+                   <i class="fas fa-shopping-cart"></i> Add to Cart
+                 </button>
+               `;
 
               const productHtml = `
                 <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 ${product.stock === 0 ? 'out-of-stock' : ''}">
@@ -479,9 +489,9 @@
 
                             <div class="price-container d-flex align-items-center gap-2">
                                 ${bestOffer ? `
-                                    <span class="old-price mr-1" style="font-size: 0.65rem; color: #777; text-decoration: line-through;">₹${product.price}</span>
-                                    <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹${bestOffer.discountedPrice.toFixed(0)}</span>
-                                ` : `<span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹${product.price}</span>`}
+                                    <span class="old-price mr-1" style="font-size: 0.65rem; color: #777; text-decoration: line-through;">₹${Math.floor(product.price)}</span>
+                                    <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹${Math.floor(bestOffer.discountedPrice)}</span>
+                                ` : `<span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹${Math.floor(product.price)}</span>`}
                             </div>
                         </div>
                         <div class="btn-group button-container cart-controls-container" role="group" data-product-id="${product._id}">
@@ -526,7 +536,7 @@
           loadMoreReviewsBtn.disabled = true;
           loadMoreReviewsBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
           
-          const response = await fetch(`/user/reviews/load-more/${productId}?page=${page}`);
+          const response = await fetch(`/reviews/load-more/${productId}?page=${page}`);
           const data = await response.json();
 
           if (data.success && data.reviews.length > 0) {

@@ -9,12 +9,15 @@ import userRoute from "./routes/userRoutes.js";
 import adminRoute from "./routes/adminRoutes.js";
 import authRoute from "./routes/authRoutes.js";
 import orderRoute from "./routes/orderRoutes.js";
+import adminOrderRoute from "./routes/adminOrderRoutes.js";
 import productRoute from "./routes/productRoutes.js";
 import categoryRoute from "./routes/categoryRoutes.js";
 import cartRoute from "./routes/cartRoutes.js";
 import wishlistRoute from "./routes/wishlistRoutes.js";
 import profileRoute from "./routes/profileRoutes.js";
+import walletRoute from "./routes/walletRoutes.js";
 import reviewRoute from "./routes/reviewRoutes.js";
+import adminReviewRoute from "./routes/adminReviewRoutes.js";
 import offerRoute from "./routes/offerRoutes.js";
 
 import "dotenv/config";
@@ -83,17 +86,20 @@ app.get("/", (req, res) => {
   res.redirect("/user/home");
 });
 
+app.use("/auth", authRoute);
 app.use("/user", userRoute);
-app.use("/user", cartRoute);
-app.use("/user", wishlistRoute);
-app.use("/user", profileRoute);
+app.use("/cart", cartRoute);
+app.use("/wishlist", wishlistRoute);
+app.use("/profile", profileRoute);
+app.use("/wallet", walletRoute);
+app.use("/reviews", reviewRoute);
+app.use("/orders", orderRoute);
 app.use("/admin", adminRoute);
-app.use("/admin", productRoute);
-app.use("/admin", categoryRoute);
-app.use("/admin", offerRoute);
-app.use("/", reviewRoute);
-app.use("/", authRoute);
-app.use("/", orderRoute);
+app.use("/admin/orders", adminOrderRoute);
+app.use("/admin/products", productRoute);
+app.use("/admin/categories", categoryRoute);
+app.use("/admin/offers", offerRoute);
+app.use("/admin/reviews", adminReviewRoute);
 
 app.use((req, res, next) => {
   res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: MESSAGES.GENERAL.PAGE_NOT_FOUND });

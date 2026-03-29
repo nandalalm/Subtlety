@@ -1,0 +1,46 @@
+<% if (cart && cart.products && cart.products.length > 0) { %>
+  <div class="col-md-8 mt-3">
+    <h4>Products</h4>
+    <% cart.products.forEach(cartItem => { %>
+    <div class="product-card" data-product-id="<%= cartItem.productId._id %>">
+      <div class="product-info">
+        <img src="<%= cartItem.productId.images[0] %>" alt="Product Image">
+        <div class="product-details">
+          <p class="font-weight-bold"><%= cartItem.productId.name %></p>
+          <p>
+            <% if (cartItem.productId.bestOffer) { %>
+              <span class="text-muted" style="text-decoration: line-through; font-size: 0.85rem;">₹ <%= Math.floor(cartItem.productId.price) %></span>
+              <span class="font-weight-bold ml-1" style="color: #008000;">₹ <%= Math.floor(cartItem.productId.bestOffer.discountedPrice) %></span>
+            <% } else { %>
+              <span class="font-weight-bold">₹ <%= Math.floor(cartItem.productId.price) %></span>
+            <% } %>
+          </p>
+        </div>
+        <div class="status-container">
+          <% if (!cartItem.productId.isListed) { %>
+          <span class="status-badge badge-unavailable unavailable-text">Unavailable</span>
+          <% } else if (cartItem.productId.stock === 0) { %>
+          <span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>
+          <% } else if (cartItem.productId.stock < cartItem.quantity) { %>
+          <span class="status-badge badge-low-stock low-stock-text">Only <%= cartItem.productId.stock %> units left</span>
+          <% } %>
+        </div>
+      </div>
+      <div class="controls-container">
+        <div class="quantity-group">
+          <button class="quantity-btn" type="button" onclick="decreaseQuantity(this)">-</button>
+          <input type="number" value="<%= cartItem.quantity %>" min="1" max="<%= cartItem.productId.stock %>" class="quantity-input" oninput="debounceUpdateQuantity('<%= cartItem.productId._id %>', this.value, this.getAttribute('max'))">
+          <button class="quantity-btn" type="button" onclick="increaseQuantity(this)">+</button>
+        </div>
+        <span class="delete-icon" onclick="confirmRemoveProduct('<%= cartItem.productId._id %>')">
+          <i class="fas fa-trash-alt"></i>
+        </span>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="col-md-12">
+    <p class="text-center">There are no items in your cart. <a href="/user/home">Back to Home</a></p>
+  </div>
+<% } %>

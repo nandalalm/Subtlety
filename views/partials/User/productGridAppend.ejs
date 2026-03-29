@@ -1,0 +1,7 @@
+<% 
+    const products = typeof productsWithOffers !== 'undefined' ? productsWithOffers : [];
+%>
+
+<% products.forEach(({ product, bestOffer, averageRating }) => { %>
+    <%- include('productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
+<% }) %>

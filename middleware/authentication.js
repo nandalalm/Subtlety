@@ -17,7 +17,7 @@ async function userAuthenticated(req, res, next) {
     if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.MIDDLEWARE.UNAUTHORIZED });
     }
-    return res.redirect("/user/login");
+    return res.redirect("/auth/login");
   }
 
   try {
@@ -27,7 +27,7 @@ async function userAuthenticated(req, res, next) {
       if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.MIDDLEWARE.ACCOUNT_BLOCKED_OR_NOT_FOUND });
       }
-      return res.redirect("/user/login");
+      return res.redirect("/auth/login");
     }
     next();
   } catch (err) {

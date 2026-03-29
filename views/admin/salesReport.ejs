@@ -11,6 +11,7 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <style>
     /* Standardized Filter Select Style */
@@ -73,21 +74,6 @@
         color: #dc3545;
     }
 
-    /* Table Styles */
-    .table thead th {
-        background-color: #f8f9fa;
-        border-bottom: 2px solid #eef0f2;
-        color: #555;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-    }
-
-    .table td {
-        vertical-align: middle;
-        font-size: 0.9rem;
-    }
-
     .order-id-badge {
         font-weight: 600;
     }
@@ -106,75 +92,19 @@
         height: 40px;
     }
 
-    /* Mild Badge Styles */
-    .badge-mild-success {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid #c8e6c9;
-    }
-    .badge-mild-danger {
-        background-color: #ffebee;
-        color: #c62828;
-        border: 1px solid #ffcdd2;
-    }
-    .badge-mild-warning {
-        background-color: #fff3e0;
-        color: #ef6c00;
-        border: 1px solid #ffe0b2;
-    }
-    .badge-mild-info {
-        background-color: #e3f2fd;
-        color: #1565c0;
-        border: 1px solid #bbdefb;
-    }
+    /* Mild Badge Styles (moved to tables.css but kept here if not present) */
+    .badge-mild-success { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .badge-mild-danger { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .badge-mild-warning { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+    .badge-mild-info { background-color: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
 
-    /* Responsive Card View */
-    .sales-cards-container {
-        display: none;
-    }
-
-    @media (max-width: 1000px) {
-        .bg-white.rounded.shadow-sm.overflow-hidden {
-            display: none; /* Hide table container */
-        }
-        .sales-cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-        }
-        .sales-mobile-card {
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .card-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            align-items: center;
-        }
-        .card-row:last-child { margin-bottom: 0; }
-        .card-label {
-            font-size: 0.75rem;
-            color: #888;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .card-value {
-            font-size: 0.9rem;
-            color: #333;
-            font-weight: 500;
-        }
-    }
   </style>
 </head>
 
 <body class="bg-light text-dark">
-  <%- include('partials/adminNavbar') %>
+  <%- include('../partials/Admin/adminNavbar') %>
   <div class="d-flex" id="wrapper">
-    <%- include('partials/adminSidebar', { activePage: 'salesReport' }) %>
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'salesReport' }) %>
 
     <div id="page-content-wrapper" class="w-100">
       <div class="container-fluid">
@@ -183,35 +113,35 @@
         <!-- Action Bar -->
         <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap">
           <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-            <!-- Filter Select -->
-            <div class="position-relative d-flex align-items-center">
-              <select id="reportType" class="filter-select shadow-sm" onchange="toggleCustomDates(this.value)">
-                <option value="all" <%= reportType === 'all' ? 'selected' : '' %>>All Time</option>
-                <option value="daily" <%= reportType === 'daily' ? 'selected' : '' %>>Daily</option>
-                <option value="monthly" <%= reportType === 'monthly' ? 'selected' : '' %>>Monthly</option>
-                <option value="yearly" <%= reportType === 'yearly' ? 'selected' : '' %>>Yearly</option>
-                <option value="custom" <%= reportType === 'custom' ? 'selected' : '' %>>Custom Range</option>
-              </select>
+            <!-- Report Type Filter -->
+            <div style="min-width: 175px;">
+              <div class="filter-sort-pill shadow-sm">
+                <select id="reportType" onchange="toggleCustomDates(this.value); if(this.value !== 'custom') applyAjaxFilter('salesTableContainerParent', 'reportType', this.value, 'admin/orders/sales-report'); document.getElementById('clearSalesReportBtn').style.display=this.value!=='all'?'flex':'none';">
+                  <option value="all" <%= reportType === 'all' ? 'selected' : '' %>>All Time</option>
+                  <option value="daily" <%= reportType === 'daily' ? 'selected' : '' %>>Daily</option>
+                  <option value="monthly" <%= reportType === 'monthly' ? 'selected' : '' %>>Monthly</option>
+                  <option value="yearly" <%= reportType === 'yearly' ? 'selected' : '' %>>Yearly</option>
+                  <option value="custom" <%= reportType === 'custom' ? 'selected' : '' %>>Custom Range</option>
+                </select>
+                <button id="clearSalesReportBtn" type="button" class="sort-clear-inner" title="Clear Filters"
+                  style="display:<%= reportType !== 'all' ? 'flex' : 'none' %>;"
+                  onclick="clearAjaxFilter('salesTableContainerParent', 'reportType', 'admin/orders/sales-report'); document.getElementById('reportType').value='all'; toggleCustomDates('all'); this.style.display='none';">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
 
             <!-- Custom Date Inputs -->
-            <div id="customDateRange" class="custom-date-container ml-0" <% if (reportType !== 'custom') { %> style="display: none;" <% } else { %> style="display: flex;" <% } %>>
-              <input type="date" id="startDate" class="custom-date-input" value="<%= startDate %>">
-              <span class="text-muted">to</span>
-              <input type="date" id="endDate" class="custom-date-input" value="<%= endDate %>">
-            </div>
-
-            <!-- Integrated Generate & Reset Control -->
-            <div class="d-flex align-items-center shadow-sm rounded-pill overflow-hidden" style="border: 1px solid #9135ED; height: 40px;">
-                <button class="btn btn-primary rounded-0 h-100 px-3 px-sm-4" style="border: none;" onclick="applyFilters()">
-                    <span class="d-none d-sm-inline" style="font-size: 0.9rem;">Generate Report</span>
-                    <span class="d-inline d-sm-none" style="font-size: 0.8rem;">Generate</span>
-                </button>
-                <% if (reportType !== 'all') { %>
-                <button class="btn btn-primary rounded-0 h-100 border-left px-3" style="border: none; border-left: 1px solid rgba(255,255,255,0.2) !important;" onclick="resetFilters()" title="Reset Filters">
-                    <i class="fas fa-times"></i>
-                </button>
-                <% } %>
+            <div id="customDateRange" class="align-items-center mb-3" style="display: <%= reportType === 'custom' ? 'flex' : 'none' %>; gap: 8px;">
+              <div class="filter-sort-pill shadow-sm px-2" style="background: white;">
+                <input type="date" id="startDate" class="border-0 bg-transparent" style="height: 38px; outline: none;" value="<%= startDate %>">
+                <span class="text-muted mx-1">to</span>
+                <input type="date" id="endDate" class="border-0 bg-transparent" style="height: 38px; outline: none;" value="<%= endDate %>">
+              </div>
+              
+              <button class="btn btn-primary rounded-pill px-4 shadow-sm" style="height: 40px; background: #9135ED; border: none;" onclick="applySalesFilter()">
+                Generate
+              </button>
             </div>
           </div>
 
@@ -225,69 +155,10 @@
           </div>
         </div>
 
-        <!-- Summary Statistics -->
-        <div class="d-flex mb-4 flex-wrap">
-            <div class="summary-card shadow-sm mb-lg-0 mb-3">
-                <div class="summary-label">Total Sales Count</div>
-                <div class="summary-value"><%= totalSalesCount %></div>
-            </div>
-            <div class="summary-card shadow-sm mb-lg-0 mb-3">
-                <div class="summary-label">Total Order Amount</div>
-                <div class="summary-value">₹<%= totalOrderAmount.toFixed(2) %></div>
-            </div>
-            <div class="summary-card shadow-sm">
-                <div class="summary-label">Total Discounts Given</div>
-                <div class="summary-value">₹<%= totalDiscount.toFixed(2) %></div>
-            </div>
+        <div id="salesTableContainerParent">
+          <%- include('../partials/Admin/salesSummary') %>
+          <%- include('../partials/Admin/salesTable') %>
         </div>
-
-        <% if (orders.length === 0) { %>
-        <div class="bg-white rounded shadow-sm py-5 text-center mb-4">
-            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-            <h4 class="text-muted">No sales records found</h4>
-            <p class="text-muted">We couldn't find any data for the selected period.</p>
-            <% if (reportType !== 'all') { %>
-                <button class="btn btn-link" onclick="resetFilters()" style="color: #9135ED;">Reset all filters</button>
-            <% } %>
-        </div>
-        <% } else { %>
-        <div class="bg-white rounded shadow-sm overflow-hidden mb-4">
-        <table class="table table-hover mb-0" id="salesTable">
-          <thead>
-            <tr>
-              <th style="width: 5%;">S.No</th>
-              <th style="width: 20%;">Order ID</th>
-              <th style="width: 12%;">Customer</th>
-              <th style="width: 12%;">Offer Disc.</th>
-              <th style="width: 13%;">Coupon Disc.</th>
-              <th style="width: 13%;">Total Amount</th>
-              <th style="width: 10%;">Date</th>
-              <th style="width: 10%;">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% orders.forEach((order, index) => { %>
-            <tr>
-              <td class="text-muted font-weight-bold"><%= (currentPage - 1) * 7 + (index + 1) %></td>
-              <td><span class="order-id-badge"><%= order.orderId %></span></td>
-              <td><%= order.shippingAddress.fullname %></td>
-              <td>₹<%= (order.offerDiscount || 0).toFixed(2) %></td>
-              <td>₹<%= (order.couponDiscount || 0).toFixed(2) %></td>
-              <td>₹<%= order.totalAmount.toFixed(2) %></td>
-              <td><%= new Date(order.orderDate).toLocaleDateString('en-GB') %></td>
-              <td>
-                <span class="badge badge-pill <%= order.orderStatus === 'Completed' ? 'badge-mild-success' : order.orderStatus === 'Cancelled' ? 'badge-mild-danger' : 'badge-mild-warning' %> px-2 py-1">
-                    <%= order.orderStatus %>
-                </span>
-              </td>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
-        </div>
-
-        <%- include('partials/adminPagination') %>
-        <% } %>
       </div>
     </div>
   </div>
@@ -302,7 +173,11 @@
         document.getElementById('customDateRange').style.display = (value === 'custom') ? 'flex' : 'none';
     }
 
-    function applyFilters(page = 1) {
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleCustomDates(document.getElementById('reportType').value);
+    });
+
+    function applySalesFilter() {
         const reportType = document.getElementById('reportType').value;
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
@@ -311,17 +186,18 @@
             return Swal.fire('Error', 'Please select both start and end dates', 'error');
         }
 
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('reportType', reportType);
-        urlParams.set('startDate', startDate);
-        urlParams.set('endDate', endDate);
-        urlParams.set('page', page);
+        const url = new URL(window.location.href);
+        url.searchParams.set('reportType', reportType);
+        if (reportType === 'custom') {
+            url.searchParams.set('startDate', startDate);
+            url.searchParams.set('endDate', endDate);
+        } else {
+            url.searchParams.delete('startDate');
+            url.searchParams.delete('endDate');
+        }
+        url.searchParams.set('page', 1);
 
-        window.location.href = `?${urlParams.toString()}`;
-    }
-
-    function resetFilters() {
-        window.location.href = '/admin/salesReport';
+        refreshTable('salesTableContainerParent', url.pathname + url.search);
     }
 
     // PDF Download
@@ -330,7 +206,7 @@
       const startDate = document.getElementById('startDate').value;
       const endDate = document.getElementById('endDate').value;
 
-      fetch('/admin/salesReport/download/pdf', {
+      fetch('/admin/orders/sales-report/download/pdf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reportType, startDate, endDate })
@@ -354,7 +230,7 @@
       const startDate = document.getElementById('startDate').value;
       const endDate = document.getElementById('endDate').value;
 
-      fetch('/admin/salesReport/download/excel', {
+      fetch('/admin/orders/sales-report/download/excel', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reportType, startDate, endDate })
@@ -372,6 +248,6 @@
         .catch(error => Swal.fire('Error', 'Failed to generate Excel', 'error'));
     });
   </script>
-  <%- include('partials/adminScripts') %>
+  <%- include('../partials/Admin/adminScripts') %>
 </body>
 </html>

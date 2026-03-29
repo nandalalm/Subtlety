@@ -146,7 +146,7 @@
       </div>
     </div>
 
-    <p class="text-center mt-3"><small>Already have an account? </small><a href="/user/login"><small>Login here</small></a></p>
+    <p class="text-center mt-3"><small>Already have an account? </small><a href="/auth/login"><small>Login here</small></a></p>
   </div>
 
   <!-- Bootstrap JS and dependencies -->
@@ -211,7 +211,7 @@
       // Password: required, strong
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
       if (!passwordRegex.test(password)) {
-        document.getElementById('password-error').textContent = 'At least 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character, no spaces';
+        document.getElementById('password-error').textContent = 'Min 6 chars, 1 upper & 1 lowercase, 1 num, no spaces, 1 special char - !@#$%^&*';
         document.getElementById('password-error').style.display = 'block';
         document.getElementById('password-success').style.display = 'none';
         passwordEl.classList.add('is-invalid');
@@ -465,7 +465,7 @@
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/,
         'password-error',
         'password-success',
-        'At least 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character, no spaces'
+        'Min 6 chars, 1 upper & 1 lowercase, 1 num, no spaces, 1 special char - !@#$%^&*'
       );
     });
 

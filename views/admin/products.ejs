@@ -10,115 +10,17 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="/styles/admin/dashboard.css">
+    <link rel="stylesheet" href="/styles/shared/tables.css">
     <link rel="stylesheet" href="/styles/admin/products.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
-
-    <style>
-        .search-group .form-control {
-            border-radius: 20px 0 0 20px;
-            border: 1px solid #9135ED;
-        }
-
-        .search-group .btn {
-            border-radius: 0 20px 20px 0;
-            background-color: #9135ED;
-            border: 1px solid #9135ED;
-            color: white;
-        }
-
-        .filter-select {
-            border-radius: 20px;
-            padding: 5px 15px;
-            border: 1px solid #9135ED !important;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: none !important;
-        }
-
-        .products-table th,
-        .products-table td {
-            vertical-align: middle !important;
-        }
-
-        .products-table tbody tr:hover td {
-            background-color: #f2f2f2 !important;
-        }
-
-       /* Responsive Styles - Below 1350px */
-    @media (max-width: 1349.98px) {
-      .product-table-desktop {
-        display: none !important;
-      }
-
-      .product-cards-mobile {
-        display: block !important;
-      }
-    }
-
-    @media (min-width: 1350px) {
-      .product-table-desktop {
-        display: table !important;
-      }
-
-      .product-cards-mobile {
-        display: none !important;
-      }
-    }
-
-    .description-cell {
-      min-width: 150px;
-      max-width: 300px;
-      font-size: 0.85rem;
-      color: #666;
-      word-wrap: break-word;
-      white-space: normal;
-    }
-
-        .product-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            border-left: 5px solid #9135ED;
-            width: 100%;
-        }
-
-        .product-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 12px;
-        }
-
-        .product-card-body p {
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-
-        .product-card-img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 5px;
-        }
-
-        #page-content-wrapper {
-            width: 100%;
-        }
-    </style>
 </head>
 
 <body class="bg-light text-dark">
-    <%- include('partials/adminNavbar') %>
+  <%- include('../partials/Admin/adminNavbar') %>
     <div class="d-flex" id="wrapper">
-        <%- include('partials/adminSidebar', { activePage: 'products' }) %>
+        <%- include('../partials/Admin/adminSidebar', { activePage: 'products' }) %>
 
         <div id="page-content-wrapper">
 
@@ -133,150 +35,38 @@
                         </a>
                     </div>
 
-                    <!-- Search -->
                     <div class="col-lg-5 col-md-12 mb-3">
-                        <form action="/admin/products" method="GET" class="search-group" id="searchForm">
-                            <div class="input-group">
-                                <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search by name, category, price..." style="border-radius: 20px 0 0 20px; border: 1px solid #9135ED;" value="<%= search %>">
-                                <input type="hidden" name="sort" value="<%= sort %>">
-                                <div class="input-group-append">
-                                    <% if (search) { %>
-                                    <a href="/admin/products?sort=<%= sort %>" class="btn btn-outline-secondary d-flex align-items-center px-2" title="Clear search" style="border-radius:0; border-color: #9135ED; color: #9135ED;">
-                                        <i class="fas fa-times"></i>
-                                    </a>
-                                    <% } %>
-                                    <button class="btn" type="submit" style="border-radius: 0 20px 20px 0; background-color: #9135ED; border: 1px solid #9135ED; color: white;"><i class="fas fa-search"></i></button>
-                                </div>
-                            </div>
-                        </form>
+                        <%- include('../partials/Common/searchBar', {
+                          searchInputId: 'productSearchInput',
+                          searchContainerId: 'productTableContainer',
+                          searchPlaceholder: 'Search by name, category, price...',
+                          searchValue: search || '',
+                          searchBasePath: 'admin/products'
+                        }) %>
                     </div>
 
                     <!-- Sort/Status Filter -->
                     <div class="col-lg-3 col-md-12 mb-3">
-                        <div class="d-flex align-items-center">
-                            <form action="/admin/products" method="GET" class="flex-grow-1 mr-1">
-                                <input type="hidden" name="search" value="<%= search %>">
-                                <select name="sort" class="form-control filter-select" onchange="this.form.submit()" style="border-radius: 20px; border: 1px solid #9135ED !important; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none !important;">
-                                    <option value="latest" <%=!sort || sort==='latest' ? 'selected' : '' %>>Sort: Latest</option>
-                                    <option value="oldest" <%=sort==='oldest' ? 'selected' : '' %>>Sort: Oldest</option>
-                                    <option disabled>── Status ──</option>
-                                    <option value="listed" <%=sort==='listed' ? 'selected' : '' %>>Listed</option>
-                                    <option value="unlisted" <%=sort==='unlisted' ? 'selected' : '' %>>Unlisted</option>
-                                </select>
-                            </form>
-                            <% if (sort && sort !== 'latest') { %>
-                            <a href="/admin/products?search=<%= search %>" class="btn btn-sm" title="Clear sort" style="color: #9135ED;">
-                                <i class="fas fa-times-circle"></i>
-                            </a>
-                            <% } %>
+                        <div class="filter-sort-pill">
+                            <select id="productSort" onchange="applyAjaxFilter('productTableContainer', 'sort', this.value, 'admin/products'); document.getElementById('clearProductSortBtn').style.display=this.value!=='latest'?'flex':'none';">
+                                <option value="latest" <%=!sort || sort==='latest' ? 'selected' : '' %>>Sort: Latest</option>
+                                <option value="oldest" <%=sort==='oldest' ? 'selected' : '' %>>Sort: Oldest</option>
+                                <option disabled>── Status ──</option>
+                                <option value="listed" <%=sort==='listed' ? 'selected' : '' %>>Listed</option>
+                                <option value="unlisted" <%=sort==='unlisted' ? 'selected' : '' %>>Unlisted</option>
+                            </select>
+                            <button id="clearProductSortBtn" type="button" class="sort-clear-inner" title="Clear sort"
+                              style="display:<%= (sort && sort !== 'latest') ? 'flex' : 'none' %>;"
+                              onclick="clearAjaxFilter('productTableContainer', 'sort', 'admin/products'); this.style.display='none'; document.getElementById('productSort').value='latest';">
+                              <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
 
 
 
-                <!-- Content -->
-                <% if (products.length === 0) { %>
-                <div class="text-center py-5">
-                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
-                    <p class="text-muted">No products found for the given criteria.
-                        <a href="/admin/products" style="color:#9135ED;">Clear filters</a>
-                    </p>
-                </div>
-                <% } else { %>
-                <!-- Desktop Table -->
-                <table class="table table-hover products-table product-table-desktop" style="border-bottom: 2px solid #dee2e6;">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>S.No</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th>Images</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% products.forEach((product, index) => { %>
-                        <tr>
-                            <td><%= (currentPage - 1) * limit + (index + 1) %></td>
-                            <td><%= product.name %></td>
-                            <td>
-                                <div class="description-cell" title="<%= product.description %>">
-                                    <%= product.description.length > 120 ? product.description.substring(0, 120) + '...' : product.description %>
-                                </div>
-                            </td>
-                            <td><%= product.category ? product.category.name : 'No category' %></td>
-                            <td>₹<%= product.price %></td>
-                            <td><%= product.stock %></td>
-                            <td>
-                                <% if (product.images && product.images.length > 0) { %>
-                                <div class="d-flex align-items-center">
-                                    <% product.images.slice(0, 3).forEach(image => { %>
-                                    <img src="<%= image %>" alt="Product" class="product-card-img" style="width: 40px; height: 40px;">
-                                    <% }) %>
-                                    <% if (product.images.length > 3) { %>
-                                    <span class="badge badge-pill badge-light ml-1" style="border: 1px solid #dee2e6; color: #666; font-size: 0.75rem; padding: 4px 6px;">+<%= product.images.length - 3 %></span>
-                                    <% } %>
-                                </div>
-                                <% } else { %>
-                                <span class="text-muted small">No images</span>
-                                <% } %>
-                            </td>
-                            <td>
-                                <a href="/admin/products/edit/<%= product._id %>?page=<%= currentPage %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                    Edit
-                                </a>
-                                <button class="btn btn-sm <%= product.isListed ? 'btn-outline-secondary' : 'btn-outline-success' %> rounded-pill px-3 ml-1" onclick="toggleProductStatus('<%= product._id %>', '<%= product.isListed %>')">
-                                    <%= product.isListed ? 'Unlist' : 'Relist' %>
-                                </button>
-                            </td>
-                        </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-
-                <!-- Mobile Cards -->
-                <div class="product-cards-mobile">
-                    <% products.forEach((product, index) => { %>
-                    <div class="product-card">
-                        <div class="product-card-header">
-                            <span class="font-weight-bold">#<%= (currentPage - 1) * limit + (index + 1) %></span>
-                            <span class="badge <%= product.isListed ? 'badge-success' : 'badge-secondary' %>">
-                                <%= product.isListed ? 'Listed' : 'Unlisted' %>
-                            </span>
-                        </div>
-                        <div class="product-card-body">
-                            <p><strong>Name:</strong> <%= product.name %></p>
-                            <p><strong>Description:</strong> <span class="small text-muted"><%= product.description.length > 120 ? product.description.substring(0, 120) + '...' : product.description %></span></p>
-                            <p><strong>Category:</strong> <%= product.category ? product.category.name : 'N/A' %></p>
-                            <p><strong>Price:</strong> ₹<%= product.price %></p>
-                            <p><strong>Stock:</strong> <%= product.stock %></p>
-                            <div class="d-flex align-items-center mb-3">
-                                <% product.images.slice(0, 3).forEach(image => { %>
-                                <img src="<%= image %>" class="product-card-img" alt="Product">
-                                <% }) %>
-                                <% if (product.images.length > 3) { %>
-                                <span class="badge badge-pill badge-light" style="border: 1px solid #dee2e6; color: #666; font-size: 0.75rem; padding: 4px 6px;">+<%= product.images.length - 3 %></span>
-                                <% } %>
-                            </div>
-                            <div class="text-right">
-                                <a href="/admin/products/edit/<%= product._id %>?page=<%= currentPage %>&search=<%= encodeURIComponent(search) %>&sort=<%= sort %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                    Edit
-                                </a>
-                                <button class="btn btn-sm <%= product.isListed ? 'btn-outline-secondary' : 'btn-outline-success' %> rounded-pill px-3 ml-1" onclick="toggleProductStatus('<%= product._id %>', '<%= product.isListed %>')">
-                                    <%= product.isListed ? 'Unlist' : 'Relist' %>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <% }) %>
-                </div>
-                
-                <%- include('partials/adminPagination') %>
-                <% } %>
+        <%- include('../partials/Admin/productTable') %>
             </div>
         </div>
     </div>
@@ -290,22 +80,19 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        function applyFilter(param, value) {
-            const url = new URL(window.location.href);
-            url.searchParams.set(param, value);
-            url.searchParams.set('page', 1);
-            window.location.href = url.toString();
-        }
+        // Search, Sort, and Pagination is now handled by /js/ajaxTable.js
 
-        function toggleProductStatus(productId, isListed) {
-            const isListedBool = isListed === true || isListed === 'true';
+        function toggleProductStatus(button) {
+            const productId = button.getAttribute('data-id');
+            const isListedBool = button.getAttribute('data-status') === 'true';
             const action = isListedBool ? 'unlist' : 'relist';
+
             Swal.fire({
                 title: 'Are you sure?',
                 text: `Do you want to ${action} this product?`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
+                confirmButtonColor: '#9135ED',
                 cancelButtonColor: '#d33',
                 confirmButtonText: `Yes, ${action}!`
             }).then((result) => {
@@ -319,15 +106,48 @@
                                 isListed: isListedBool
                             }),
                         })
-                        .then(response => {
-                            if (response.ok) return response.json();
-                            throw new Error('Network response was not ok.');
-                        })
+                        .then(response => response.json())
                         .then(data => {
-                            const url = new URL(window.location.href);
-                            window.location.href = '/admin/products' + url.search;
+                            if (data.success) {
+                                const newIsListed = data.product.isListed;
+                                
+                                // Update status badges
+                                const desktopBadge = document.getElementById(`status-badge-${productId}`);
+                                const mobileBadge = document.getElementById(`status-badge-mobile-${productId}`);
+                                
+                                if (desktopBadge) {
+                                    desktopBadge.textContent = newIsListed ? 'Listed' : 'Unlisted';
+                                    desktopBadge.className = `status-box status-${newIsListed ? 'successful' : 'failed'}`;
+                                }
+                                if (mobileBadge) {
+                                    mobileBadge.textContent = newIsListed ? 'Listed' : 'Unlisted';
+                                    mobileBadge.className = `status-box status-${newIsListed ? 'successful' : 'failed'}`;
+                                }
+
+                                // Update ALL toggle buttons for this product
+                                const buttons = document.querySelectorAll(`button[data-id="${productId}"]`);
+                                buttons.forEach(btn => {
+                                    if (btn.classList.contains('toggle-status-btn')) {
+                                        btn.textContent = newIsListed ? 'Unlist' : 'Relist';
+                                        btn.setAttribute('data-status', newIsListed.toString());
+                                        btn.className = `btn btn-sm rounded-pill ${newIsListed ? 'btn-outline-secondary' : 'btn-outline-success'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
+                                    }
+                                });
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Updated!',
+                                    text: `Product has been ${newIsListed ? 'listed' : 'unlisted'}.`,
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+                            } else {
+                                Swal.fire('Error', data.message || 'Could not update status.', 'error');
+                            }
                         })
-                        .catch(err => console.error('Fetch error:', err));
+                        .catch(err => Swal.fire('Error', 'Network error. Please try again.', 'error'));
                 }
             });
         }
@@ -337,6 +157,6 @@
     </script>
 
 
-    <%- include('partials/adminScripts') %>
+    <%- include('../partials/Admin/adminScripts') %>
 </body>
 </html>

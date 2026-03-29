@@ -275,16 +275,16 @@
 </head>
 
 <body class="bg-light text-dark">
-  <%- include('partials/adminNavbar') %>
+  <%- include('../partials/Admin/adminNavbar') %>
   <div class="d-flex" id="wrapper">
-    <%- include('partials/adminSidebar', { activePage: 'orders' }) %>
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'orders' }) %>
 
     <div id="page-content-wrapper" class="w-100">
       <div class="container-fluid py-3">
         <!-- Breadcrumbs Style matching editProduct -->
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/admin/orderList?<%= backQuery %>">Orders</a></li>
+            <li class="breadcrumb-item"><a href="/admin/orders?<%= backQuery %>">Orders</a></li>
             <li class="breadcrumb-item active" aria-current="page">Order Details</li>
           </ol>
         </nav>
@@ -442,7 +442,7 @@
 
       if (isConfirmed) {
         try {
-          const response = await fetch('/admin/order/changeOrderStatus', {
+          const response = await fetch('/admin/orders/change-order-status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ orderId, newStatus: nextStatus })
@@ -477,7 +477,7 @@
 
       if (action) {
         try {
-          const response = await fetch('/admin/order/approveReturn', {
+          const response = await fetch('/admin/orders/approve-return', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ orderId, productId, action })
@@ -498,7 +498,7 @@
 
     async function refreshOrderData() {
       try {
-        const resJson = await fetch('/admin/order/<%= order._id %>/details');
+        const resJson = await fetch('/admin/orders/<%= order._id %>/details');
         const data = await resJson.json();
         const order = data.order;
 

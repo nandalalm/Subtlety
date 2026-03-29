@@ -1,0 +1,75 @@
+<% 
+    const orderItems = typeof orders !== 'undefined' ? orders : [];
+    const currPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
+    const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
+%>
+
+<div class="table-container-shared card border-0 shadow-sm" id="salesTableContainer">
+    <% if (orderItems.length === 0) { %>
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No results found for the given criteria.</p>
+        </div>
+    <% } else { %>
+        <!-- Desktop Table -->
+        <div class="table-responsive shared-table-desktop">
+            <table class="table table-hover mb-0" id="salesTable">
+                <thead class="thead-light">
+                    <tr>
+                        <th style="width: 5%;">S.No</th>
+                        <th style="width: 20%;">Order ID</th>
+                        <th style="width: 15%;">Customer</th>
+                        <th style="width: 12%;">Offer Disc.</th>
+                        <th style="width: 13%;">Coupon Disc.</th>
+                        <th style="width: 13%;">Total Amount</th>
+                        <th style="width: 12%;">Date</th>
+                        <th style="width: 10%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orderItems.forEach((order, index) => { %>
+                    <tr>
+                        <td class="text-muted font-weight-bold"><%= (currPg - 1) * pgLimit + (index + 1) %></td>
+                        <td><span class="order-id-badge"><%= order.orderId %></span></td>
+                        <td><%= order.shippingAddress ? order.shippingAddress.fullname : 'N/A' %></td>
+                        <td>₹<%= (order.offerDiscount || 0).toFixed(2) %></td>
+                        <td>₹<%= (order.couponDiscount || 0).toFixed(2) %></td>
+                        <td>₹<%= order.totalAmount.toFixed(2) %></td>
+                        <td><%= new Date(order.orderDate).toLocaleDateString('en-GB') %></td>
+                        <td>
+                            <span class="badge badge-pill <%= order.orderStatus === 'Completed' ? 'badge-mild-success' : order.orderStatus === 'Cancelled' ? 'badge-mild-danger' : 'badge-mild-warning' %> px-2 py-1">
+                                <%= order.orderStatus %>
+                            </span>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Cards (Optional placeholder or implement if needed) -->
+        <div class="shared-cards-mobile p-3">
+            <% orderItems.forEach((order, index) => { %>
+            <div class="shared-item-card">
+                <div class="card-header-flex">
+                    <span class="font-weight-bold">#<%= (currPg - 1) * pgLimit + (index + 1) %></span>
+                    <span class="badge badge-pill <%= order.orderStatus === 'Completed' ? 'badge-mild-success' : order.orderStatus === 'Cancelled' ? 'badge-mild-danger' : 'badge-mild-warning' %> px-2 py-1">
+                        <%= order.orderStatus %>
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <p><strong>Order ID:</strong> <%= order.orderId %></p>
+                    <p><strong>Customer:</strong> <%= order.shippingAddress ? order.shippingAddress.fullname : 'N/A' %></p>
+                    <p><strong>Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
+                    <p><strong>Date:</strong> <%= new Date(order.orderDate).toLocaleDateString('en-GB') %></p>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-3 pb-3">
+            <%- include('../Common/pagination') %>
+        </div>
+    <% } %>
+</div>

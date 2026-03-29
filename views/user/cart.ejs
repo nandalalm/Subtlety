@@ -230,57 +230,18 @@
 
 <body>
 
-  <%- include('partials/navBar') %>
+  <%- include('../partials/User/navBar') %>
 
   <section class="cart">
     <div class="container">
       <div class="mb-4">
         <a href="/user/home" class="text-decoration-none">Home</a> /
-        <a href="/user/cart" class="text-decoration-none">My Cart</a>
+        <a href="/cart" class="text-decoration-none">My Cart</a>
       </div>
       <h1>Your Cart</h1>
       <div class="row">
-        <% let subtotal = 0; %>
-        <% if (cart && cart.products && cart.products.length > 0) { %>
-        <div class="col-md-8 mt-3">
-          <h4>Products</h4>
-          <% cart.products.forEach(cartItem => { %>
-          <div class="product-card" data-product-id="<%= cartItem.productId._id %>">
-            <div class="product-info">
-              <img src="<%= cartItem.productId.images[0] %>" alt="Product Image">
-              <div class="product-details">
-                <p class="font-weight-bold"><%= cartItem.productId.name %></p>
-                <p>₹ <%= cartItem.discountedPrice || cartItem.productId.price %></p>
-              </div>
-              <div class="status-container">
-                <% if (!cartItem.productId.isListed) { %>
-                <span class="status-badge badge-unavailable unavailable-text">Unavailable</span>
-                <% } else if (cartItem.productId.stock === 0) { %>
-                <span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>
-                <% } else if (cartItem.productId.stock < cartItem.quantity) { %>
-                <span class="status-badge badge-low-stock low-stock-text">Only <%= cartItem.productId.stock %> units left</span>
-                <% } %>
-              </div>
-            </div>
-            <div class="controls-container">
-              <div class="quantity-group">
-                <button class="quantity-btn" type="button" onclick="decreaseQuantity(this)">-</button>
-                <input type="number" value="<%= cartItem.quantity %>" min="1" max="<%= cartItem.productId.stock %>" class="quantity-input" oninput="debounceUpdateQuantity('<%= cartItem.productId._id %>', this.value, this.getAttribute('max'))">
-                <button class="quantity-btn" type="button" onclick="increaseQuantity(this)">+</button>
-              </div>
-              <span class="delete-icon" onclick="confirmRemoveProduct('<%= cartItem.productId._id %>')">
-                <i class="fas fa-trash-alt"></i>
-              </span>
-            </div>
-          </div>
-          <% if (cartItem.productId.isListed && cartItem.productId.stock > 0) { %>
-          <% subtotal += (cartItem.discountedPrice || cartItem.productId.price) * Math.min(cartItem.quantity, cartItem.productId.stock); %>
-          <% } %>
-          <% }); %>
-        </div>
-        <% } else { %>
-        <p class="text-center">There are no items in your cart. <a href="/user/home">Back to Home</a></p>
-        <% } %>
+
+        <%- include('../partials/User/cartProductList') %>
 
         <% if (cart && cart.products && cart.products.length > 0) { %>
         <div class="col-md-4 mt-3">
@@ -288,19 +249,34 @@
           <ul class="list-group">
             <li class="list-group-item d-flex justify-content-between">
               <span>Subtotal:</span>
-              <span>₹ <span id="subtotal"><%= subtotal %></span></span>
+              <span>₹ <span id="subtotal"><%= Math.floor(cart.subtotal) %></span></span>
             </li>
             <li class="list-group-item d-flex justify-content-between">
-              <span>Discount:</span>
-              <span>₹ 0</span>
+              <span>Offer Discount:</span>
+              <span id="discountText" class="text-success">
+                <%= Math.floor(cart.offerDiscount) > 0 ? `- ₹ ${Math.floor(cart.offerDiscount)}` : '0' %>
+              </span>
+              <span id="discount" style="display:none;"><%= Math.floor(cart.offerDiscount) %></span>
             </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Delivery Fee:</span>
-              <span>₹ 50</span>
+            <li class="list-group-item d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>Delivery Fee:</span>
+                <span id="deliveryFeeWrapper">
+                  <% if (cart.deliveryFee === 0) { %>
+                    <span class="text-muted" style="text-decoration: line-through;">₹ 80</span>
+                    <span class="text-success font-weight-bold ml-1">Free</span>
+                  <% } else { %>
+                    ₹ <span id="deliveryFee"><%= Math.floor(cart.deliveryFee) %></span>
+                  <% } %>
+                </span>
+              </div>
+              <small id="deliveryFeeMessage" class="<%= cart.deliveryFee === 0 ? 'text-success' : 'text-muted' %> mt-1" style="font-size: 0.75rem;">
+                <%= cart.deliveryFee === 0 ? "Congrats! You've unlocked FREE delivery" : "Free delivery on orders above ₹600" %>
+              </small>
             </li>
             <li class="list-group-item d-flex justify-content-between">
               <strong>Total:</strong>
-              <strong>₹ <span id="total"><%= subtotal + 50 %></span></strong>
+              <strong>₹ <span id="total"><%= Math.floor(cart.total) %></span></strong>
             </li>
           </ul>
           <div class="text-center mt-4">
@@ -338,7 +314,12 @@
     }
 
     function removeProduct(productId) {
-      fetch(`/user/cart/remove`, {
+      const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+      if (productCard) {
+        productCard.style.display = 'none'; // Optimistic hide
+      }
+
+      fetch(`/cart/remove`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json'
@@ -357,29 +338,42 @@
           }
         })
         .then(data => {
-          const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
           if (productCard) {
-            productCard.style.opacity = '0';
-            productCard.style.transform = 'translateX(20px)';
-            productCard.style.transition = 'all 0.3s ease';
-            setTimeout(() => {
-              productCard.remove();
-              if (data.cartCount === 0) {
-                const container = document.querySelector('.cart .container');
-                container.innerHTML = `
-                  <div class="mb-4">
-                    <a href="/user/home" class="text-decoration-none">Home</a> /
-                    <a href="/user/cart" class="text-decoration-none">My Cart</a>
-                  </div>
-                  <h1>Your Cart</h1>
-                  <p class="text-center mt-5">There are no items in your cart. <a href="/user/home" class="btn btn-primary ml-2">Back to Home</a></p>
-                `;
-              }
-            }, 300);
+            productCard.remove();
+            if (data.cartCount === 0) {
+              const container = document.querySelector('.cart .container');
+              container.innerHTML = `
+                <div class="mb-4">
+                  <a href="/user/home" class="text-decoration-none">Home</a> /
+                  <a href="/cart" class="text-decoration-none">My Cart</a>
+                </div>
+                <h1>Your Cart</h1>
+                <p class="text-center mt-5">There are no items in your cart. <a href="/user/home" class="btn btn-primary ml-2">Back to Home</a></p>
+              `;
+            }
           }
 
-          document.getElementById('subtotal').innerText = data.subtotal.toFixed(2);
-          document.getElementById('total').innerText = data.total.toFixed(2);
+          const subtotalEl = document.getElementById('subtotal');
+          if (subtotalEl) {
+            subtotalEl.innerText = Math.floor(data.subtotal);
+            const discountVal = Math.floor(data.offerDiscount);
+            document.getElementById('discountText').innerText = discountVal > 0 ? `- ₹ ${discountVal}` : '0';
+            
+            // Update Delivery Fee UI
+            const wrapper = document.getElementById('deliveryFeeWrapper');
+            const message = document.getElementById('deliveryFeeMessage');
+            if (data.deliveryFee === 0) {
+              wrapper.innerHTML = `<span class="text-muted" style="text-decoration: line-through;">₹ 80</span> <span class="text-success font-weight-bold ml-1">Free</span>`;
+              message.innerText = "Congrats! You've unlocked FREE delivery";
+              message.className = "text-success mt-1";
+            } else {
+              wrapper.innerHTML = `₹ <span id="deliveryFee">${Math.floor(data.deliveryFee)}</span>`;
+              message.innerText = "Free delivery on orders above ₹600";
+              message.className = "text-muted mt-1";
+            }
+
+            document.getElementById('total').innerText = Math.floor(data.total);
+          }
 
           Toastify({
             text: data.message,
@@ -390,6 +384,9 @@
           }).showToast();
         })
         .catch(err => {
+          if (productCard) {
+            productCard.style.display = 'flex'; // Rollback
+          }
           console.error("Error:", err);
           Toastify({
             text: 'Error removing product: ' + err.message,
@@ -407,7 +404,7 @@
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         updateQuantity(productId, newQuantity, maxStock);
-      }, 500);
+      }, 250);
     }
 
     function updateQuantity(productId, newQuantity, maxStock) {
@@ -431,7 +428,7 @@
         quantity: newQuantity
       };
 
-      fetch(`/user/cart/update`, {
+      fetch(`/cart/update`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -475,8 +472,27 @@
             }).showToast();
           }
           
-          document.getElementById('subtotal').innerText = data.subtotal.toFixed(2);
-          document.getElementById('total').innerText = data.total.toFixed(2);
+          const subtotalEl = document.getElementById('subtotal');
+          if (subtotalEl) {
+            subtotalEl.innerText = Math.floor(data.subtotal);
+            const discountVal = Math.floor(data.offerDiscount);
+            document.getElementById('discountText').innerText = discountVal > 0 ? `- ₹ ${discountVal}` : '0';
+            
+            // Update Delivery Fee UI
+            const wrapper = document.getElementById('deliveryFeeWrapper');
+            const message = document.getElementById('deliveryFeeMessage');
+            if (data.deliveryFee === 0) {
+              wrapper.innerHTML = `<span class="text-muted" style="text-decoration: line-through;">₹ 80</span> <span class="text-success font-weight-bold ml-1">Free</span>`;
+              message.innerText = "Congrats! You've unlocked FREE delivery";
+              message.className = "text-success mt-1";
+            } else {
+              wrapper.innerHTML = `₹ <span id="deliveryFee">${Math.floor(data.deliveryFee)}</span>`;
+              message.innerText = "Free delivery on orders above ₹600";
+              message.className = "text-muted mt-1";
+            }
+
+            document.getElementById('total').innerText = Math.floor(data.total);
+          }
         })
         .catch(error => {
           Toastify({
@@ -507,7 +523,7 @@
           confirmButtonText: 'OK'
         });
       } else {
-        fetch('/user/checkout', {
+        fetch('/orders/checkout', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -534,7 +550,7 @@
           })
           .then(data => {
             if (data) {
-              window.location.href = '/user/checkout';
+              window.location.href = '/orders/checkout';
             }
           })
           .catch(error => {

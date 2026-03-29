@@ -10,369 +10,255 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles/user/home.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <style>
-    .filter-container {
+    .out-of-stock { opacity: 0.6; }
+    .out-of-stock-label {
+      position: absolute; top: 10px; right: 10px;
+      background-color: red; color: white;
+      padding: 5px 10px; border-radius: 4px;
+      font-size: 12px; font-weight: bold;
+    }
+    .offer-badge {
+      position: absolute; top: 10px; left: 10px;
+      background-color: #28a745; color: white;
+      padding: 5px 10px; border-radius: 4px;
+      font-size: 12px; font-weight: bold;
+    }
+    .original-price { text-decoration: line-through; color: #6c757d; font-size: 0.9em; }
+    .discounted-price { color: #28a745; font-weight: bold; }
+    /* Shop filter bar */
+    .shop-filter-bar {
       display: flex;
-      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
       margin-bottom: 20px;
       background-color: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 14px 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.07);
     }
-
-    .filter-icon {
-      margin-right: 5px;
+    .shop-filter-label {
+      font-size: 0.8rem;
+      font-weight: 600;
       color: #6c757d;
+      margin-bottom: 4px;
+    }
+    .shop-filter-item { min-width: 200px; flex: 1; max-width: 280px; }
+    
+    /* Shop Search Responsiveness */
+    #search {
+        height: 44px;
+        width: 350px;
+        background: transparent !important;
+        color: white !important;
+        border: 1px solid white !important;
+        border-radius: 5px 0 0 5px !important;
+        padding: 10px;
+        padding-right: 35px;
+        transition: width 0.3s;
+    }
+    #search:focus {
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    #search-btn {
+        background-color: #9135ED !important;
+        color: white !important;
+        border-radius: 0 5px 5px 0 !important;
+        height: 44px;
+        border: 1px solid #9135ED !important;
+        padding: 0 25px;
+        font-weight: 500;
+        margin-left: 2px;
     }
 
-    .filter-label {
-      font-weight: 500;
-      color: #495057;
-      margin-right: 10px;
+    @media(max-width: 930px) {
+        #search { width: 250px; }
     }
-
-    select {
-      padding: 8px 12px;
-      border-radius: 4px;
-      border: 1px solid #ced4da;
-      background-color: white;
-      margin-right: 15px;
-    }
-
-    #showAllBtn {
-      background-color: #6c757d;
-      border: none;
-      padding: 9px 15px;
-      margin-bottom: 8px;
-      border-radius: 4px;
-      color: white;
-      transition: background-color 0.3s ease;
-      display: none;
-    }
-
-    #showAllBtn:hover {
-      background-color: #5a6268;
-    }
-
-    .out-of-stock {
-      opacity: 0.6;
-    }
-
-    .out-of-stock-label {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: red;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .offer-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background-color: #28a745;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .original-price {
-      text-decoration: line-through;
-      color: #6c757d;
-      font-size: 0.9em;
-    }
-
-    .discounted-price {
-      color: #28a745;
-      font-weight: bold;
-    }
-
-    /* Apply a fixed width to the filter items */
-    .filter-item {
-      width: 250px;
-      /* Adjust this width as needed */
-    }
-
-    /* Optional: Ensure the button and selects fill the container */
-    .filter-item select,
-    .filter-item button {
-      width: 100%;
-    }
-
-    /* Adjust label spacing */
-    .filter-item label {
-      margin-bottom: 5px;
-      display: block;
-      /* Make sure label is on top of the select/input */
-    }
-
-    #showAllBtn {
-      text-align: center;
-      padding: 8px 12px;
-      font-size: 14px;
-      border-radius: 5px;
+    @media(max-width: 576px) {
+        #search { width: 155px; padding: 8px; padding-right: 25px; }
+        #search-btn { padding: 0 15px; }
     }
   </style>
 </head>
 
 <body>
-  <%- include('partials/navBar') %>
+  <%- include('../partials/User/navBar') %>
 
   <section style="height: 380px !important;" class="hero-section text-center py-5" style="background-color: black;">
     <div class="container">
       <h1 style="color: #9135ED;" class="pt-5">Explore Our Products</h1>
-      <div class="search-bar mt-4">
-        <input type="text" placeholder="Search for products..." value="<%= search || '' %>" id="search" name="search" />
-        <button type="button" id="search-btn">Search</button>
+      <div class="search-bar mt-4 text-center">
+        <div class="d-inline-flex align-items-center" style="position: relative;">
+            <div style="position: relative;">
+                <input type="text" placeholder="Search for Merch.." value="<%= search || '' %>" id="search" name="search" />
+                
+                <span id="clearSearchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: rgba(255,255,255,0.7); z-index: 10; display: <%= (search && search.trim()) ? 'block' : 'none' %>;" 
+                      onclick="document.getElementById('search').value=''; this.style.display='none'; clearAjaxFilter('product-grid', 'search', 'user/shop')" title="Clear search">
+                    <i class="fas fa-times"></i>
+                </span>
+            </div>
+            <button type="button" id="search-btn" class="btn">Search</button>
+        </div>
       </div>
     </div>
   </section>
 
   <div class="container">
-    <div class="filter-container mt-3">
-      <div class="d-flex align-items-center flex-wrap">
+    <!-- Filter Bar -->
+    <div class="shop-filter-bar mt-3">
 
-        <!-- Filter by Category -->
-        <div class="filter-item mr-4 mb-2">
-          <label for="category" class="filter-label">
-            <i class="fas fa-filter filter-icon"></i> Filter by Category:
-          </label>
-          <select id="category" onchange="applyFilters()">
-            <option value="all" <%= category === 'all' ? 'selected' : '' %>>All</option>
+      <!-- Filter by Category -->
+      <div class="shop-filter-item">
+        <div class="shop-filter-label"><i class="fas fa-filter mr-1"></i>Category</div>
+        <div class="filter-sort-pill">
+          <select id="categorySelect" onchange="applyAjaxFilter('product-grid', 'category', this.value, 'user/shop'); document.getElementById('clearCategoryBtn').style.display=this.value!=='all'?'flex':'none';">
+            <option value="all" <%= category === 'all' || !category ? 'selected' : '' %>>All Categories</option>
             <% categories.forEach(cat => { %>
             <option value="<%= cat._id %>" <%= category === cat._id.toString() ? 'selected' : '' %>><%= cat.name %></option>
             <% }) %>
           </select>
-        </div>
-
-        <!-- Sort by -->
-        <div class="filter-item mr-4 mb-2">
-          <label for="sort" class="filter-label">
-            <i class="fas fa-sort filter-icon"></i> Sort by:
-          </label>
-          <select id="sort" onchange="applyFilters()">
-            <option value="">Select from</option>
-            <option value="priceLowToHigh" <%= sort === 'priceLowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
-            <option value="priceHighToLow" <%= sort === 'priceHighToLow' ? 'selected' : '' %>>Price: High to Low</option>
-            <option value="aToZ" <%= sort === 'aToZ' ? 'selected' : '' %>>A - Z</option>
-            <option value="zToA" <%= sort === 'zToA' ? 'selected' : '' %>>Z - A</option>
-          </select>
-        </div>
-
-        <!-- Show All Button -->
-        <div style="padding-top: 30px;" class="filter-item mr-4 mb-2 ">
-          <button id="showAllBtn" onclick="resetFilters()" class="btn btn-sm btn-secondary m-0 ">
-            <i class="fas fa-sync-alt"></i> Show All
+          <button id="clearCategoryBtn" type="button" class="sort-clear-inner" title="Clear category"
+            style="display:<%= (category && category !== 'all') ? 'flex' : 'none' %>;"
+            onclick="clearAjaxFilter('product-grid', 'category', 'user/shop'); this.style.display='none'; document.getElementById('categorySelect').value='all';">
+            <i class="fas fa-times"></i>
           </button>
         </div>
       </div>
+
+      <!-- Sort By -->
+      <div class="shop-filter-item">
+        <div class="shop-filter-label"><i class="fas fa-sort mr-1"></i>Sort by</div>
+        <div class="filter-sort-pill">
+          <select id="shopSortSelect" onchange="applyAjaxFilter('product-grid', 'sort', this.value, 'user/shop'); document.getElementById('clearShopSortBtn').style.display=this.value!=='latest'?'flex':'none';">
+            <option value="latest" <%= !sort || sort === 'latest' ? 'selected' : '' %>>Latest Arrivals</option>
+            <option value="priceLowToHigh" <%= sort === 'priceLowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
+            <option value="priceHighToLow" <%= sort === 'priceHighToLow' ? 'selected' : '' %>>Price: High to Low</option>
+            <option value="aToZ" <%= sort === 'aToZ' ? 'selected' : '' %>>A → Z</option>
+            <option value="zToA" <%= sort === 'zToA' ? 'selected' : '' %>>Z → A</option>
+          </select>
+          <button id="clearShopSortBtn" type="button" class="sort-clear-inner" title="Clear sort"
+            style="display:<%= (sort && sort !== 'latest') ? 'flex' : 'none' %>;"
+            onclick="clearAjaxFilter('product-grid', 'sort', 'user/shop'); this.style.display='none'; document.getElementById('shopSortSelect').value='latest';">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <div class="row g-5" id="product-grid">
-      <% if (productsWithOffers && productsWithOffers.length > 0) { %>
-      <% productsWithOffers.forEach(({ product, bestOffer, averageRating }) => { %>
-        <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
-      <% }) %>
-      <% } else { %>
-      <div class="col-12 text-center">
-        <p>No product was found of that criteria.</p>
-      </div>
-      <% } %>
-    </div>
-    <div class="text-center my-4 mt-5 pt-3">
-      <% if (hasMore) { %>
-        <button id="load-more-btn" class="btn text-white" style="background-color: #9135ED;" data-page="<%= currentPage + 1 %>">Load More</button>
-      <% } %>
+    <!-- AJAX Target Container -->
+    <div id="product-grid" class="mt-4 mb-5 pb-5">
+        <%- include('../partials/User/productGrid') %>
     </div>
   </div>
 
-  <%- include('partials/footer') %>
+  <%- include('../partials/User/footer') %>
 
   <script src="https://code.jquery.com/jquery-3.5.2.slim.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script src="/js/cartControls.js"></script>
+  <script src="/js/cartControls.js"></script>
+  <script src="/js/ajaxTable.js"></script>
   <script>
-    function resetFilters() {
-      window.location.href = window.location.pathname;
-    }
+    let currentPage = 1;
+    const itemsPerPage = 8;
 
-    function applyFilters() {
-      const sort = document.getElementById('sort').value;
-      const category = document.getElementById('category').value;
-      const search = document.getElementById('search').value.trim();
+    async function loadMoreProducts() {
+      const btn = document.getElementById('load-more-btn');
+      if (!btn) return;
+
+      currentPage++;
+      btn.disabled = true;
+      btn.innerHTML = 'Loading...';
 
       const url = new URL(window.location.href);
-      if (search) {
-        url.searchParams.set('search', search);
-      } else {
-        url.searchParams.delete('search');
+      url.searchParams.set('ajax', 'true');
+      url.searchParams.set('append', 'true');
+      url.searchParams.set('page', currentPage);
+      url.searchParams.set('limit', itemsPerPage);
+
+      try {
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error('Failed to load more products');
+        
+        const html = await response.text();
+        const container = document.getElementById('products-list-inner');
+        if (container) {
+          container.insertAdjacentHTML('beforeend', html);
+        }
+
+        // We need to know if there's more. The server can send a header or we can check the response length.
+        // For simplicity, let's assume if we get < 8 items, there's no more.
+        // But a better way is to have the controller return a 'hasMore' flag in a header.
+        const hasMore = response.headers.get('X-Has-More') === 'true';
+        const loadMoreContainer = document.getElementById('load-more-container');
+        if (!hasMore && loadMoreContainer) {
+          loadMoreContainer.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error loading more products:', error);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = 'Load More';
+        }
       }
-      url.searchParams.set('sort', sort);
-      url.searchParams.set('category', category);
-      window.location.href = url.toString();
     }
+
+    // Override the generic applyAjaxFilter for this page to maintain the current limit
+    const originalApplyAjaxFilter = applyAjaxFilter;
+    window.applyAjaxFilter = function(containerId, param, value, basePath) {
+      const url = new URL(window.location.href);
+      if (basePath) {
+        const absolutePath = basePath.startsWith('/') ? basePath : `/${basePath}`;
+        url.pathname = absolutePath;
+      }
+
+      if (value === '' || value === 'all') {
+        url.searchParams.delete(param);
+        if (param === 'search') {
+          const clearBtn = document.getElementById('clearSearchBtn');
+          if (clearBtn) clearBtn.style.display = 'none';
+        }
+      } else {
+        url.searchParams.set(param, value);
+        if (param === 'search') {
+          const clearBtn = document.getElementById('clearSearchBtn');
+          if (clearBtn) clearBtn.style.display = 'block';
+        }
+      }
+      
+      // Reset page to 1 but keep the total limit loaded so far
+      url.searchParams.set('page', '1');
+      url.searchParams.set('limit', currentPage * itemsPerPage);
+      
+      const newUrl = `${url.pathname}${url.search}`;
+      refreshTable(containerId, newUrl);
+      window.history.pushState({}, '', newUrl);
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
-      const sortSelect = document.getElementById('sort');
-      const categorySelect = document.getElementById('category');
-      const searchInput = document.getElementById('search');
       const searchButton = document.getElementById('search-btn');
-      const showAllBtn = document.getElementById('showAllBtn');
+      const searchInput = document.getElementById('search');
 
-      // Function to update the products based on search, sort, and category
-      const updateProducts = () => {
-        const search = searchInput.value.trim();
-        const sort = sortSelect.value;
-        const category = categorySelect.value;
-
-        const url = new URL(window.location.href);
-
-        // Update the search parameter
-        if (search) {
-          url.searchParams.set('search', search);
-        } else {
-          url.searchParams.delete('search');
-        }
-        url.searchParams.set('sort', sort);
-        url.searchParams.set('category', category);
-
-        // Show the "Show All" button if any filter is applied
-        showAllBtn.style.display = (search || sort || category !== 'all') ? 'inline-block' : 'none';
-
-        // Redirect to the updated URL
-        window.location.href = url.toString();
-      };
-
-      // Event listeners for changes
-      sortSelect.addEventListener('change', updateProducts);
-      categorySelect.addEventListener('change', updateProducts);
-
-      // Search button handling
-      searchButton.addEventListener('click', updateProducts);
-      searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          updateProducts();
-        }
-      });
-
-      // Check if any filter is applied on page load
-      const currentUrl = new URL(window.location.href);
-      const hasSearch = currentUrl.searchParams.has('search');
-      const hasSort = currentUrl.searchParams.get('sort') !== null && currentUrl.searchParams.get('sort') !== '';
-      const hasCategory = currentUrl.searchParams.get('category') !== null && currentUrl.searchParams.get('category') !== 'all';
-
-      if (hasSearch || hasSort || hasCategory) {
-        showAllBtn.style.display = 'inline-block';
+      if (searchButton && searchInput) {
+        searchButton.addEventListener('click', () => {
+          applyAjaxFilter('product-grid', 'search', searchInput.value.trim(), 'user/shop');
+        });
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            applyAjaxFilter('product-grid', 'search', searchInput.value.trim(), 'user/shop');
+          }
+        });
       }
     });
-  </script>
-  <script>
-    // Load More Functionality
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    if (loadMoreBtn) {
-      loadMoreBtn.addEventListener('click', async () => {
-        const page = loadMoreBtn.getAttribute('data-page');
-        const url = new URL(window.location.href);
-        url.pathname = '/user/shop/load-more';
-        url.searchParams.set('page', page);
-
-        try {
-          const response = await fetch(url.toString());
-          const data = await response.json();
-
-          if (data.products && data.products.length > 0) {
-            const productGrid = document.getElementById('product-grid');
-            data.products.forEach(({
-              product,
-              bestOffer,
-              averageRating
-            }) => {
-              const cartQty = (data.cartItemMap && data.cartItemMap[product._id]) ? data.cartItemMap[product._id] : 0;
-              const cartControls = cartQty > 0 ? `
-                <div class="cart-quantity-controls d-flex align-items-center">
-                  <button type="button" class="btn btn-dark btn-decrement m-0" data-product-id="${product._id}">-</button>
-                  <span class="px-3 quantity-display" style="min-width: 40px; text-align: center; font-weight: bold; color: #9135ED;">${cartQty}</span>
-                  <button type="button" class="btn btn-dark btn-increment m-0" data-product-id="${product._id}">+</button>
-                </div>
-              ` : `
-                <button type="button" class="btn btn-dark m-0 btn-add-to-cart ${product.stock === 0 ? 'disabled' : ''}" data-product-id="${product._id}">
-                  <i class="fas fa-shopping-cart"></i> Add to Cart
-                </button>
-              `;
-
-              const productHtml = `
-                <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 ${product.stock === 0 ? 'out-of-stock' : ''}">
-                  <a href="/user/single-product/${product._id}" class="card-link">
-                    <div class="card-img-half position-relative">
-                      <img src="${product.images[0]}" class="card-img-top fixed-height" alt="${product.name}">
-                      ${product.stock === 0 ? '<span class="out-of-stock-label">Out of Stock</span>' : ''}
-                    </div>
-                    <div class="card-body-half">
-                      <div class="product-details">
-                        <h5 class="card-title text-center" style="font-size: 0.9rem; font-weight: 600; color: #333; margin-bottom: 0 !important;">${product.name}</h5>
-                        
-                        <div class="d-flex justify-content-between align-items-center mb-1 px-1">
-                            <div class="star-rating d-flex align-items-center" style="color: #ffc107;">
-                                <div class="stars mr-1" style="display: flex; gap: 1px;">
-                                    ${averageRating > 0 ? 
-                                        Array.from({length: 5}, (_, i) => `<i class="${i < Math.round(averageRating) ? 'fas' : 'far'} fa-star" style="font-size: 0.75rem !important;"></i>`).join('') :
-                                        '<i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i>'
-                                    }
-                                </div>
-                                <span class="text-muted font-weight-bold" style="font-size: 0.80rem;">${averageRating > 0 ? averageRating : '(0)'}</span>
-                            </div>
-
-                            <div class="price-container d-flex align-items-center gap-2">
-                                ${bestOffer && bestOffer.discountedPrice !== undefined ? `
-                                    <span class="old-price mr-1" style="font-size: 0.65rem; color: #777; text-decoration: line-through;">₹${product.price}</span>
-                                    <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹${bestOffer.discountedPrice.toFixed(0)}</span>
-                                ` : `<span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹${product.price}</span>`}
-                            </div>
-                        </div>
-                        <div class="btn-group button-container cart-controls-container" role="group" data-product-id="${product._id}">
-                          ${cartControls}
-                          <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="${product._id}">
-                            <i class="fas fa-heart"></i> Wishlist
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                </div>`;
-              productGrid.insertAdjacentHTML('beforeend', productHtml);
-            });
-
-            if (data.hasMore) {
-              loadMoreBtn.setAttribute('data-page', parseInt(page) + 1);
-            } else {
-              loadMoreBtn.remove();
-            }
-          }
-        } catch (error) {
-          console.error('Error loading more products:', error);
-          Toastify({
-            text: "Error loading more products",
-            duration: 3000,
-            style: {
-              background: "linear-gradient(to right, #ff416c, #ff4b2b)"
-            }
-          }).showToast();
-        }
-      });
-    }
-  </script>
-  <script>
-    // Existing filter logic stays here
   </script>
 
 </body>

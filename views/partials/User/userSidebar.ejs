@@ -15,13 +15,13 @@
           <p class="section-title">Account Settings</p>
           <ul class="list-unstyled">
             <li class="<%= activePage === 'profile' ? 'active' : '' %>">
-              <a href="/user/profile" title="Profile">
+              <a href="/profile" title="Profile">
                 <i class="fas fa-user-circle"></i>
                 <span class="nav-text">Profile</span>
               </a>
             </li>
             <li class="<%= activePage === 'address' ? 'active' : '' %>">
-              <a href="/user/address" title="Address Book">
+              <a href="/profile/address" title="Address Book">
                 <i class="fas fa-map-marker-alt"></i>
                 <span class="nav-text">Address Book</span>
               </a>
@@ -33,19 +33,19 @@
           <p class="section-title">Orders & Activity</p>
           <ul class="list-unstyled">
             <li class="<%= activePage === 'orders' ? 'active' : '' %>">
-              <a href="/user/orders" title="Orders">
+              <a href="/orders" title="Orders">
                 <i class="fas fa-shopping-bag"></i>
                 <span class="nav-text">Orders</span>
               </a>
             </li>
             <li class="<%= activePage === 'wishlist' ? 'active' : '' %>">
-              <a href="/user/wishlist" title="Wishlist">
+              <a href="/wishlist" title="Wishlist">
                 <i class="fas fa-heart"></i>
                 <span class="nav-text">Wishlist</span>
               </a>
             </li>
             <li class="<%= activePage === 'wallet' ? 'active' : '' %>">
-              <a href="/user/wallet" title="Wallet">
+              <a href="/wallet" title="Wallet">
                 <i class="fas fa-wallet"></i>
                 <span class="nav-text">Wallet</span>
               </a>
@@ -55,7 +55,7 @@
       </nav>
 
       <div class="sidebar-footer">
-        <form action="/user/logout" method="POST" id="logout-form-sidebar">
+        <form action="/auth/logout" method="POST" id="logout-form-sidebar">
           <button type="button" id="logout-btn-sidebar" class="btn btn-logout-sidebar" title="Logout">
             <i class="fas fa-sign-out-alt"></i>
             <span class="nav-text">Logout</span>

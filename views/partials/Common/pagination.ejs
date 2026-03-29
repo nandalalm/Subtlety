@@ -1,0 +1,73 @@
+<% 
+    // Helper to build the URL with all current query parameters preserved
+    function buildPaginationUrl(pageNum) {
+        let params = [];
+        params.push(`page=${pageNum}`);
+        
+        // Use a consistent parameter list for both user and admin views
+        if (typeof search !== 'undefined' && search) params.push(`search=${encodeURIComponent(search)}`);
+        if (typeof sort !== 'undefined' && sort) params.push(`sort=${encodeURIComponent(sort)}`);
+        if (typeof rating !== 'undefined' && rating) params.push(`rating=${encodeURIComponent(rating)}`);
+        if (typeof paymentStatus !== 'undefined' && paymentStatus) params.push(`paymentStatus=${encodeURIComponent(paymentStatus)}`);
+        if (typeof reportType !== 'undefined' && reportType) params.push(`reportType=${encodeURIComponent(reportType)}`);
+        if (typeof startDate !== 'undefined' && startDate) params.push(`startDate=${encodeURIComponent(startDate)}`);
+        if (typeof endDate !== 'undefined' && endDate) params.push(`endDate=${encodeURIComponent(endDate)}`);
+        if (typeof category !== 'undefined' && category) params.push(`category=${encodeURIComponent(category)}`);
+        if (typeof priceRange !== 'undefined' && priceRange) params.push(`priceRange=${encodeURIComponent(priceRange)}`);
+        
+        return '?' + params.join('&');
+    }
+
+    const currentPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
+    const totalPgs = typeof totalPages !== 'undefined' ? parseInt(totalPages) : 1;
+%>
+
+<div class="pagination-wrapper d-flex justify-content-center align-items-center mt-3 mb-0" id="paginationContainer" style="gap: 10px;">
+    <!-- Prev Button -->
+    <a href="<%= currentPg > 1 ? buildPaginationUrl(currentPg - 1) : 'javascript:void(0)' %>" 
+       class="btn-pagination <%= currentPg <= 1 ? 'disabled' : '' %>"
+       data-page="<%= currentPg - 1 %>"
+       title="Previous Page">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    
+    <!-- Page Info -->
+    <div class="page-info mx-2" style="color: #9135ED; font-weight: 600; min-width: 80px; text-align: center; font-size: 0.95rem;">
+        <%= currentPg %> of <%= totalPgs || 1 %>
+    </div>
+    
+    <!-- Next Button -->
+    <a href="<%= currentPg < totalPgs ? buildPaginationUrl(currentPg + 1) : 'javascript:void(0)' %>" 
+       class="btn-pagination <%= currentPg >= totalPgs ? 'disabled' : '' %>"
+       data-page="<%= currentPg + 1 %>"
+       title="Next Page">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+</div>
+
+<style>
+    /* Inline but shared-class fallback if table.css is somehow missed */
+    .btn-pagination {
+        border-radius: 5px;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #9135ED;
+        color: #9135ED;
+        background: transparent;
+        transition: all 0.3s ease;
+        text-decoration: none !important;
+        flex: none !important;
+    }
+    .btn-pagination:hover:not(.disabled) {
+        background-color: #9135ED !important;
+        color: white !important;
+    }
+    .btn-pagination.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+</style>

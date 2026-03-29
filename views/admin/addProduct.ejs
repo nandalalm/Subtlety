@@ -134,9 +134,9 @@
 </head>
 <body class="bg-light">
     <!-- ... same body content ... -->
-    <%- include('partials/adminNavbar') %>
+    <%- include('../partials/Admin/adminNavbar') %>
     <div class="d-flex" id="wrapper">
-        <%- include('partials/adminSidebar', { activePage: 'products' }) %>
+        <%- include('../partials/Admin/adminSidebar', { activePage: 'products' }) %>
 
         <div id="page-content-wrapper" class="w-100">
             <div class="container-fluid pt-2 px-1 px-md-3">
@@ -252,7 +252,7 @@
         </div>
     </div>
 
-    <%- include('partials/adminScripts') %>
+    <%- include('../partials/Admin/adminScripts') %>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

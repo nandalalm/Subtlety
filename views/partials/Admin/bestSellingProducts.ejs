@@ -1,0 +1,28 @@
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product Name</th>
+        <th class="hide-xs">Description</th>
+        <th class="text-center">Image</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% bestSellingProducts.forEach(product => { %>
+      <tr>
+        <td><%= product.index %></td>
+        <td class="font-weight-bold"><%= product.name %></td>
+        <td class="text-muted small hide-xs"><%= product.description.substring(0, 100) %>...</td>
+        <td class="text-center">
+          <% if (product.images && product.images.length > 0) { %>
+          <img src="<%= product.images[0] %>" alt="Product Image" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+          <% } else { %>
+          <span class="text-muted small">No Image</span>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

@@ -431,13 +431,3 @@
         font-size: 1.2rem;
     }
 }
-
-.table thead th {
-    background-color: #f8f9fa;
-    border-top: none;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #636E72;
-    letter-spacing: 0.5px;
-}

@@ -1,0 +1,108 @@
+<% 
+    const reviewList = typeof reviews !== 'undefined' ? reviews : [];
+    const currPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
+    const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
+%>
+
+<div class="table-container-shared card border-0 shadow-sm" id="reviewTableContainer" style="background: transparent;">
+    <% if (reviewList.length === 0) { %>
+        <div class="text-center py-5 bg-white rounded shadow-sm">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No results found for the given criteria.</p>
+        </div>
+    <% } else { %>
+        <!-- Desktop Table -->
+        <table class="table table-hover shared-table-desktop mb-0 bg-white">
+            <thead class="thead-light">
+                <tr>
+                    <th style="width: 5%;">S.No</th>
+                    <th style="width: 20%;">Reviewer</th>
+                    <th style="width: 20%;">Product</th>
+                    <th style="width: 15%;">Rating</th>
+                    <th style="width: 20%;">Review</th>
+                    <th style="width: 10%;">Date</th>
+                    <th style="width: 10%;" class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% reviewList.forEach((review, index) => { %>
+                <tr data-row-id="<%= review._id %>">
+                    <td><%= (currPg - 1) * pgLimit + (index + 1) %></td>
+                    <td>
+                        <div class="font-weight-bold text-dark"><%= review.userId ? review.userId.firstname : 'Deleted User' %></div>
+                        <div class="small text-muted"><%= review.userId ? review.userId.email : '' %></div>
+                    </td>
+                    <td><div class="font-weight-bold text-dark"><%= review.productId ? review.productId.name : 'Deleted Product' %></div></td>
+                    <td>
+                        <div class="star-rating text-warning">
+                            <% for(let i=1; i<=5; i++) { %>
+                                <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
+                            <% } %>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small text-muted text-truncate-2" title="<%= review.comment %>">
+                            <%= review.comment || 'No review' %>
+                        </div>
+                    </td>
+                    <td class="small text-muted">
+                        <%= new Date(review.createdAt).toLocaleDateString('en-GB') %>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm toggle-review-btn <%= review.isListed ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill px-3" 
+                                data-id="<%= review._id %>" 
+                                data-status="<%= review.isListed %>"
+                                onclick="toggleReviewStatus(this)"
+                                style="min-width: 85px;">
+                            <%= review.isListed ? 'Unlist' : 'List' %>
+                        </button>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <!-- Mobile Cards -->
+        <div class="shared-cards-mobile px-0">
+            <% reviewList.forEach((review, index) => { %>
+            <div class="shared-item-card mb-3" data-card-id="<%= review._id %>">
+                <div class="card-header-flex">
+                    <span class="font-weight-bold text-dark">#<%= (currPg - 1) * pgLimit + (index + 1) %></span>
+                    <span class="status-box status-<%= review.isListed ? 'successful' : 'failed' %>" id="status-badge-mobile-<%= review._id %>">
+                        <%= review.isListed ? 'Listed' : 'Unlisted' %>
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="mb-2">
+                        <span class="text-warning">
+                            <% for(let i=1; i<=5; i++) { %>
+                                <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
+                            <% } %>
+                        </span>
+                    </div>
+                    <p><strong>Product:</strong> <%= review.productId ? review.productId.name : 'Deleted Product' %></p>
+                    <p><strong>By:</strong> <%= review.userId ? review.userId.firstname : 'Deleted User' %></p>
+                    <p><strong>Review:</strong> <span class="text-muted small"><%= review.comment || 'No review' %></span></p>
+                    <p class="small text-muted mb-0"><%= new Date(review.createdAt).toLocaleDateString('en-GB') %></p>
+                    
+                    <div class="mt-4 text-right">
+                        <button class="btn toggle-review-btn btn-sm <%= review.isListed ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill px-4" 
+                                data-id="<%= review._id %>" 
+                                data-status="<%= review.isListed %>"
+                                onclick="toggleReviewStatus(this)">
+                            <%= review.isListed ? 'Unlist' : 'List' %>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+    <% } %>
+    
+        <!-- Pagination moved inside for AJAX refresh support -->
+        <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+        <div class="px-3 pb-3">
+            <%- include('../Common/pagination') %>
+        </div>
+        <% } %>
+</div>

@@ -11,51 +11,9 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
   <style>
-    .status-box {
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      text-align: center;
-      display: inline-block;
-      min-width: 90px;
-    }
-
-    /* Mild colors from user side */
-    .status-pending { background-color: #fff3cd !important; color: #856404 !important; }
-    .status-shipped { background-color: #cfe2ff !important; color: #084298 !important; }
-    .status-completed { background-color: #d1e7dd !important; color: #0f5132 !important; }
-    .status-delivered { background-color: #d1e7dd !important; color: #0f5132 !important; }
-    .status-cancelled { background-color: #f8d7da !important; color: #842029 !important; }
-    .status-returned { background-color: #e2e3e5 !important; color: #41464b !important; }
-    .status-failed { background-color: #f8d7da !important; color: #842029 !important; }
-    .status-successful { background-color: #d1e7dd !important; color: #0f5132 !important; }
-
-    .order-id {
-      font-size: 0.9em;
-    }
-
-    /* Responsive Layout Reversal */
-    @media (min-width: 1200px) {
-      .order-table-container { display: block; }
-      .order-cards-container { display: none; }
-    }
-    @media (max-width: 1199px) {
-      .order-table-container { display: none; }
-      .order-cards-container { display: flex; flex-direction: column; gap: 15px; }
-      .order-card { 
-        background: #fff; 
-        border-radius: 12px; 
-        padding: 20px; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-        width: 100%;
-        border: 1px solid #eee;
-      }
-    }
-
     .order-card-header {
       display: flex;
       justify-content: space-between;
@@ -66,96 +24,13 @@
     }
 
     .order-card-body p { margin-bottom: 8px; font-size: 0.95rem; }
-
-    .pagination .page-number {
-      height: 35px;
-      min-width: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      padding: 0 10px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .pagination .btn {
-      height: 35px;
-      width: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-    }
-
-    /* Bell Ringing Animation */
-    @keyframes ring {
-      0% { transform: rotate(0); }
-      1% { transform: rotate(30deg); }
-      3% { transform: rotate(-28deg); }
-      5% { transform: rotate(34deg); }
-      7% { transform: rotate(-32deg); }
-      9% { transform: rotate(30deg); }
-      11% { transform: rotate(-28deg); }
-      13% { transform: rotate(26deg); }
-      15% { transform: rotate(-24deg); }
-      17% { transform: rotate(22deg); }
-      19% { transform: rotate(-20deg); }
-      21% { transform: rotate(18deg); }
-      23% { transform: rotate(-16deg); }
-      25% { transform: rotate(14deg); }
-      27% { transform: rotate(-12deg); }
-      29% { transform: rotate(10deg); }
-      31% { transform: rotate(-8deg); }
-      33% { transform: rotate(6deg); }
-      35% { transform: rotate(-4deg); }
-      37% { transform: rotate(2deg); }
-      39% { transform: rotate(-1deg); }
-      41% { transform: rotate(1deg); }
-      43% { transform: rotate(0); }
-      100% { transform: rotate(0); }
-    }
-
-    .bell-ringing {
-      display: inline-block;
-      animation: ring 2.5s ease infinite;
-      transform-origin: 50% 0;
-    }
-
-    /* Standardized Search & Filter Bar Styling (Purple Theme) */
-    .search-sort-bar {
-      margin-bottom: 20px;
-    }
-
-    .input-group .form-control {
-      border-radius: 20px 0 0 20px;
-      border: 1px solid #9135ED;
-    }
-
-    .input-group .btn-primary {
-      border-radius: 0 20px 20px 0;
-      background-color: #9135ED !important;
-      border: 1px solid #9135ED !important;
-    }
-
-    .filter-select {
-      border-radius: 20px;
-      border: 1px solid #9135ED !important;
-      padding: 5px 15px;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-      background-image: none !important;
-    }
   </style>
 </head>
 
 <body class="bg-light text-dark">
-  <%- include('partials/adminNavbar') %>
+  <%- include('../partials/Admin/adminNavbar') %>
   <div class="d-flex" id="wrapper">
-    <%- include('partials/adminSidebar', { activePage: 'orders' }) %>
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'orders' }) %>
 
     <!-- Page Content -->
     <div id="page-content-wrapper" class="w-100">
@@ -166,163 +41,65 @@
         <div class="row mb-3 align-items-center">
           <!-- Search -->
           <div class="col-lg-5 col-md-12 mb-3">
-            <form action="/admin/orderList" method="GET" class="search-group" id="searchForm">
-              <div class="input-group">
-                <input type="text" name="search" class="form-control" placeholder="Search by Order ID or Email..." value="<%= search %>">
-                <input type="hidden" name="sort" value="<%= sort %>">
-                <input type="hidden" name="paymentStatus" value="<%= paymentStatus %>">
-                <div class="input-group-append">
-                  <% if (search) { %>
-                  <a href="/admin/orderList?sort=<%= sort %>&paymentStatus=<%= paymentStatus %>" class="btn btn-outline-secondary d-flex align-items-center px-2" title="Clear search">
-                    <i class="fas fa-times"></i>
-                  </a>
-                  <% } %>
-                  <button class="btn btn-primary" type="submit">
-                    <i class="fas fa-search"></i>
-                  </button>
-                </div>
-              </div>
-            </form>
+            <%- include('../partials/Common/searchBar', {
+              searchInputId: 'adminOrderSearchInput',
+              searchContainerId: 'orderTableContainer',
+              searchPlaceholder: 'Search by Order ID or Email...',
+              searchValue: search || '',
+              searchBasePath: 'admin/orders'
+            }) %>
           </div>
 
           <!-- Sort -->
           <div class="col-lg-3 col-md-12 mb-3">
-            <div class="d-flex align-items-center">
-              <form action="/admin/orderList" method="GET" class="flex-grow-1 mr-1">
-                <input type="hidden" name="search" value="<%= search %>">
-                <input type="hidden" name="paymentStatus" value="<%= paymentStatus %>">
-                <select name="sort" class="form-control filter-select" onchange="this.form.submit()">
-                  <option value="default" <%= sort === 'default' ? 'selected' : '' %>>Sort: Default Priority</option>
-                  <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Sort: Latest</option>
-                  <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Sort: Oldest</option>
-                  <option disabled>── Order Status ──</option>
-                  <option value="Pending" <%= sort === 'Pending' ? 'selected' : '' %>>Pending Only</option>
-                  <option value="Shipped" <%= sort === 'Shipped' ? 'selected' : '' %>>Shipped Only</option>
-                  <option value="Completed" <%= sort === 'Completed' ? 'selected' : '' %>>Completed Only</option>
-                  <option value="Cancelled" <%= sort === 'Cancelled' ? 'selected' : '' %>>Cancelled Only</option>
-                </select>
-              </form>
-              <% if (sort !== 'default') { %>
-              <a href="/admin/orderList?search=<%= search %>&paymentStatus=<%= paymentStatus %>" class="btn btn-sm" title="Clear sort" style="color: #9135ED;">
-                <i class="fas fa-times-circle"></i>
-              </a>
-              <% } %>
+            <div class="filter-sort-pill">
+              <select id="adminOrderSortSelect" onchange="applyAjaxFilter('orderTableContainer', 'sort', this.value, 'admin/orders'); document.getElementById('clearAdminOrderSortBtn').style.display=this.value!=='default'?'flex':'none';">
+                <option value="default" <%= sort === 'default' ? 'selected' : '' %>>Sort: Default Priority</option>
+                <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Sort: Latest</option>
+                <option value="oldest" <%= sort === 'oldest' ? 'selected' : '' %>>Sort: Oldest</option>
+                <option disabled>── Order Status ──</option>
+                <option value="Pending" <%= sort === 'Pending' ? 'selected' : '' %>>Pending Only</option>
+                <option value="Shipped" <%= sort === 'Shipped' ? 'selected' : '' %>>Shipped Only</option>
+                <option value="Completed" <%= sort === 'Completed' ? 'selected' : '' %>>Completed Only</option>
+                <option value="Cancelled" <%= sort === 'Cancelled' ? 'selected' : '' %>>Cancelled Only</option>
+              </select>
+              <button id="clearAdminOrderSortBtn" type="button" class="sort-clear-inner" title="Clear sort"
+                style="display:<%= (sort !== 'default') ? 'flex' : 'none' %>;"
+                onclick="clearAjaxFilter('orderTableContainer', 'sort', 'admin/orders'); this.style.display='none'; document.getElementById('adminOrderSortSelect').value='default';">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </div>
 
           <!-- Payment Status -->
           <div class="col-lg-3 col-md-12 mb-3">
-            <div class="d-flex align-items-center">
-              <form action="/admin/orderList" method="GET" class="flex-grow-1 mr-1">
-                <input type="hidden" name="search" value="<%= search %>">
-                <input type="hidden" name="sort" value="<%= sort %>">
-                <select name="paymentStatus" class="form-control filter-select" onchange="this.form.submit()">
-                  <option value="">Payment: All</option>
-                  <option value="Successful" <%= paymentStatus === 'Successful' ? 'selected' : '' %>>Successful</option>
-                  <option value="Pending" <%= paymentStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
-                  <option value="Failed" <%= paymentStatus === 'Failed' ? 'selected' : '' %>>Failed</option>
-                </select>
-              </form>
-              <% if (paymentStatus) { %>
-              <a href="/admin/orderList?search=<%= search %>&sort=<%= sort %>" class="btn btn-sm" title="Clear payment filter" style="color: #9135ED;">
-                <i class="fas fa-times-circle"></i>
-              </a>
-              <% } %>
+            <div class="filter-sort-pill">
+              <select id="orderPaymentSelect" onchange="applyAjaxFilter('orderTableContainer', 'paymentStatus', this.value, 'admin/orders'); document.getElementById('clearPaymentFilterBtn').style.display=this.value?'flex':'none';">
+                <option value="" <%= !paymentStatus ? 'selected' : '' %>>Payment: All</option>
+                <option value="Successful" <%= paymentStatus === 'Successful' ? 'selected' : '' %>>Successful Only</option>
+                <option value="Pending" <%= paymentStatus === 'Pending' ? 'selected' : '' %>>Pending Only</option>
+                <option value="Failed" <%= paymentStatus === 'Failed' ? 'selected' : '' %>>Failed Only</option>
+              </select>
+              <button id="clearPaymentFilterBtn" type="button" class="sort-clear-inner" title="Clear payment filter"
+                style="display:<%= paymentStatus ? 'flex' : 'none' %>;"
+                onclick="clearAjaxFilter('orderTableContainer', 'paymentStatus', 'admin/orders'); this.style.display='none'; document.getElementById('orderPaymentSelect').value='';">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </div>
         </div>
 
-        <% if (orders.length === 0) { %>
-        <div class="text-center py-5 bg-white rounded shadow-sm">
-          <i class="fas fa-search fa-3x text-muted mb-3"></i>
-          <h4 class="text-muted">No orders found</h4>
-          <p class="text-muted">We couldn't find any orders matching your criteria.</p>
-          <a href="/admin/orderList" class="btn btn-primary rounded-pill mt-2">View All Orders</a>
+        <div id="orderTableContainer">
+          <%- include('../partials/Common/orderTable') %>
         </div>
-        <% } else { %>
-        <!-- Table View (< 1000px) -->
-        <div class="order-table-container">
-          <div class="table-responsive bg-white rounded shadow-sm">
-            <table class="table table-hover mb-0">
-              <thead class="thead-light">
-                <tr>
-                  <th>S.No</th>
-                  <th>Order ID</th>
-                  <th>User Email</th>
-                  <th>Date</th>
-                  <th>Order Status</th>
-                  <th>Payment Status</th>
-                  <th class="text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% orders.forEach((order, index) => { %>
-                <tr>
-                  <td><%= (currentPage - 1) * limit + (index + 1) %></td>
-                  <td><%= order.orderId %></td>
-                  <td><%= order.userDetails ? order.userDetails.email : 'N/A' %></td>
-                  <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
-                  <td>
-                    <span class="status-box status-<%= order.orderStatus.toLowerCase() %>">
-                      <%= order.orderStatus %>
-                    </span>
-                    <% if (order.returnRequests && order.returnRequests.some(req => req.status === 'Pending')) { %>
-                    <i class="fas fa-bell text-danger ml-1 bell-ringing" title="Return Request Pending"></i>
-                    <% } %>
-                  </td>
-                  <td>
-                    <span class="status-box status-<%= order.paymentStatus.toLowerCase() %>">
-                      <%= order.paymentStatus %>
-                    </span>
-                  </td>
-                  <td class="text-center">
-                    <a href="/admin/order/<%= order._id %>/view?page=<%= currentPage %>&sort=<%= sort %>&search=<%= encodeURIComponent(search) %>&paymentStatus=<%= paymentStatus %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">View</a>
-                  </td>
-                </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Card View (>= 1000px) -->
-        <div class="order-cards-container">
-          <% orders.forEach((order, index) => { %>
-          <div class="order-card position-relative">
-            <div class="order-card-header">
-              <span class="text-muted small">S.No: <%= (currentPage - 1) * limit + (index + 1) %></span>
-              <span class="status-box status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span>
-            </div>
-            <div class="order-card-body">
-              <h6 class="font-weight-bold mb-3"><%= order.orderId %></h6>
-              <p><i class="fas fa-envelope text-muted mr-2"></i> <%= order.userDetails ? order.userDetails.email : 'N/A' %></p>
-              <p><i class="fas fa-calendar-alt text-muted mr-2"></i> <%= new Date(order.orderDate).toLocaleDateString() %></p>
-              <p>
-                <i class="fas fa-credit-card text-muted mr-2"></i>
-                <span class="status-box status-<%= order.paymentStatus.toLowerCase() %> py-1 px-2" style="min-width: 70px; font-size: 0.75rem;">
-                  <%= order.paymentStatus %>
-                </span>
-              </p>
-              <div class="mt-4 text-right">
-                <a href="/admin/order/<%= order._id %>/view?page=<%= currentPage %>&sort=<%= sort %>&search=<%= encodeURIComponent(search) %>&paymentStatus=<%= paymentStatus %>" class="btn btn-outline-primary btn-sm rounded-pill px-4">View</a>
-              </div>
-            </div>
-            <% if (order.returnRequests && order.returnRequests.some(req => req.status === 'Pending')) { %>
-            <div class="position-absolute" style="top: 10px; right: 10px;">
-              <i class="fas fa-circle text-danger" style="font-size: 8px;"></i>
-            </div>
-            <% } %>
-          </div>
-          <% }) %>
-        </div>
-
-        <%- include('partials/adminPagination') %>
-        <% } %>
       </div>
     </div>
   </div>
 
-  <%- include('partials/adminScripts') %>
+  <script>
+    // AJAX Search, Filter, and Pagination is now handled by /js/ajaxTable.js
+  </script>
+  <%- include('../partials/Admin/adminScripts') %>
 </body>
 
 </html>

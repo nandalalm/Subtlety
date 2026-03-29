@@ -90,7 +90,7 @@
 </head>
 
 <body>
-  <%-include('partials/navBar')%>
+  <%- include('../partials/User/navBar') %>
 
   <!-- Hero Section -->
   <section class="hero-section text-center py-0" style="background-color: black;">
@@ -99,7 +99,7 @@
         <div class="col-lg-12 text-center pt-5">
           <h1>Experience the magic of anime with Subtlety</h1>
           <h4>—Where every piece tells a story.</h4>
-          <form action="/user/shop" method="GET" class="search-bar mt-4">
+          <form action="/user/shop" method="GET" class="search-bar mt-4" onsubmit="if(!this.search.value.trim()) return false;">
             <input type="text" name="search" placeholder="Search for Merch.." />
             <button type="submit">Search</button>
           </form>
@@ -117,12 +117,14 @@
           <div class="this-month-square"></div>
           <span style="color: #9135ED;">Categories</span>
         </div>
-        <h2 class="text-left mt-3">SHOP BY CATEGORIES</h2>
+        <div class="mt-3">
+          <h2 class="text-left mb-0">SHOP BY CATEGORIES</h2>
+        </div>
       </div>
-      <div class="row">
+      <div id="category-scroll-container" class="category-scroll-container mt-4">
         <% categories.forEach(category => { %>
         <% if(category.isListed){%>
-        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="category-item">
           <a class="card-links" href="/user/shop?category=<%= category._id %>">
             <div class="category-card vertical">
               <img src="<%= category.image %>" class="category-img" alt="Category Image">
@@ -153,7 +155,7 @@
       <% if (latestProducts && latestProducts.length > 0) { %>
       <% latestProducts.forEach(({ product, bestOffer, averageRating }) => { %>
       <% if (product && product.isListed) { %>
-      <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
+            <%- include('../partials/User/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
       <% } %>
       <% }) %>
       <% } else { %>
@@ -182,13 +184,13 @@
       <% if (bestSellingProducts && bestSellingProducts.length) { %>
         <% bestSellingProducts.forEach(({ product, bestOffer, count, averageRating }) => { %>
           <% if (product && product.isListed) { %>
-            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
+                  <%- include('../partials/User/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
           <% } %>
         <% }) %>
       <% } else { %>
         <% fallbackProducts.forEach(({ product, bestOffer, averageRating }) => { %>
           <% if (product && product.isListed) { %>
-            <%- include('partials/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
+            <%- include('../partials/User/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
           <% } %>
         <% }) %>
       <% } %>
@@ -263,7 +265,7 @@
   </div>
 </section>
 
-  <%-include('partials/footer')%>
+  <%- include('../partials/User/footer') %>
 
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.5.2.slim.min.js"></script>
@@ -276,6 +278,8 @@
   <script src="/js/cartControls.js"></script>
 
   <script>
+    // Other home-specific scripts can stay here if any
+
     // Other home-specific scripts can stay here if any
   </script>
 

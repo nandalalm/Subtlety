@@ -1,0 +1,73 @@
+<div class="table-container-shared card border-0 shadow-sm" id="walletTableContainer">
+    <% if (transactions.length === 0) { %>
+        <% if (typeof totalTransactionsUnfiltered !== 'undefined' && totalTransactionsUnfiltered === 0) { %>
+        <div class="text-center py-5">
+            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No transactions recorded yet.</p>
+        </div>
+        <% } else { %>
+        <div class="text-center py-4">
+            <i class="fas fa-search fa-2x text-muted mb-2"></i>
+            <p class="text-muted">No results found for the given criteria.</p>
+        </div>
+        <% } %>
+    <% } else { %>
+        <!-- Desktop Table -->
+        <table class="table table-hover shared-table-desktop mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">S.No</th>
+                    <th style="width: 20%;">Transaction ID</th>
+                    <th style="width: 38%;">Description</th>
+                    <th style="width: 8%;">Type</th>
+                    <th style="width: 12%;">Amount</th>
+                    <th style="width: 10%;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% transactions.forEach((transaction, index) => { %>
+                <tr>
+                    <td><%= (currentPage - 1) * limit + (index + 1) %></td>
+                    <td class="font-weight-bold text-dark"><span class="small font-weight-bold"><%= transaction.transactionId %></span></td>
+                    <td><%= transaction.description %></td>
+                    <td>
+                        <span class="<%= transaction.type === 'credit' ? 'credited' : 'debited' %> text-uppercase small">
+                            <%= transaction.type %>
+                        </span>
+                    </td>
+                    <td class="font-weight-bold">
+                        <%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %>
+                    </td>
+                    <td>
+                        <%= new Date(transaction.date).toLocaleDateString() %>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <!-- Mobile Cards -->
+        <div class="shared-cards-mobile">
+            <% transactions.forEach((transaction, index) => { %>
+            <div class="shared-item-card">
+                <div class="card-header-flex">
+                    <span class="font-weight-bold">#<%= (currentPage - 1) * limit + (index + 1) %></span>
+                    <span class="<%= transaction.type === 'credit' ? 'credited' : 'debited' %> text-uppercase small"><%= transaction.type %></span>
+                </div>
+                <div class="card-body p-0">
+                    <p><strong>Ref Code:</strong> <span class="small text-muted"><%= transaction.transactionId %></span></p>
+                    <p><strong>Message:</strong> <%= transaction.description %></p>
+                    <p><strong>Amount:</strong> <span class="font-weight-bold <%= transaction.type === 'credit' ? 'text-success' : 'text-danger' %>"><%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %></span></p>
+                    <p class="text-muted small"><strong>Date:</strong> <%= new Date(transaction.date).toLocaleDateString() %></p>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+
+        <!-- Standardized Pagination -->
+        <% if (typeof totalPages !== 'undefined' && totalPages >= 1 && transactions.length > 0) { %>
+        <div class="px-3 pt-3 pb-4">
+            <%- include('../Common/pagination') %>
+        </div>
+        <% } %>
+    <% } %>
+</div>

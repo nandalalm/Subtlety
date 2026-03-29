@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Order Details - SUBTLETY</title>
   <!-- Bootstrap CSS -->
@@ -275,20 +276,20 @@
 </head>
 
 <body>
-  <%- include('partials/navBar') %>
+  <%- include('../partials/User/navBar') %>
 
   <section class="orderDetails">
     <div class="container">
-      <div>
+      <div class="mt-4 mt-lg-0">
         <a href="/user/home" class="text-decoration-none">Home</a> /
-        <a href="/user/orders" class="text-decoration-none">My Orders</a> /
+        <a href="/orders" class="text-decoration-none">My Orders</a> /
         <span style="color: #9135ed" class="text-decoration-none">Order Details</span>
       </div>
       <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
         <h2 class="mb-0">Order Details</h2>
         <% if (order.orderStatus==='Completed' && order.items.some(item=>
             item.status === 'Delivered')) { %>
-        <a href="/user/order/invoice/<%= order._id %>" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i>
+        <a href="/orders/invoice/<%= order._id %>" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i>
           Download Invoice</a>
         <% } %>
         <% if (order.paymentStatus==='Failed' ) { %>
@@ -507,7 +508,7 @@
     </div>
   </div>
 
-  <%- include('partials/footer') %>
+  <%- include('../partials/User/footer') %>
 
   <!-- Bootstrap JS and dependencies -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -534,7 +535,7 @@
           confirmButtonText: "Yes, cancel it!",
         }).then((result) => {
           if (result.isConfirmed) {
-            fetch(`/user/orders/cancel/${orderId}/${productId}`, {
+            fetch(`/orders/cancel/${orderId}/${productId}`, {
                 method: "POST",
               })
               .then((response) => response.json())
@@ -595,7 +596,7 @@
           return;
         }
 
-        fetch(`/user/orders/return/${orderId}/${productId}`, {
+        fetch(`/orders/return/${orderId}/${productId}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -732,7 +733,7 @@
             if (paymentStatus === "Failed" && paymentMethod === "Wallet") {
               // Handle wallet deduction logic by calling your controller
               try {
-                const walletResponse = await fetch(`/user/deduct-wallet-amount`, {
+                const walletResponse = await fetch(`/wallet/deduct`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
@@ -786,7 +787,7 @@
               // Existing Razorpay payment retry logic
               try {
                 // Create Razorpay order
-                const razorpayResponse = await fetch("/user/create-razorpay-order", {
+                const razorpayResponse = await fetch("/orders/razorpay/create", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
@@ -808,7 +809,7 @@
                     handler: async function(response) {
                       try {
                         // Confirm payment
-                        const paymentConfirmationResponse = await fetch("/user/razorpay-confirm", {
+                        const paymentConfirmationResponse = await fetch("/orders/razorpay/confirm", {
                           method: "POST",
                           headers: {
                             "Content-Type": "application/json",
@@ -828,7 +829,7 @@
                             showConfirmButton: false,
                             timer: 1000,
                           }).then(() => {
-                            window.location.href = `/user/order-success?orderId=${orderId}`;
+                            window.location.href = `/orders/success?orderId=${orderId}`;
                           });
                         } else {
                           const errorData = await paymentConfirmationResponse.json();
@@ -926,7 +927,7 @@
         };
 
         try {
-          const response = await fetch('/user/reviews/add', {
+          const response = await fetch('/reviews/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)

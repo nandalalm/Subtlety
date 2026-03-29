@@ -48,7 +48,7 @@ export async function getBestOffer(product) {
     $or: [
       { targetId: product._id, offerFor: OFFER_FOR.PRODUCT, isActive: true },
       {
-        targetId: product.category,
+        targetId: product.category?._id || product.category,
         offerFor: OFFER_FOR.CATEGORY,
         isActive: true,
       },
@@ -71,7 +71,7 @@ export async function getBestOffer(product) {
   });
 
   if (bestOffer) {
-    bestOffer.discountedPrice = roundToTwo(bestDiscountedPrice);
+    bestOffer.discountedPrice = Math.floor(bestDiscountedPrice);
   }
 
   return bestOffer;
@@ -86,7 +86,7 @@ export function calculateDiscountedPrice(offer, product) {
     } else if (offer.offerType === OFFER_TYPES.PERCENTAGE) {
       discountedPrice *= 1 - (offer.value / 100);
     }
-    discountedPrice = roundToTwo(discountedPrice);
+    discountedPrice = Math.floor(discountedPrice);
   } else if (offer.offerFor === OFFER_FOR.CATEGORY) {
     if (
       offer.offerType === OFFER_TYPES.FLAT &&
@@ -98,11 +98,58 @@ export function calculateDiscountedPrice(offer, product) {
       const maxDiscount = offer.maxDiscount;
       discountedPrice -= Math.min(potentialDiscount, maxDiscount);
     }
-    discountedPrice = roundToTwo(discountedPrice);
+    discountedPrice = Math.floor(discountedPrice);
   }
 
-  // Ensure price doesn't go below zero and round to 2 decimals
-  return roundToTwo(Math.max(discountedPrice, 0));
+  // Ensure price doesn't go below zero and truncate
+  return Math.floor(Math.max(discountedPrice, 0));
+}
+
+export async function getBestOfferBatch(products) {
+  if (!products || products.length === 0) return [];
+
+  const productIds = products.map(p => p._id);
+  const categoryIds = products.map(p => p.category?._id || p.category).filter(c => c);
+
+  // Fetch all relevant active offers in one query
+  const allOffers = await Offer.find({
+    isActive: true,
+    $or: [
+      { targetId: { $in: productIds }, offerFor: OFFER_FOR.PRODUCT },
+      { targetId: { $in: categoryIds }, offerFor: OFFER_FOR.CATEGORY }
+    ],
+    $or: [
+      { expiresAt: { $exists: false } },
+      { expiresAt: { $gt: new Date() } }
+    ]
+  });
+
+  return products.map(product => {
+    let bestOffer = null;
+    let bestDiscountedPrice = product.price;
+
+    const relevantOffers = allOffers.filter(offer => {
+      const targetIdStr = String(offer.targetId);
+      const productIdStr = String(product._id);
+      const categoryIdStr = String(product.category?._id || product.category);
+      
+      return (offer.offerFor === OFFER_FOR.PRODUCT && targetIdStr === productIdStr) ||
+             (offer.offerFor === OFFER_FOR.CATEGORY && targetIdStr === categoryIdStr);
+    });
+
+    relevantOffers.forEach(offer => {
+      const discountedPrice = calculateDiscountedPrice(offer, product);
+      if (discountedPrice < bestDiscountedPrice) {
+        bestDiscountedPrice = discountedPrice;
+        bestOffer = offer.toObject ? offer.toObject() : { ...offer };
+      }
+    });
+
+    if (bestOffer) {
+      bestOffer.discountedPrice = Math.floor(bestDiscountedPrice);
+    }
+    return bestOffer;
+  });
 }
 
 export async function getAverageRatingsForProducts(products) {

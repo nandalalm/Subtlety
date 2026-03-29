@@ -1,0 +1,41 @@
+<%
+  /* Required locals:
+      searchInputId      — unique ID for the <input> element
+      searchContainerId  — AJAX container div ID to refresh
+      searchPlaceholder  — placeholder string
+      searchValue        — current value (from query param)
+      searchBasePath     — base path string for ajaxTable (e.g. 'orders', 'admin/products')
+      searchParam        — optional, defaults to 'search'
+  */
+  const _sid   = searchInputId;
+  const _scid  = searchContainerId;
+  const _ph    = typeof searchPlaceholder !== 'undefined' ? searchPlaceholder : 'Search...';
+  const _val   = typeof searchValue !== 'undefined' && searchValue ? searchValue : '';
+  const _base  = typeof searchBasePath !== 'undefined' ? searchBasePath : '';
+  const _param = typeof searchParam !== 'undefined' ? searchParam : 'search';
+%>
+<div class="unified-search"
+     data-container="<%= _scid %>"
+     data-param="<%= _param %>"
+     data-base="<%= _base %>">
+  <input
+    type="text"
+    id="<%= _sid %>"
+    class="unified-search-input"
+    placeholder="<%= _ph %>"
+    value="<%= _val %>"
+    autocomplete="off"
+    onkeydown="if(event.key==='Enter') this.parentElement.querySelector('.unified-search-btn').click()"
+  >
+  <button
+    type="button"
+    class="unified-search-clear"
+    style="display:<%= _val.length > 0 ? 'flex' : 'none' %>;"
+    onclick="unifiedSearchClear(this)"
+  ><i class="fas fa-times"></i></button>
+  <button
+    type="button"
+    class="unified-search-btn"
+    onclick="unifiedSearchApply(this)"
+  ><i class="fas fa-search"></i></button>
+</div>

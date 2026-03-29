@@ -295,43 +295,6 @@ input[disabled] {
   }
 }
 
-/* Admin-style Pagination */
-.pagination {
-  gap: 5px;
-}
-
-.pagination .btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  color: #333;
-  transition: all 0.2s ease;
-}
-
-.pagination .btn:hover:not(:disabled) {
-  background-color: #f8f0ff;
-  border-color: #9135ED;
-  color: #9135ED;
-}
-
-.pagination .btn:disabled {
-  background-color: #f9f9f9;
-  color: #ccc;
-  cursor: not-allowed;
-}
-
-.pagination .page-number {
-  font-weight: 700;
-  font-size: 1.1rem;
-  min-width: 30px;
-  text-align: center;
-  color: #9135ED;
-}
 
 
 /* Breadcrumb Fixes */
@@ -357,9 +320,4 @@ input[disabled] {
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin-top: 25px;
-}
-
-.tight-card {
-  padding: 5px 15px !important;
-  margin-top: 15px !important;
 }

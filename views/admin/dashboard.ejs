@@ -24,9 +24,9 @@
 </head>
 
 <body class="bg-light text-dark">
-  <%- include('partials/adminNavbar') %>
+  <%- include('../partials/Admin/adminNavbar') %>
   <div class="d-flex" id="wrapper">
-    <%- include('partials/adminSidebar', { activePage: 'dashboard' }) %>
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'dashboard' }) %>
 
     <div id="page-content-wrapper">
 
@@ -383,7 +383,7 @@
       renderChart('monthly');
     });
   </script>
-  <%- include('partials/adminScripts') %>
+  <%- include('../partials/Admin/adminScripts') %>
 
 </body>
 

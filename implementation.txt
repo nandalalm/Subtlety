@@ -1,39 +1,270 @@
-# Implementation Plan: Centralized Infrastructure Refactor
+## Stage 11: Table Partials — Extract All Tables ✅
 
-## Stage 1: Infrastructure Setup
-- Create `Constants/httpStatus.js` (Export status code constants).
-- Create `Constants/messages.js` (Export response and error message constants).
-- Create `middleware/logger.js` (Request logging middleware).
-- Create `middleware/errorHandler.js` (Centralized error handling middleware).
-- Create `utils/otpHelper.js` (Moving OTP HTML templates and generation logic).
+### Goal
+Move all table + mobile-card markup out of every page view into standalone EJS partials.
+All partials use shared styles from Stage 9. Variables are passed via EJS locals (no change
+to existing controller data shapes needed).
 
-## Stage 2: Core Refactor
-- Update `app.js` to integrate new middlewares and replace hardcoded 404/500 handlers.
-- Update `config/db.js` to use centralized messages and logger.
-- Update `passport-setup.js` to use constants for messages and logging.
+### 11a — Shared Order Table Partial (Admin + User with conditional columns)
+- [NEW] `views/partials/orderTable.ejs`
+  - Receives: `orders`, `currentPage`, `limit`, `isAdmin` (boolean)
+  - Desktop table columns when `isAdmin`:
+    S.No | Order ID | User Email | Date | Order Status | Payment Status | Action (View)
+  - Desktop table columns when NOT `isAdmin`:
+    S.No | Order ID | Date | Payment Method | Order Status | Payment Status | Action (Details)
+  - Mobile card view adapts the same way
+  - Status boxes use shared `.status-box .status-*` classes
+  - Bell-ringing icon for return requests (admin only)
+- [MODIFY] `views/admin/orderList.ejs` — replace table block with `include('../partials/orderTable', { isAdmin: true })`
+- [MODIFY] `views/user/orders.ejs` — replace table block with `include('../partials/orderTable', { isAdmin: false })`
 
-## Stage 3: Refactor Auth & Identity
-- `authController.js` (OTP logic migration, status codes, messages, error handling).
+### 11b — Admin Partials (in `views/admin/partials/`)
+- [NEW] `views/admin/partials/usersTable.ejs`
+  - Receives: `users`, `currentPage`, `limit`
+  - Desktop: S.No | Name | Email | Phone | Status | Action
+  - Mobile: card view
+- [MODIFY] `views/admin/usersList.ejs`
 
-## Stage 4: Refactor Admin & Management
-- `adminController.js`
-- `categoryController.js`
-- `offerController.js`
+- [NEW] `views/admin/partials/productsTable.ejs`
+  - Receives: `products`, `currentPage`, `limit`, `search`, `sort`
+  - Desktop: S.No | Name | Description | Category | Price | Stock | Images | Action
+  - Mobile: card view
+- [MODIFY] `views/admin/products.ejs`
 
-## Stage 5: Refactor Product & Review
-- `productController.js`
-- `reviewController.js`
+- [NEW] `views/admin/partials/categoriesTable.ejs`
+  - Receives: `categories`, `currentPage`, `limit`
+  - Desktop: S.No | Name | Image | Actions
+  - Mobile: card view
+- [MODIFY] `views/admin/categories.ejs`
 
-## Stage 6: Refactor User & Profile
-- `userController.js`
-- `profileController.js`
+- [NEW] `views/admin/partials/reviewsTable.ejs`
+  - Receives: `reviews`, `currentPage`, `limit`
+  - Desktop: S.No | Reviewer | Product | Rating | Review | Date | Action
+  - Mobile: card view
+- [MODIFY] `views/admin/reviews.ejs`
 
-## Stage 7: Refactor Shopping & Order
-- `cartController.js`
-- `wishlistController.js`
-- `orderController.js`
+- [NEW] `views/admin/partials/couponsTable.ejs`
+  - Receives: `coupons`, `currentPage`, `limit`
+  - Desktop: S.No | Code | Type | Discount | Limit | Expires | Actions
+  - Mobile: card view
+- [MODIFY] `views/admin/coupons.ejs`
 
-## Stage 8: Verification & Global Testing
-- Verify all major application flows (Login, Admin, Orders, Products).
-- Verify consistency of error responses and log outputs.
-- Cleanup any remaining hardcoded strings.
+- [NEW] `views/admin/partials/offersTable.ejs`
+  - Receives: `offers`, `currentPage`, `limit`, `products`, `categories`
+  - Desktop: S.No | Offer For | Target | Type | Value | Expires | Actions
+  - Mobile: card view
+- [MODIFY] `views/admin/offer.ejs`
+
+- [NEW] `views/admin/partials/salesReportTable.ejs`
+  - Receives: `orders`, `currentPage`, `limit`
+  - Desktop: S.No | Order ID | Customer | Offer Disc. | Coupon Disc. | Total | Date | Status
+  - No mobile card (data too complex — scrollable table on small screens)
+- [MODIFY] `views/admin/salesReport.ejs`
+
+### 11c — User Partials (in `views/user/partials/`)
+- [NEW] `views/user/partials/walletTable.ejs`
+  - Receives: `transactions`, `currentPage`, `limit`
+  - Desktop: S.No | Transaction ID | Description | Type | Amount | Date
+  - Mobile: card view
+  - Uses same status badge styles as admin
+- [MODIFY] `views/user/userWallet.ejs`
+
+- [NEW] `views/user/partials/cancellationsTable.ejs`
+  - Receives: `cancellations`
+  - Simple table: # | Date | Status | Payment Method | Products | Actions
+- [MODIFY] `views/user/cancellations.ejs`
+
+---
+
+## Stage 12: AJAX List/Unlist — No Page Reload
+
+### Goal
+Every "Unlist / Relist / Block / Unblock" button fires a `fetch()` call and updates ONLY
+the affected table row in-place — no `location.reload()`.
+
+### Row-update pattern
+After successful AJAX toggle:
+1. Swap the button's classes and text
+2. Update the status badge in the same row
+3. Show a toast/swal success for 1.5s
+
+### Pages that need AJAX toggle (currently reload):
+| Page | Toggle target | Current | Goal |
+|------|--------------|---------|------|
+| `admin/usersList` | Block/Unblock user | `location.reload()` | Row DOM update |
+| `admin/products` | List/Unlist product | `location.reload()` | Row DOM update |
+| `admin/categories` | List/Unlist category | `location.reload()` | Row DOM update |
+| `admin/reviews` | List/Unlist review | `location.reload()` | Row DOM update |
+| `admin/coupons` | List/Unlist coupon | `location.reload()` | Row DOM update |
+| `admin/offer` | Unlist/Relist offer | `location.reload()` | Row DOM update |
+
+### Implementation per partial
+- Add `data-id` and `data-status` attributes to each toggle button
+- Add `data-row-id` to the `<tr>` so JS can find it
+- Write a generic `toggleStatus(url, btn, statusKey)` helper function in a shared JS file
+  or inline per partial
+- The helper updates button text/class and badge text/class without reload
+
+---
+
+## Stage 13: AJAX Modal Add/Edit — No Page Reload
+
+### Goal
+All modal-based CRUD (categories, coupons, offers) already use `fetch()` but call
+`location.reload()` on success. Replace with:
+- On ADD success: prepend a new row to the table tbody + update pagination count
+- On EDIT success: update existing row's cells in-place
+- On error: show SweetAlert error, keep modal open
+
+> [!NOTE]
+> Page-based additions (e.g., Add Product Page) will still use traditional page loads. AJAX is only for the modal-based additions.
+
+### Pages with modal CRUD (update via AJAX):
+| Page | Current behaviour | Goal |
+|------|------------------|------|
+| `admin/categories` | `location.reload()` after add/edit | New/updated row in table |
+| `admin/coupons` | `location.reload()` after add/edit | New/updated row in table |
+| `admin/offer` | `location.reload()` after add/edit | New/updated row in table |
+
+### Pattern
+- After successful POST/PUT, server returns the new/updated document as JSON
+- JS creates a `<tr>` string from the returned data and inserts/updates it
+- Close modal, show a brief success toast
+
+---
+
+## Stage 14: AJAX Pagination
+
+### Goal
+All paginated pages load the next/prev page by replacing the table container HTML via
+`fetch()` — no full-page navigation.
+
+### How it works
+1. Every controller that renders a paginated page gets a parallel JSON route:
+   e.g. `GET /admin/orders?page=2` returns HTML page,
+   `GET /admin/orders?page=2&_ajax=1` returns JSON `{ rows: [...], totalPages, currentPage }`
+2. The pagination partial renders anchor tags with `data-page` attributes
+3. A shared JS listener intercepts clicks, fires `fetch(?page=N&_ajax=1)`, replaces the
+   `<div id="table-container">` innerHTML with the rendered rows, and updates the
+   pagination partial HTML
+
+### Alternative (simpler): server-side EJS fragment rendering
+- Add an `?_ajax=1` branch in each controller that renders ONLY the table partial (not
+  the full page layout) and returns it as HTML
+- JS fetches this HTML fragment and swaps the container div
+
+### Pages requiring AJAX pagination:
+- `admin/orderList` — orders table
+- `admin/usersList` — users table
+- `admin/products` — products table
+- `admin/categories` — categories table
+- `admin/reviews` — reviews table
+- `admin/coupons` — coupons table
+- `admin/offer` — offers table
+- `admin/salesReport` — sales report table
+- `user/orders` — user orders table
+- `user/userWallet` — wallet transactions table
+
+### Controller changes needed (for each paginated page):
+- Add `if (req.query._ajax) { res.render('admin/partials/xxxTable', data); return; }` branch
+- This renders ONLY the table partial, which is returned as HTML string
+
+### Frontend changes:
+---
+
+## Stage 15: AJAX Search, Sort, and Filter (NEW)
+
+### Goal
+Convert all search forms, sort selects, and filter dropdowns to AJAX-based updates.
+No page reloads should occur when the user searches or filters.
+
+### Implementation
+- Intercept search form `submit` events.
+- Intercept sort/filter `change` events.
+- Use `refreshTable()` (to be standardized in `ajaxTable.js`) to fetch the HTML fragment.
+- Update the browser URL using `window.history.pushState` so that back/forward buttons work and links remain shareable.
+
+### Scope
+- **Admin**: Categories, Products, Users, Coupons, Offers, Reviews, Sales Report.
+- **User**: Orders, Wallet Transactions.
+
+---
+
+## Stage 16: Standardize AJAX Logic
+
+### Goal
+Move all AJAX table logic (`refreshTable`, `initializePagination`, AJAX Search/Filter) into a single reusable file: `public/js/ajaxTable.js`.
+
+### Actions
+- [NEW] `public/js/ajaxTable.js`
+- [MODIFY] `views/admin/partials/adminScripts.ejs` — include the new script.
+- [MODIFY] User view scripts — include the new script.
+
+---
+
+## Execution Order
+
+1. [STAGE 9]  Create `public/styles/shared/tables.css` and link in all views
+2. [STAGE 10] Upgrade pagination partial, delete adminPagination, update all includes
+3. [STAGE 11] Extract all table partials (11a → 11b → 11c)
+4. [STAGE 12] Convert all toggle buttons to no-reload AJAX row updates
+5. [STAGE 13] Convert modal add/edit to no-reload AJAX row insert/update
+6. [STAGE 14] Implement AJAX pagination with `?_ajax=1` fragment rendering
+
+---
+
+## Summary of New Files
+
+| File | Purpose |
+|------|---------|
+| `public/styles/shared/tables.css` | Shared table, badge, card styles |
+| `public/scripts/ajaxPagination.js` | AJAX pagination handler |
+| `views/partials/orderTable.ejs` | Shared order table (admin+user conditional) |
+| `views/admin/partials/usersTable.ejs` | Admin users table partial |
+| `views/admin/partials/productsTable.ejs` | Admin products table partial |
+| `views/admin/partials/categoriesTable.ejs` | Admin categories table partial |
+| `views/admin/partials/reviewsTable.ejs` | Admin reviews table partial |
+| `views/admin/partials/couponsTable.ejs` | Admin coupons table partial |
+| `views/admin/partials/offersTable.ejs` | Admin offers table partial |
+| `views/admin/partials/salesReportTable.ejs` | Admin sales report table partial |
+| `views/user/partials/walletTable.ejs` | User wallet transactions table partial |
+| `views/user/partials/cancellationsTable.ejs` | User cancellations table partial |
+
+## Summary of Deleted Files
+| File | Reason |
+|------|--------|
+| `views/admin/partials/adminPagination.ejs` | Replaced by upgraded shared pagination.ejs |
+237: 
+238: ---
+239: 
+240: ## Stage 17: Cart & Checkout Refinement — Integer-First Pricing ✅
+241: 
+242: ### Goal
+243: Standardize all monetary calculations to use pure integers (truncated via `Math.floor`) at every step of the calculation, 
+244: ensuring absolute consistency between backend data, frontend UI, and third-party payment gateways.
+245: 
+246: ### Core Logic Refinement
+247: - **Source-Level Truncation**: In `utils/helper.js`, the `discountedPrice` of any product—after applying percentage or flat 
+248:   offers—is truncated *immediately* via `Math.floor()`. 
+249:   - *Example*: A 10% discount on ₹299 becomes exactly ₹269 (not 269.1). This prevents decimal drift when multiplying by quantity.
+250: - **Mental Model Change (Subtotal vs Discount)**:
+251:   - **Subtotal**: Now represents the sum of **Original Prices** for all items.
+252:   - **Offer Discount**: Specifically tracks savings from Product/Category offers (Original - Truncated Discounted).
+253:   - **Coupon Discount**: Specifically tracks additional savings from applied Coupon codes.
+254: - **Atomic AJAX Sync**: The entire pricing summary (Subtotal, Offer Discount, Coupon Discount, Delivery Fee, and Total) 
+255:   is refreshed in one atomic step whenever quantities change or coupons are toggled.
+256: 
+257: ### UI/UX Improvements
+258: - **Elegant Zero Displays**: Summary rows show a simple `0` if no discount is present (removing the `- ₹` and negative symbols).
+259: - **Checkout Sidebar**: Individual product rows show their **Base Price** so the subtotal above the footer remains intuitive.
+260: - **Dynamic Coupon Controls**: Successfully applying a coupon hides the input field and "Apply" button, replacing them 
+261:   with a "Remove Registered Coupon" button.
+262: 
+263: ### Files Impacted
+264: - `utils/helper.js` — Core truncation at source
+265: - `services/cartService.js` — Original-price subtotal logic
+266: - `services/orderService.js` — Order placement recalculation & alignment
+267: - `views/user/cart.ejs` — Complete summary AJAX sync
+268: - `views/user/checkout.ejs` — Base-price sidebar + dynamic coupon UI
+269: 
+270: ---

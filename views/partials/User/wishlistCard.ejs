@@ -38,10 +38,10 @@
 
                     <div class="price-container d-flex align-items-center gap-1">
                         <% if (bestOffer) { %>
-                            <span class="old-price text-muted small text-decoration-line-through" style="color: #777 !important; font-size: 0.6rem;">₹<%= product.price %></span>
-                            <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.78rem;">₹<%= bestOffer.discountedPrice.toFixed(0) %></span>
+                            <span class="old-price text-muted small text-decoration-line-through" style="color: #777 !important; font-size: 0.6rem;">₹<%= Math.floor(product.price) %></span>
+                            <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.78rem;">₹<%= Math.floor(bestOffer.discountedPrice) %></span>
                         <% } else { %>
-                            <span class="current-price font-weight-bold" style="color: #333; font-size: 0.78rem;">₹<%= product.price %></span>
+                            <span class="current-price font-weight-bold" style="color: #333; font-size: 0.78rem;">₹<%= Math.floor(product.price) %></span>
                         <% } %>
                     </div>
                 </div>

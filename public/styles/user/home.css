@@ -249,6 +249,62 @@ body {
   color: #555;
 }
 
+/* Category Slider */
+.category-scroll-container {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  gap: 20px;
+  padding-top: 20px; /* Added padding to allow scale-up space */
+  padding-bottom: 25px; /* Increased padding-bottom */
+  margin-top: -10px; /* Offset the padding to maintain vertical alignment */
+  width: 100%;
+}
+
+.category-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+.category-scroll-container .category-item {
+  flex: 0 0 calc(25% - 15px); /* 4 items per view on desktop */
+  min-width: 200px; /* Minimum width for mobile hinting */
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 991px) {
+  .category-scroll-container .category-item {
+    flex: 0 0 30%; /* Hint at scrolling on tablet */
+  }
+}
+
+@media (max-width: 576px) {
+  .category-scroll-container .category-item {
+    flex: 0 0 60%; /* Show one and a bit more on mobile */
+  }
+  .category-scroll-container {
+    gap: 12px;
+  }
+}
+
+/* Outline-to-Solid Violet Button */
+.btn-outline-violet {
+  border: 1px solid #9135ED !important;
+  background-color: transparent !important;
+  color: #9135ED !important;
+  padding: 4px 12px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.btn-outline-violet:hover {
+  background-color: #9135ED !important;
+  color: white !important;
+}
+
 .fixed-height {
   height: 200px; /* Set your desired height */
   object-fit: cover; /* This maintains the aspect ratio */
@@ -275,15 +331,30 @@ flex-direction: row;
 justify-content: space-between;
 }
 
-.view-more-btn{
-  background-color: #9135ED;
-  color: white;
+.view-more-btn {
+  background-color: #9135ED !important;
+  color: white !important;
+  border: none !important;
+  transition: background-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px !important;
+  padding: 8px 25px !important; /* Reduced vertical padding */
+  font-weight: 500;
 }
 
-.view-more-btn :hover{
-  background-color: #ffffff;
-  color: #9135ED;
-  padding: 5px;
+.view-more-btn:hover {
+  background-color: #7a2dc9 !important; /* Darker shade of violet */
+  color: white !important;
+}
+
+.view-more-btn i {
+  color: white !important;
+}
+
+.view-more-btn:hover i {
+  color: white !important;
 }
 
 .card-link {
@@ -364,25 +435,25 @@ justify-content: space-between;
 
 @media(max-width:581px){
   .category-container{
-    width: 80% !important;
+    width: 95% !important;
   }
   .new-arrival-container{
-    width: 80% !important;
+    width: 95% !important;
   }
   .top-selling-container{
-    width: 80% !important;
+    width: 95% !important;
   }
 }
 
 @media(max-width:450px){
   .category-container{
-    width: 80% !important;
+    width: 95% !important;
   }
   .new-arrival-container{
-    width: 80% !important;
+    width: 95% !important;
   }
   .top-selling-container{
-    width: 80% !important;
+    width: 95% !important;
   }
 }
 

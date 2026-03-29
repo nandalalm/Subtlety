@@ -90,64 +90,59 @@ document.addEventListener('DOMContentLoaded', () => {
   const updateUI = (productId, quantity) => {
     const containers = document.querySelectorAll(`.cart-controls-container[data-product-id="${productId}"]`);
     containers.forEach(container => {
-      const cartBtn = container.querySelector('.btn-add-to-cart');
-      const quantityControls = container.querySelector('.cart-quantity-controls');
-
-      // Detect layout context:
-      // 1. Single product page (data-sp-layout) → replace entire container innerHTML
-      // 2. Product card (cart-controls-container IS btn-group) → flex-grow-1
-      // 3. Wishlist card (w-75 fixed-width div) → w-100 h-100
       const isSpLayout = container.dataset.spLayout === 'true';
       const isInBtnGroup = container.classList.contains('btn-group');
 
-      // --- Single Product Page: replace full container content ---
-      if (isSpLayout) {
-        if (quantity > 0) {
-          container.innerHTML = `
-            <div class="cart-quantity-controls d-flex align-items-center">
-              <div class="d-flex align-items-center btn btn-dark p-0" style="border-radius: 6px; overflow: hidden;">
-                <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="${productId}" style="border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 36px;">−</button>
-                <span class="quantity-display px-3" style="font-weight: bold; font-size: 1rem; color: #fff; min-width: 36px; text-align: center;">${quantity}</span>
-                <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="${productId}" style="border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 36px;">+</button>
+      // Find existing cart-related element to replace
+      const existingCartBtn = container.querySelector('.btn-add-to-cart');
+      const existingQuantityControls = container.querySelector('.cart-quantity-controls');
+      const targetElement = existingCartBtn || existingQuantityControls;
+
+      let newCartHtml;
+      if (quantity > 0) {
+        if (isSpLayout) {
+          newCartHtml = `
+            <div class="cart-quantity-controls d-flex align-items-center" style="height: 42px; width: 170px;">
+              <div class="d-flex align-items-center btn btn-dark p-0 h-100 w-100" style="border-radius: 8px; overflow: hidden;">
+                <button type="button" class="btn btn-dark btn-decrement m-0 border-0 h-100" data-product-id="${productId}" style="border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
+                <span class="quantity-display flex-grow-1 text-center font-weight-bold" style="font-size: 1rem; color: #fff; min-width: 40px;">${quantity}</span>
+                <button type="button" class="btn btn-dark btn-increment m-0 border-0 h-100" data-product-id="${productId}" style="border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
               </div>
             </div>`;
         } else {
-          container.innerHTML = `
-            <button class="btn btn-dark btn-add-to-cart" data-product-id="${productId}">
-              <i class="fas fa-shopping-cart"></i> Add To Cart
+          newCartHtml = `
+            <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
+              <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">
+                <button type="button" class="btn btn-dark btn-decrement m-0 border-0 h-100" data-product-id="${productId}" style="border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
+                <span class="quantity-display flex-grow-1 text-center" style="font-weight: bold; color: #fff;">${quantity}</span>
+                <button type="button" class="btn btn-dark btn-increment m-0 border-0 h-100" data-product-id="${productId}" style="border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
+              </div>
+            </div>`;
+        }
+      } else {
+        if (isSpLayout) {
+          newCartHtml = `
+            <button class="btn btn-dark btn-add-to-cart font-weight-bold" data-product-id="${productId}" style="height: 42px; border-radius: 8px; width: 170px;">
+              <i class="fas fa-shopping-cart mr-1"></i> Add To Cart
+            </button>`;
+        } else if (isInBtnGroup) {
+          newCartHtml = `
+            <button type="button" class="btn btn-dark m-0 btn-add-to-cart flex-grow-1 rounded-0" data-product-id="${productId}" style="height: 100%; border-radius: 0 !important; font-size: 0.85rem;">
+              <i class="fas fa-shopping-cart mr-1"></i> Add to Cart
+            </button>`;
+        } else {
+          newCartHtml = `
+            <button type="button" class="btn btn-dark m-0 btn-add-to-cart w-100 h-100 rounded-0" data-product-id="${productId}" style="height: 100%; border-radius: 0 !important; font-size: 0.85rem;">
+              <i class="fas fa-shopping-cart small mr-1"></i> Add to Cart
             </button>`;
         }
-        return; // Done — no outerHTML replacement needed
       }
 
-      // --- Product card or Wishlist card: replace specific child ---
-      let newCartHtml;
-      if (quantity > 0) {
-        newCartHtml = `
-          <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
-            <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">
-              <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="${productId}" style="height: 100%; border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
-              <span class="quantity-display flex-grow-1 text-center" style="font-weight: bold; color: #fff;">${quantity}</span>
-              <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="${productId}" style="height: 100%; border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
-            </div>
-          </div>`;
-      } else if (isInBtnGroup) {
-        newCartHtml = `
-          <button type="button" class="btn btn-dark m-0 btn-add-to-cart flex-grow-1 rounded-0" data-product-id="${productId}" style="border-radius: 0 !important; font-size: 0.8rem;">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>`;
+      if (targetElement) {
+        targetElement.outerHTML = newCartHtml;
       } else {
-        // Wishlist card
-        newCartHtml = `
-          <button type="button" class="btn btn-dark m-0 btn-add-to-cart w-100 h-100 rounded-0" data-product-id="${productId}" style="border-radius: 0 !important; font-size: 0.8rem;">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>`;
-      }
-
-      if (quantityControls) {
-        quantityControls.outerHTML = newCartHtml;
-      } else if (cartBtn) {
-        cartBtn.outerHTML = newCartHtml;
+        // Fallback: prepend to container (should not happen if initial EJS is correct)
+        container.insertAdjacentHTML('afterbegin', newCartHtml);
       }
     });
   };
@@ -156,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const performUpdate = async (productId, newQty, currentQty) => {
     try {
-      const res = await fetch('/user/cart/update', {
+      const res = await fetch('/cart/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: newQty })
@@ -168,6 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
           updateUI(productId, data.newQuantity);
         } else {
           showToast("Cart updated");
+          // Ensure UI is in sync
+          updateUI(productId, newQty);
         }
       } else {
         showToast(data.message, 'error');
@@ -181,9 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       console.error(err);
-      if (!(err instanceof ReferenceError)) {
-        showToast("Error updating cart", 'error');
-      }
+      showToast("Error updating cart", 'error');
       updateUI(productId, currentQty);
     }
   };
@@ -209,8 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // ADD TO CART
     if (target.classList.contains('btn-add-to-cart')) {
       e.preventDefault();
+      target.blur();
+      
+      // Optimistic update
+      updateUI(productId, 1);
+      
       try {
-        const res = await fetch('/user/cart/add', {
+        const res = await fetch('/cart/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user: userId, productId, quantity: 1 })
@@ -218,9 +218,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (res.ok) {
           showToast(data.message);
-          updateUI(productId, 1);
+          // Sync with potentially different quantity (e.g. if already in cart)
+          updateUI(productId, data.newQuantity || 1);
         } else {
           showToast(data.message, 'error');
+          // Rollback
+          updateUI(productId, 0);
           if (data.status === 'unlisted') {
             syncProductAvailability(productId, 'unlisted');
           } else if (data.status === 'out-of-stock') {
@@ -229,10 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         console.error(err);
-        // Only show generic error if it wasn't a handled status change (ReferenceError fix)
-        if (!(err instanceof ReferenceError)) {
-          showToast("Something went wrong", 'error');
-        }
+        showToast("Something went wrong", 'error');
+        // Rollback
+        updateUI(productId, 0);
       }
     }
 
@@ -241,10 +243,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // INCREMENT
     if (target.classList.contains('btn-increment')) {
       e.preventDefault();
-      const display = target.closest('.cart-quantity-controls').querySelector('.quantity-display');
+      target.blur();
+      const controls = target.closest('.cart-quantity-controls');
+      if (!controls) return;
+      const display = controls.querySelector('.quantity-display');
       const currentQty = parseInt(display.textContent);
-      const newQty = currentQty + 1;
 
+      if (currentQty >= 10) {
+        showToast("Maximum 10 items allowed", 'warning');
+        return;
+      }
+
+      const newQty = currentQty + 1;
       // Optimistic update
       updateUI(productId, newQty);
 
@@ -258,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // DECREMENT
     if (target.classList.contains('btn-decrement')) {
       e.preventDefault();
+      target.blur();
       const display = target.closest('.cart-quantity-controls').querySelector('.quantity-display');
       const currentQty = parseInt(display.textContent);
 
@@ -275,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // REMOVE FROM CART - Instant removal
         clearTimeout(debounceTimers[productId]); // Clear any pending update for this product
         try {
-          const res = await fetch('/user/cart/remove', {
+          const res = await fetch('/cart/remove', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productId })
@@ -297,14 +308,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // WISHLIST ADD
     if (target.classList.contains('btn-add-to-wishlist')) {
       e.preventDefault();
+      target.blur();
       try {
-        const res = await fetch('/user/add-to-wishlist', {
+        const res = await fetch('/wishlist/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, productId })
+          body: JSON.stringify({ productId })
         });
-        const data = await res.json();
-        showToast(data.message, res.ok ? 'success' : 'error');
+        
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const data = await res.json();
+          showToast(data.message, res.ok ? 'success' : 'error');
+        } else {
+          showToast("Something went wrong", 'error');
+        }
       } catch (err) {
         console.error(err);
         showToast("Error adding to wishlist", 'error');
@@ -314,6 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // WISHLIST REMOVE
     if (target.classList.contains('btn-remove-from-wishlist')) {
       e.preventDefault();
+      target.blur();
       Swal.fire({
         title: 'Are you sure?',
         text: "You want to remove this product from your wishlist!",
@@ -325,22 +344,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const res = await fetch(`/user/wishlist/remove/${productId}`, {
+            const res = await fetch(`/wishlist/remove/${productId}`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId })
             });
-            const data = await res.json();
-            if (res.ok) {
-              const card = target.closest('.card-div');
-              if (card) {
-                card.remove();
-                if (document.querySelectorAll('.card-div').length === 0) {
-                  location.reload();
+
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+              const data = await res.json();
+              if (res.ok) {
+                const card = target.closest('.card-div');
+                if (card) {
+                  card.remove();
+                  if (document.querySelectorAll('.card-div').length === 0) {
+                    location.reload();
+                  }
+                } else {
+                  showToast("Removed from wishlist");
                 }
               } else {
-                showToast("Removed from wishlist");
+                showToast(data.message, 'error');
               }
+            } else {
+              showToast("Something went wrong", 'error');
             }
           } catch (err) {
             console.error(err);
@@ -352,15 +379,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // BUY NOW (Specific to single product page)
     if (target.classList.contains('buy-buy')) {
         e.preventDefault();
+        target.blur();
+
+        // If product already in cart, just go to cart
+        const cartControls = target.parentElement?.querySelector('.cart-action-wrapper');
+        const isAlreadyInCart = cartControls?.querySelector('.cart-quantity-controls');
+        
+        if (isAlreadyInCart) {
+            window.location.href = '/cart';
+            return;
+        }
+
         try {
-            const res = await fetch('/user/cart/add', {
+            const res = await fetch('/cart/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user: userId, productId, quantity: 1 })
             });
             const data = await res.json();
             if (res.ok) {
-                window.location.href = '/user/cart';
+                window.location.href = '/cart';
             } else {
                 showToast(data.message, 'error');
                 if (data.status === 'unlisted') {

@@ -1,0 +1,132 @@
+<% 
+    const orderList = typeof orders !== 'undefined' ? orders : [];
+    const isAdm = typeof isAdmin !== 'undefined' ? isAdmin : false;
+    const currPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
+    const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
+%>
+
+<div class="table-container-shared card border-0 shadow-sm" id="orderTableContainer">
+    <% if (orderList.length === 0) { %>
+        <div class="text-center py-5">
+            <% if (typeof totalOrdersUnfiltered !== 'undefined' && totalOrdersUnfiltered === 0) { %>
+                <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                <% if (isAdm) { %>
+                    <h4 class="text-dark">No orders present currently</h4>
+                <% } else { %>
+                    <p class="text-muted mb-0">
+                        You haven't placed any orders yet. 
+                        <a href="/user/home" class="ml-1" style="font-weight: bold; color: #9135ED;">Continue Shopping</a>
+                    </p>
+                <% } %>
+            <% } else { %>
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No results found for the given criteria.</p>
+            <% } %>
+        </div>
+    <% } else { %>
+        <!-- Desktop Table -->
+        <table class="table table-hover shared-table-desktop mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">S.No</th>
+                    <th style="width: 20%;">Order ID</th>
+                    <th style="width: <%= isAdm ? '20%' : '15%' %>;"><%= isAdm ? 'User Email' : 'Payment Method' %></th>
+                    <th style="width: 10%;">Date</th>
+                    <th style="width: 12%;">Order Status</th>
+                    <th style="width: 12%;">Payment Status</th>
+                    <th style="width: 10%;" class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% orderList.forEach((order, index) => { %>
+                <tr data-row-id="<%= order._id %>" class="position-relative">
+                    <td><%= (currPg - 1) * pgLimit + (index + 1) %></td>
+                    <td><span class="font-weight-bold text-dark"><%= order.orderId %></span></td>
+                    <td>
+                        <% if (isAdm) { %>
+                            <% 
+                                let email = 'N/A';
+                                if (order.userDetails && order.userDetails.email) email = order.userDetails.email;
+                                else if (order.userId && order.userId.email) email = order.userId.email;
+                                else if (order.userId && typeof order.userId === 'string') email = 'ID: ' + order.userId;
+                            %>
+                            <%= email %>
+                        <% } else { %>
+                            <%= order.paymentMethod %>
+                        <% } %>
+                    </td>
+                    <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
+                    <td>
+                        <span class="status-box status-<%= (order.orderStatus || 'pending').toLowerCase() %>">
+                            <%= order.orderStatus %>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-box status-<%= (order.paymentStatus || 'pending').toLowerCase() %>">
+                            <%= order.paymentStatus %>
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <a href="<%= isAdm ? `/admin/orders/${order._id}` : `/orders/${order._id}` %>" 
+                           class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <%= isAdm ? 'View' : 'Details' %>
+                        </a>
+                        
+                        <% if (isAdm && (order.returnRequests || []).some(req => req.status === 'Pending')) { %>
+                            <div class="position-absolute" style="top: 8px; right: 8px;" title="Pending Return Request">
+                                <i class="fas fa-bell text-danger bell-ringing" style="font-size: 14px;"></i>
+                            </div>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <!-- Mobile Cards -->
+        <div class="shared-cards-mobile p-3">
+            <% orderList.forEach((order, index) => { %>
+            <div class="shared-order-card" data-card-id="<%= order._id %>">
+                <div class="card-header-flex">
+                    <span class="font-weight-bold">#<%= (currPg - 1) * pgLimit + (index + 1) %></span>
+                    <span class="status-box status-<%= (order.orderStatus || 'pending').toLowerCase() %>"><%= order.orderStatus %></span>
+                    
+                    <% if (isAdm && (order.returnRequests || []).some(req => req.status === 'Pending')) { %>
+                        <i class="fas fa-bell text-danger bell-ringing ml-2" title="Pending Return Request"></i>
+                    <% } %>
+                </div>
+                <div class="card-body p-0">
+                    <p><strong>Order ID:</strong> <%= order.orderId %></p>
+                    <% if (isAdm) { %>
+                        <p><strong>Customer:</strong> 
+                            <% 
+                                let customerEmail = 'N/A';
+                                if (order.userDetails && order.userDetails.email) customerEmail = order.userDetails.email;
+                                else if (order.userId && order.userId.email) customerEmail = order.userId.email;
+                                else if (order.userId && typeof order.userId === 'string') customerEmail = 'ID: ' + order.userId;
+                            %>
+                            <%= customerEmail %>
+                        </p>
+                    <% } %>
+                    <p><strong>Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                    <p><strong>Payment:</strong> <%= order.paymentMethod %> (<span class="text-uppercase small <%= order.paymentStatus === 'Successful' ? 'text-success' : 'text-danger' %>"><%= order.paymentStatus %></span>)</p>
+                    
+                    <div class="mt-3">
+                        <a href="<%= isAdm ? `/admin/orders/${order._id}` : `/orders/${order._id}` %>" 
+                           class="btn btn-sm btn-primary btn-block rounded-pill">
+                            <%= isAdm ? 'Manage Order' : 'View Details' %>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+    <% } %>
+    
+    <!-- Pagination moved inside for AJAX refresh support -->
+    <% if (typeof totalPages !== 'undefined' && totalPages >= 1 && orderList.length > 0) { %>
+        <div class="px-3 pt-3 pb-4">
+            <%- include('./pagination') %>
+        </div>
+    <% } %>
+</div>

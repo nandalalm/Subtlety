@@ -119,6 +119,7 @@ const MESSAGES = {
     PASSWORD_INCORRECT: "Current password is incorrect.",
     PASSWORDS_DONT_MATCH: "New passwords do not match",
     PASSWORD_TOO_SHORT: "New password must be at least 6 characters long.",
+    SAME_PASSWORD: "New password cannot be the same as the current password.",
     USER_NOT_FOUND: "User not found.",
   },
   WALLET: {

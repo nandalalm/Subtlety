@@ -2,8 +2,9 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout - SUBTLETY</title>
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
@@ -210,14 +211,14 @@
 
 <body>
   <!-- Navbar -->
-  <%- include('partials/navBar') %>
+  <%- include('../partials/User/navBar') %>
 
   <section class="checkout">
     <div class="container mt-2 checkout-container">
       <div class="mb-5">
         <a href="/user/home" class="text-decoration-none">Home</a> /
-        <a href="/user/cart" class="text-decoration-none">Cart</a> /
-        <a href="/user/checkout" class="text-decoration-none">Checkout</a>
+        <a href="/cart" class="text-decoration-none">Cart</a> /
+        <a href="/orders/checkout" class="text-decoration-none">Checkout</a>
       </div>
       <% if (locals.message) { %>
       <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #fff3cd; color: #856404; border-left: 5px solid #ffc107 !important;">
@@ -275,25 +276,30 @@
             <% let subtotal = 0 %> <% let hasUnlistedProduct = false %> <% let
               hasOutOfStockProduct = false %> <% if(cart) { %>
             <div id="cartData" data-cart="<%= JSON.stringify(cart) %>"></div>
-            <% cart.products.forEach(cartItem => { %> <% if
-              (cartItem.productId.isListed && cartItem.productId.stock > 0) { %>
-            <% const price = cartItem.discountedPrice ||
-              cartItem.productId.price %> <% subtotal += price *
-              cartItem.quantity %>
+            <% cart.products.forEach(cartItem => { %> 
+            <% if (cartItem.productId.isListed && cartItem.productId.stock > 0) { %>
+            <% const originalPrice = cartItem.productId.price %> 
+            <% subtotal += originalPrice * cartItem.quantity %>
             <div class="product-summary">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
+                <% if (cartItem.productId.bestOffer) { %>
+                  <span class="text-muted" style="text-decoration: line-through; font-size: 0.85rem;">₹ <%= Math.floor(cartItem.productId.price) %></span>
+                  <span class="font-weight-bold ml-1" style="color: #008000;">₹ <%= Math.floor(cartItem.productId.bestOffer.discountedPrice) %></span>
+                <% } else { %>
+                  <span class="font-weight-bold">₹ <%= Math.floor(cartItem.productId.price) %></span>
+                <% } %>
               </div>
               <div class="quantity-details">
                 <span>x <%= cartItem.quantity %></span>
               </div>
               <div class="product-price">
-                <span>₹ <%= (price * cartItem.quantity).toFixed(2) %></span>
+                <span>₹ <%= Math.floor(originalPrice * cartItem.quantity) %></span>
               </div>
             </div>
-            <% } else if (!cartItem.productId.isListed) { %> <%
-              hasUnlistedProduct = true %>
+            <% } else if (!cartItem.productId.isListed) { %> 
+            <% hasUnlistedProduct = true %>
             <div class="product-summary product-unavailable">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
@@ -301,8 +307,8 @@
                 <span>Product no longer available</span>
               </div>
             </div>
-            <% } else if (cartItem.productId.stock < 1) { %> <%
-              hasOutOfStockProduct = true %>
+            <% } else if (cartItem.productId.stock < 1) { %> 
+            <% hasOutOfStockProduct = true %>
             <div class="product-summary product-unavailable">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
@@ -316,34 +322,51 @@
               <ul class="list-group">
                 <li class="list-group-item d-flex justify-content-between">
                   <span>Subtotal:</span>
-                  <span id="subtotal">₹ <%= subtotal.toFixed(2) %></span>
-                  <!-- Add an ID here -->
+                  <span id="subtotal">₹ <%= Math.floor(subtotal) %></span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
-                  <span>Discount:</span>
-                  <span id="discountAmount">₹ 0</span>
-                  <!-- Update this to show the discount -->
+                  <span>Offer Discount:</span>
+                  <span id="offerDiscountDisplay" class="text-success">
+                    <%= Math.floor(offerDiscount) > 0 ? `- ₹ ${Math.floor(offerDiscount)}` : '0' %>
+                  </span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
-                  <span>Delivery Fee:</span>
-                  <span>₹ 50</span>
+                  <span>Coupon Discount:</span>
+                  <span id="couponDiscountDisplay" class="text-success">
+                    <%= Math.floor(couponDiscount || 0) > 0 ? `- ₹ ${Math.floor(couponDiscount)}` : '0' %>
+                  </span>
+                </li>
+                <li class="list-group-item d-flex flex-column">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span>Delivery Fee:</span>
+                    <span id="deliveryChargeDisplayWrapper">
+                      <% if (deliveryCharge === 0) { %>
+                        <span class="text-muted" style="text-decoration: line-through;">₹ 80</span>
+                        <span class="text-success font-weight-bold ml-1">Free</span>
+                      <% } else { %>
+                        ₹ <span id="deliveryChargeDisplay"><%= Math.floor(deliveryCharge) %></span>
+                      <% } %>
+                    </span>
+                  </div>
+                  <small id="deliveryChargeMessage" class="<%= deliveryCharge === 0 ? 'text-success' : 'text-muted' %> mt-1" style="font-size: 0.75rem;">
+                    <%= deliveryCharge === 0 ? "Congrats! You've unlocked FREE delivery" : "Free delivery on orders above ₹600" %>
+                  </small>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
                   <strong>Total:</strong>
-                  <strong id="totalAmount">₹ <%= (subtotal + 50).toFixed(2) %></strong>
-                  <!-- Update this to reflect the new total -->
+                  <strong id="totalAmount">₹ <%= Math.floor(totalAmount) %></strong>
                 </li>
               </ul>
 
               <div class="coupon-container mt-2">
-                <div class="coupon-flex">
+                <div id="couponInputContainer" class="coupon-flex">
                   <input type="text" id="couponCode" placeholder="Enter coupon code" />
                   <button id="applyCouponButton" class="apply-btn">Apply Coupon</button>
-                  <button id="removeCouponButton" class="remove-coupon-btn" style="display: none;">
-                    <i class="fa-solid fa-trash"></i> Remove Coupon
-                  </button>
                 </div>
-                <div id="couponMessage" class="error-message"></div>
+                <button id="removeCouponButton" class="remove-coupon-btn btn-danger btn-sm mt-1" style="display: none; width: 100%; border-radius: 8px; padding: 8px;">
+                  <i class="fa-solid fa-trash"></i> Remove Registered Coupon
+                </button>
+                <div id="couponMessage" class="mt-1" style="font-size: 0.85rem;"></div>
               </div>
 
               <div class="mt-3">
@@ -390,7 +413,7 @@
     </div>
   </section>
 
-  <%-include('partials/footer')%>
+  <%- include('../partials/User/footer') %>
 
   <!-- Bootstrap JS and dependencies -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -563,61 +586,85 @@
       }
 
       applyCouponButton.addEventListener("click", async () => {
-        const couponCode = couponCodeInput.value;
-        const subtotal = parseFloat(
-          subtotalElement.textContent.replace("₹ ", "")
-        );
+        const couponCode = couponCodeInput.value.trim();
+        if (!couponCode) return;
 
         try {
-          const response = await fetch("/user/checkout/apply-coupon", {
+          const response = await fetch("/orders/checkout/apply-coupon", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              couponCode,
-              totalAmount: subtotal + 50
-            }),
+            body: JSON.stringify({ couponCode }),
           });
 
           const data = await response.json();
 
-          if (response.ok) {
-            discount = data.discount;
-            appliedCouponCode = couponCode; // Set the applied coupon code
-            discountAmountDisplay.textContent = `₹ ${Number(discount).toFixed(2)}`;
-            const newTotal = subtotal + 50 - discount;
-            const roundedTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
-            document.getElementById("totalAmount").textContent = `₹ ${roundedTotal.toFixed(2)}`;
+          if (response.ok && data.success) {
+            appliedCouponCode = couponCode;
+            
+            // Update UI with truncated values
+            document.getElementById('subtotal').innerText = `₹ ${Math.floor(data.subtotal)}`;
+            document.getElementById('offerDiscountDisplay').innerText = data.offerDiscount > 0 ? `- ₹ ${Math.floor(data.offerDiscount)}` : '0';
+            document.getElementById('couponDiscountDisplay').innerText = data.couponDiscount > 0 ? `- ₹ ${Math.floor(data.couponDiscount)}` : '0';
+            
+            // Update Delivery Charge UI
+            const wrapper = document.getElementById('deliveryChargeDisplayWrapper');
+            const message = document.getElementById('deliveryChargeMessage');
+            if (data.deliveryCharge === 0) {
+              wrapper.innerHTML = `<span class="text-muted" style="text-decoration: line-through;">₹ 80</span> <span class="text-success font-weight-bold ml-1">Free</span>`;
+              message.innerText = "Congrats! You've unlocked FREE delivery";
+              message.className = "text-success mt-1";
+            } else {
+              wrapper.innerHTML = `₹ <span id="deliveryChargeDisplay">${Math.floor(data.deliveryCharge)}</span>`;
+              message.innerText = "Free delivery on orders above ₹600";
+              message.className = "text-muted mt-1";
+            }
+
+            document.getElementById("totalAmount").innerText = `₹ ${Math.floor(data.totalAmount)}`;
+            
             couponMessage.textContent = "Coupon applied successfully!";
-            couponMessage.classList.remove("error-message");
-            // Show the remove coupon button when a coupon is applied
-            removeCouponButton.style.display = 'inline-block';
+            couponMessage.style.color = "green";
+            
+            // Hide Input area, show Remove button
+            document.getElementById('couponInputContainer').style.display = 'none';
+            removeCouponButton.style.display = 'block';
           } else {
             couponMessage.textContent = data.message;
-            couponMessage.classList.add("error-message");
+            couponMessage.style.color = "red";
           }
         } catch (error) {
           couponMessage.textContent = "Error applying coupon. Please try again.";
-          couponMessage.classList.add("error-message");
+          couponMessage.style.color = "red";
         }
       });
 
-      // Add event listener for the remove coupon button
       removeCouponButton.addEventListener("click", () => {
-        discount = 0;
         appliedCouponCode = "";
-        discountAmountDisplay.textContent = `₹ ${Number(discount).toFixed(2)}`;
+        
+        // Reset Coupon Discount in UI
+        document.getElementById('couponDiscountDisplay').innerText = `0`;
+        
+        // Recalculate based on current subtotal and delivery
+        const subtotalText = document.getElementById('subtotal').innerText.replace("₹ ", "").trim();
+        const offerDiscountText = document.getElementById('offerDiscountDisplay').innerText.replace("- ₹ ", "").trim();
+        
+        const subtotal = Math.floor(parseFloat(subtotalText));
+        const offerDiscount = offerDiscountText === '0' ? 0 : Math.floor(parseFloat(offerDiscountText));
+        
+        // Handle potentially non-numeric text like "Free" in delivery
+        const deliveryChargeDisplay = document.getElementById('deliveryChargeDisplay');
+        const delivery = deliveryChargeDisplay ? Math.floor(parseFloat(deliveryChargeDisplay.innerText)) : 0;
+        
+        const originalTotal = subtotal - offerDiscount + delivery;
+        document.getElementById("totalAmount").innerText = `₹ ${Math.floor(originalTotal)}`;
 
-        const subtotal = parseFloat(subtotalElement.textContent.replace("₹ ", ""));
-        const newTotal = subtotal + 50; // Recalculate total without discount
-        const roundedTotal = Math.round((newTotal + Number.EPSILON) * 100) / 100;
-        document.getElementById("totalAmount").textContent = `₹ ${roundedTotal.toFixed(2)}`;
-
-        // Hide the remove coupon button
+        // Show Input area, hide Remove button
+        document.getElementById('couponInputContainer').style.display = 'flex';
         removeCouponButton.style.display = 'none';
-        couponMessage.textContent = "Coupon removed successfully!";
-        couponMessage.classList.remove("error-message");
+        couponCodeInput.value = "";
+        couponMessage.textContent = "Coupon removed.";
+        couponMessage.style.color = "blue";
       });
 
       async function placeOrder() {
@@ -650,7 +697,7 @@
           (acc, item) => acc + (item.discountedPrice || item.productId.price) * item.quantity,
           0
         );
-        const deliveryCharge = 50;
+        const deliveryCharge = parseFloat(document.getElementById('deliveryChargeDisplay').innerText);
 
         const shippingAddress = {
           fullname: fullName,
@@ -670,7 +717,7 @@
         };
 
         try {
-          const orderResponse = await fetch("/user/checkout/confirm-order", {
+          const orderResponse = await fetch("/orders/checkout/confirm", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -690,10 +737,10 @@
                 showConfirmButton: false,
                 timer: 1000,
               }).then(() => {
-                window.location.href = `/user/order-success?orderId=${orderId}`;
+                window.location.href = `/orders/success?orderId=${orderId}`;
               });
             } else if (paymentMethod.value === 'Razorpay') {
-              const razorpayResponse = await fetch("/user/create-razorpay-order", {
+              const razorpayResponse = await fetch("/orders/razorpay/create", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -714,7 +761,7 @@
                   order_id: razorpayData.id,
                   handler: async function(response) {
                     try {
-                      const paymentConfirmationResponse = await fetch("/user/razorpay-confirm", {
+                      const paymentConfirmationResponse = await fetch("/orders/razorpay/confirm", {
                         method: "POST",
                         headers: {
                           "Content-Type": "application/json",
@@ -734,7 +781,7 @@
                           showConfirmButton: false,
                           timer: 1000,
                         }).then(() => {
-                          window.location.href = `/user/order-success?orderId=${orderId}`;
+                          window.location.href = `/orders/success?orderId=${orderId}`;
                         });
                       } else {
                         const errorData = await paymentConfirmationResponse.json();
@@ -764,7 +811,7 @@
                         }
                       });
                       setTimeout(() => {
-                        window.location.href = `/user/order/${orderId}`;
+                        window.location.href = `/orders/${orderId}`;
                       }, 1000);
                     }
                   }
@@ -780,7 +827,7 @@
                       willClose: () => resolve(),
                     });
                   });
-                  window.location.href = `/user/order/${orderId}`;
+                  window.location.href = `/orders/${orderId}`;
                 });
                 razorpay.open();
               } else {
@@ -801,7 +848,7 @@
                 showConfirmButton: false,
                 timer: 1000,
               }).then(() => {
-                window.location.href = `/user/order-success?orderId=${orderId}`;
+                window.location.href = `/orders/success?orderId=${orderId}`;
               });
             }
           } else {

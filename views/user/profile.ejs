@@ -15,19 +15,21 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
   <style>
     /* Custom CSS to remove default focus styles */
-    input:focus {
+    input:focus,
+    .btn:focus,
+    .btn:active {
       box-shadow: none !important;
-      /* Removes the box shadow */
+      outline: none !important;
     }
   </style>
 </head>
 
 <body>
-  <%- include('partials/navBar') %>
+  <%- include('../partials/User/navBar') %>
 
   <section class="profile-section">
     <div class="container profile pt-2">
-      <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs">
+      <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs mt-4 mt-lg-0">
         <div>
           <a href="/user/home" class="text-decoration-none">Home</a> /
           <span style="color: #9135ED;" class="text-decoration-none">My Profile</span>
@@ -39,7 +41,7 @@
 
       <div class="row">
         <div class="col-md-3">
-          <%- include('partials/userSidebar', { activePage: 'profile' }) %>
+          <%- include('../partials/User/userSidebar', { activePage: 'profile' }) %>
         </div>
 
         <!-- Main Content -->
@@ -50,7 +52,7 @@
               <h4>Username
                 <a id="edit-btn" class="pl-2 text-decoration-none" href="#" style="font-size: 14px;">Edit</a>
               </h4>
-              <form id="profile-form" method="POST" action="/user/profile/update">
+              <form id="profile-form" method="POST" action="/profile/update">
                 <div class="form-group">
                   <div class="d-flex justify-content-between">
                     <div class="mr-2" style="flex: 1;">
@@ -71,7 +73,7 @@
               <h4>Phone Number
                 <a id="edit-phone-btn" class="pl-2 text-decoration-none" href="#" style="font-size: 14px;">Edit</a>
               </h4>
-              <form id="phone-form" method="POST" action="/user/profile/update-phone">
+              <form id="phone-form" method="POST" action="/profile/update-phone">
                 <div class="form-group">
                   <input type="tel" name="phone" id="phone" value="<%= user.phoneNo || '' %>" placeholder="<%= user.phoneNo ? user.phoneNo : 'Update your phone number' %>" class="form-control" disabled pattern="^[0-9]{10}$" title="10 digits, no spaces or special characters" required>
                   <small id="phone-error" class="form-text text-danger" style="display: none;">Please enter a valid 10-digit phone number</small>
@@ -109,7 +111,7 @@
             <div class="form-group">
               <label for="current-password">Current Password</label>
               <div class="input-group">
-                <input type="password" id="current-password" class="form-control" placeholder="Enter current password" required>
+                <input type="password" id="current-password" class="form-control" placeholder="Enter current password">
                 <div class="input-group-append">
                   <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
                 </div>
@@ -119,7 +121,7 @@
             <div class="form-group">
               <label for="new-password">New Password</label>
               <div class="input-group">
-                <input type="password" id="new-password" class="form-control" placeholder="Enter new password" required>
+                <input type="password" id="new-password" class="form-control" placeholder="Enter new password">
                 <div class="input-group-append">
                   <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
                 </div>
@@ -129,7 +131,7 @@
             <div class="form-group">
               <label for="confirm-password">Confirm Password</label>
               <div class="input-group">
-                <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password" required>
+                <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password">
                 <div class="input-group-append">
                   <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
                 </div>
@@ -143,7 +145,7 @@
     </div>
   </div>
 
-  <%- include('partials/footer') %>
+  <%- include('../partials/User/footer') %>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
@@ -152,234 +154,281 @@
 
   <!-- JavaScript -->
   <script>
-    // Profile editing functionality
-    document.getElementById('edit-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      const firstNameInput = document.getElementById('first-name');
-      const lastNameInput = document.getElementById('last-name');
-      const saveBtn = document.getElementById('save-btn');
+    // ── Store original server-rendered values so Cancel can restore them ──
+    const originalFirstName = document.getElementById('first-name').value;
+    const originalLastName  = document.getElementById('last-name').value;
+    const originalPhone     = document.getElementById('phone').value;
 
+    // ─────────────────────────────────────────────
+    // Helper: clear validation state on an input
+    // ─────────────────────────────────────────────
+    function clearInputState(inputEl, errorEl) {
+      inputEl.style.borderColor = '';
+      if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+    }
+
+    function setInputError(inputEl, errorEl, msg) {
+      inputEl.style.borderColor = 'red';
+      if (errorEl) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+    }
+
+    function setInputOk(inputEl, errorEl) {
+      inputEl.style.borderColor = 'green';
+      if (errorEl) errorEl.style.display = 'none';
+    }
+
+    // ─────────────────────────────────────────────
+    // USERNAME (First/Last Name) — Edit toggle
+    // ─────────────────────────────────────────────
+    const firstNameInput = document.getElementById('first-name');
+    const lastNameInput  = document.getElementById('last-name');
+    const firstNameError = document.getElementById('first-name-error');
+    const lastNameError  = document.getElementById('last-name-error');
+    const editBtn        = document.getElementById('edit-btn');
+    const saveBtn        = document.getElementById('save-btn');
+
+    editBtn.addEventListener('click', function(e) {
+      e.preventDefault();
       if (firstNameInput.disabled) {
+        // Enter edit mode
         firstNameInput.disabled = false;
-        lastNameInput.disabled = false;
+        lastNameInput.disabled  = false;
         this.textContent = 'Cancel';
         saveBtn.style.display = 'inline-block';
       } else {
-        // Refresh the page on Cancel
-        location.reload();
+        // Cancel — restore originals, no reload
+        firstNameInput.value    = originalFirstName;
+        lastNameInput.value     = originalLastName;
+        firstNameInput.disabled = true;
+        lastNameInput.disabled  = true;
+        this.textContent = 'Edit';
+        saveBtn.style.display = 'none';
+        clearInputState(firstNameInput, firstNameError);
+        clearInputState(lastNameInput, lastNameError);
       }
     });
 
-    // Real-time validation for first name and last name
-    ['first-name', 'last-name'].forEach(id => {
-      const input = document.getElementById(id);
-      const error = document.getElementById(`${id}-error`);
-
-      input.addEventListener('input', function() {
-        if (this.validity.patternMismatch) {
-          error.style.display = 'block';
-          this.style.borderColor = 'red';
-        } else {
-          error.style.display = 'none';
-          this.style.borderColor = 'green';
-        }
-      });
+    // Live validation: First Name (alpha only, min 3 chars, no spaces)
+    firstNameInput.addEventListener('input', function() {
+      if (!this.value) { clearInputState(this, firstNameError); return; }
+      if (!/^[a-zA-Z]{3,}$/.test(this.value)) {
+        setInputError(this, firstNameError, 'At least 3 letters, alphabets only — no spaces or special characters');
+      } else {
+        setInputOk(this, firstNameError);
+      }
     });
 
-    // Save First Name and Last Name
-    document.getElementById('save-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      const firstNameInput = document.getElementById('first-name');
-      const lastNameInput = document.getElementById('last-name');
+    // Live validation: Last Name (alpha only, optional but no spaces)
+    lastNameInput.addEventListener('input', function() {
+      if (!this.value) { clearInputState(this, lastNameError); return; }
+      if (!/^[a-zA-Z]+$/.test(this.value)) {
+        setInputError(this, lastNameError, 'Alphabets only — no spaces or special characters');
+      } else {
+        setInputOk(this, lastNameError);
+      }
+    });
 
-      if (!firstNameInput.checkValidity()) {
+    // Save First/Last Name via AJAX
+    saveBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (!/^[a-zA-Z]{3,}$/.test(firstNameInput.value)) {
+        setInputError(firstNameInput, firstNameError, 'At least 3 letters, alphabets only — no spaces or special characters');
+        return;
+      }
+      if (lastNameInput.value && !/^[a-zA-Z]+$/.test(lastNameInput.value)) {
+        setInputError(lastNameInput, lastNameError, 'Alphabets only — no spaces or special characters');
         return;
       }
 
-      // Submit the form via Fetch API
-      const form = {
-        firstname: firstNameInput.value,
-        lastname: lastNameInput.value
-      };
-
-      fetch(`/user/profile/update`, {
-          method: 'POST',
-          body: JSON.stringify(form),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
-        .then(data => {
-          Swal.fire('Success', data.message, 'success').then(() => {
-            location.reload();
-          });
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          Swal.fire('Error', 'Failed to update profile', 'error');
-        });
+      fetch('/profile/update', {
+        method: 'POST',
+        body: JSON.stringify({ firstname: firstNameInput.value, lastname: lastNameInput.value }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(r => r.ok ? r.json() : Promise.reject('Update failed'))
+      .then(data => {
+        Swal.fire('Success', data.message, 'success');
+        firstNameInput.disabled = true;
+        lastNameInput.disabled  = true;
+        editBtn.textContent     = 'Edit';
+        saveBtn.style.display   = 'none';
+        clearInputState(firstNameInput, firstNameError);
+        clearInputState(lastNameInput, lastNameError);
+        const welcomeName = document.querySelector('.breadcrumbs h5 span');
+        if (welcomeName) welcomeName.textContent = firstNameInput.value + '!';
+      })
+      .catch(() => Swal.fire('Error', 'Failed to update profile', 'error'));
     });
 
-    // Phone editing functionality
-    document.getElementById('edit-phone-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      const phoneInput = document.getElementById('phone');
-      const savePhoneBtn = document.getElementById('save-phone-btn');
+    // ─────────────────────────────────────────────
+    // PHONE — Edit toggle
+    // ─────────────────────────────────────────────
+    const phoneInput     = document.getElementById('phone');
+    const phoneError     = document.getElementById('phone-error');
+    const editPhoneBtn   = document.getElementById('edit-phone-btn');
+    const savePhoneBtn   = document.getElementById('save-phone-btn');
 
+    editPhoneBtn.addEventListener('click', function(e) {
+      e.preventDefault();
       if (phoneInput.disabled) {
         phoneInput.disabled = false;
-        this.textContent = 'Cancel';
+        this.textContent    = 'Cancel';
         savePhoneBtn.style.display = 'inline-block';
       } else {
-        // Refresh the page on Cancel
-        location.reload();
+        // Cancel — restore original, no reload
+        phoneInput.value    = originalPhone;
+        phoneInput.disabled = true;
+        this.textContent    = 'Edit';
+        savePhoneBtn.style.display = 'none';
+        clearInputState(phoneInput, phoneError);
       }
     });
 
-    // Real-time validation for phone number
-    document.getElementById('phone').addEventListener('input', function() {
-      const phoneError = document.getElementById('phone-error');
-      if (this.validity.patternMismatch) {
-        phoneError.style.display = 'block';
-        this.style.borderColor = 'red';
+    // Live validation: Phone (exactly 10 digits)
+    phoneInput.addEventListener('input', function() {
+      // Strip non-digits as user types
+      this.value = this.value.replace(/\D/g, '');
+      if (!this.value) { clearInputState(this, phoneError); return; }
+      if (!/^[0-9]{10}$/.test(this.value)) {
+        setInputError(this, phoneError, 'Enter a valid 10-digit phone number');
       } else {
-        phoneError.style.display = 'none';
-        this.style.borderColor = 'green';
+        setInputOk(this, phoneError);
       }
     });
 
-    // Save Phone
-    document.getElementById('save-phone-btn').addEventListener('click', function(e) {
+    // Save Phone via AJAX
+    savePhoneBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      const phoneInput = document.getElementById('phone');
-
-      if (!phoneInput.checkValidity()) {
+      if (!/^[0-9]{10}$/.test(phoneInput.value)) {
+        setInputError(phoneInput, phoneError, 'Enter a valid 10-digit phone number');
         return;
       }
-
-      // Submit the form via Fetch API
-      const form = {
-        phone: phoneInput.value,
-      };
-
-      fetch(`/user/profile/update-phone`, {
-          method: 'POST',
-          body: JSON.stringify(form),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok'))
-        .then(data => {
-          Swal.fire('Success', data.message, 'success').then(() => {
-            location.reload();
-          });
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          Swal.fire('Error', 'Failed to update phone number', 'error');
-        });
+      fetch('/profile/update-phone', {
+        method: 'POST',
+        body: JSON.stringify({ phone: phoneInput.value }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(r => r.ok ? r.json() : Promise.reject('Update failed'))
+      .then(data => {
+        Swal.fire('Success', data.message, 'success');
+        phoneInput.disabled = true;
+        editPhoneBtn.textContent   = 'Edit';
+        savePhoneBtn.style.display = 'none';
+        clearInputState(phoneInput, phoneError);
+      })
+      .catch(() => Swal.fire('Error', 'Failed to update phone number', 'error'));
     });
 
-    // Real-time validation for password fields
-    ['current-password', 'new-password', 'confirm-password'].forEach(id => {
-      const input = document.getElementById(id);
-      const error = document.getElementById(`${id}-error`);
+    // ─────────────────────────────────────────────
+    // CHANGE PASSWORD MODAL
+    // ─────────────────────────────────────────────
+    const currentPasswordInput = document.getElementById('current-password');
+    const newPasswordInput     = document.getElementById('new-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    const currentPasswordError = document.getElementById('current-password-error');
+    const newPasswordError     = document.getElementById('new-password-error');
+    const confirmPasswordError = document.getElementById('confirm-password-error');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
 
-      input.addEventListener('input', function() {
-        if (id === 'current-password') {
-          if (this.value.length < 6 || /\s/.test(this.value)) {
-            error.textContent = 'At least 6 characters, no spaces';
-            error.style.display = 'block';
-            this.style.borderColor = 'red';
-          } else {
-            error.style.display = 'none';
-            this.style.borderColor = 'green';
-          }
-        } else if (id === 'new-password' || id === 'confirm-password') {
-          const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
-          if (!regex.test(this.value)) {
-            error.textContent = 'At least 6 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character, no spaces';
-            error.style.display = 'block';
-            this.style.borderColor = 'red';
-          } else {
-            error.style.display = 'none';
-            this.style.borderColor = 'green';
-          }
-        }
-
-        if (id === 'confirm-password') {
-          const newPassword = document.getElementById('new-password').value;
-          if (this.value !== newPassword) {
-            error.textContent = 'Passwords do not match';
-            error.style.display = 'block';
-            this.style.borderColor = 'red';
-          }
-        }
-
-        if (id === 'new-password') {
-          const currentPassword = document.getElementById('current-password').value;
-          if (this.value === currentPassword) {
-            error.textContent = 'New password must be different from current password';
-            error.style.display = 'block';
-            this.style.borderColor = 'red';
-          }
-        }
+    // Clear all modal state each time it opens (stale errors/values don't persist)
+    $('#changePasswordModal').on('show.bs.modal', function() {
+      document.getElementById('change-password-form').reset();
+      [currentPasswordInput, newPasswordInput, confirmPasswordInput].forEach(inp => {
+        inp.style.borderColor = '';
       });
+      clearInputState(currentPasswordInput, currentPasswordError);
+      clearInputState(newPasswordInput, newPasswordError);
+      clearInputState(confirmPasswordInput, confirmPasswordError);
     });
 
-    // Change Password Functionality
+    // Live validation — current password: clear error as user re-types
+    currentPasswordInput.addEventListener('input', function() {
+      if (currentPasswordError.style.display !== 'none') {
+        clearInputState(this, currentPasswordError);
+      }
+    });
+
+    // Live validation — new password strength
+    newPasswordInput.addEventListener('input', function() {
+      if (!this.value) { clearInputState(this, newPasswordError); return; }
+      if (!passwordRegex.test(this.value)) {
+        setInputError(this, newPasswordError, 'Min 6 chars, 1 upper & 1 lowercase, 1 num, no spaces, 1 special char - !@#$%^&*');
+      } else {
+        setInputOk(this, newPasswordError);
+      }
+    });
+
+    // Live validation — confirm password match
+    confirmPasswordInput.addEventListener('input', function() {
+      if (!this.value) { clearInputState(this, confirmPasswordError); return; }
+      if (this.value !== newPasswordInput.value) {
+        setInputError(this, confirmPasswordError, 'Passwords do not match');
+      } else {
+        setInputOk(this, confirmPasswordError);
+      }
+    });
+
+    // Submit change password
     document.getElementById('change-password-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      const currentPasswordInput = document.getElementById('current-password');
-      const newPasswordInput = document.getElementById('new-password');
-      const confirmPasswordInput = document.getElementById('confirm-password');
 
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
+      const currentVal = currentPasswordInput.value;
+      const newVal = newPasswordInput.value;
+      const confirmVal = confirmPasswordInput.value;
 
-      if (currentPasswordInput.value.length < 6 || /\s/.test(currentPasswordInput.value) ||
-        !passwordRegex.test(newPasswordInput.value) ||
-        confirmPasswordInput.value !== newPasswordInput.value ||
-        currentPasswordInput.value === newPasswordInput.value) {
+      // Trigger live validation for all fields
+      if (!currentVal) setInputError(currentPasswordInput, currentPasswordError, 'Please enter your current password');
+      else setInputOk(currentPasswordInput, currentPasswordError);
+
+      if (!newVal) setInputError(newPasswordInput, newPasswordError, 'Please enter a new password');
+      else if (!passwordRegex.test(newVal)) setInputError(newPasswordInput, newPasswordError, 'Min 6 chars, 1 upper & 1 lowercase, 1 num, no spaces, 1 special char - !@#$%^&*');
+      else if (newVal === currentVal) setInputError(newPasswordInput, newPasswordError, 'New password cannot be the same as current password');
+      else setInputOk(newPasswordInput, newPasswordError);
+
+      if (!confirmVal) setInputError(confirmPasswordInput, confirmPasswordError, 'Please confirm your password');
+      else if (confirmVal !== newVal) setInputError(confirmPasswordInput, confirmPasswordError, 'Passwords do not match');
+      else setInputOk(confirmPasswordInput, confirmPasswordError);
+
+      // Block if any red borders exist
+      const fields = [currentPasswordInput, newPasswordInput, confirmPasswordInput];
+      if (fields.some(inp => inp.style.borderColor === 'red')) {
         return;
       }
 
-      // Submit the form via Fetch API
-      const form = {
-        currentPassword: currentPasswordInput.value,
-        newPassword: newPasswordInput.value,
-        confirmPassword: confirmPasswordInput.value,
-      };
-
-      fetch(`/user/profile/change-password`, {
-          method: 'POST',
-          body: JSON.stringify(form),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(err => Promise.reject(err));
-          }
-          return response.json();
-        })
-        .then(data => {
-          $('#changePasswordModal').modal('hide');
-          Swal.fire('Success', 'Password changed successfully', 'success').then(() => {
-            location.reload();
-          });
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          if (error.message === 'Current password is incorrect') {
-            Swal.fire('Error', 'Current password is incorrect', 'error');
-            currentPasswordInput.style.borderColor = 'red';
-          } else {
-            Swal.fire('Error', error.message || 'Failed to change password', 'error');
-          }
-        });
+      fetch('/profile/change-password', {
+        method: 'POST',
+        body: JSON.stringify({
+          currentPassword: currentVal,
+          newPassword: newVal,
+          confirmPassword: confirmVal
+        }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw data;
+        return data;
+      })
+      .then(data => {
+        // Reset form first, then close modal (ensures fields are cleared)
+        document.getElementById('change-password-form').reset();
+        [currentPasswordInput, newPasswordInput, confirmPasswordInput].forEach(inp => inp.style.borderColor = '');
+        clearInputState(currentPasswordInput, currentPasswordError);
+        clearInputState(newPasswordInput, newPasswordError);
+        clearInputState(confirmPasswordInput, confirmPasswordError);
+        // Close modal by clicking the native dismiss button
+        document.querySelector('#changePasswordModal [data-dismiss="modal"]').click();
+        setTimeout(() => Swal.fire('Success', data.message || 'Password changed successfully', 'success'), 300);
+      })
+      .catch(error => {
+        if (error.message && error.message.toLowerCase().includes('current password')) {
+          setInputError(currentPasswordInput, currentPasswordError, error.message);
+        } else if (error.message && error.message.toLowerCase().includes('same')) {
+          setInputError(newPasswordInput, newPasswordError, error.message);
+        } else {
+          Swal.fire('Error', error.message || 'Failed to change password', 'error');
+        }
+      });
     });
 
     // Toggle password visibility

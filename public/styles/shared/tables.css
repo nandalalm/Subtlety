@@ -1,0 +1,534 @@
+/* Shared Styles for Tables, Search, Filters, and Cards */
+
+/* Status Box & Badges */
+.status-box {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    display: inline-block;
+    min-width: 90px;
+}
+
+.status-pending {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+.status-shipped {
+    background-color: #cfe2ff !important;
+    color: #084298 !important;
+}
+
+.status-completed {
+    background-color: #d1e7dd !important;
+    color: #0f5132 !important;
+}
+
+.status-delivered {
+    background-color: #d1e7dd !important;
+    color: #0f5132 !important;
+}
+
+.status-cancelled {
+    background-color: #f8d7da !important;
+    color: #842029 !important;
+}
+
+.status-returned {
+    background-color: #e2e3e5 !important;
+    color: #41464b !important;
+}
+
+.status-failed {
+    background-color: #f8d7da !important;
+    color: #842029 !important;
+}
+
+.status-successful {
+    background-color: #d1e7dd !important;
+    color: #0f5132 !important;
+}
+
+.status-processing {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+.status-confirmed {
+    background-color: #cfe2ff !important;
+    color: #084298 !important;
+}
+
+.status-active {
+    background-color: #d1e7dd !important;
+    color: #0f5132 !important;
+}
+
+.status-listed {
+    background-color: #d1e7dd !important;
+    color: #0f5132 !important;
+}
+
+.status-unlisted {
+    background-color: #e2e3e5 !important;
+    color: #41464b !important;
+}
+
+/* Mild Badge Styles (Sales Report) */
+.badge-mild-success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.badge-mild-danger {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.badge-mild-warning {
+    background-color: #fff3e0;
+    color: #ef6c00;
+    border: 1px solid #ffe0b2;
+}
+
+.badge-mild-info {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+}
+
+/* Filter Selects (legacy) */
+.filter-select {
+    border-radius: 20px !important;
+    padding: 5px 15px !important;
+    border: 1px solid #9135ED !important;
+    height: 40px;
+    cursor: pointer;
+}
+
+/* ── Unified Search Bar ── */
+.unified-search {
+    display: flex;
+    align-items: stretch;
+    border: 1.5px solid #dee2e6;
+    border-radius: 50px;
+    background: #fff;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    height: 40px;
+}
+
+.unified-search:focus-within {
+    border-color: #9135ED;
+    box-shadow: 0 0 0 3px rgba(145, 53, 237, 0.1);
+}
+
+.unified-search-input {
+    flex: 1;
+    min-width: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent;
+    padding: 8px 6px 8px 16px;
+    font-size: 0.875rem;
+    color: #333;
+}
+
+.unified-search-clear {
+    border: none;
+    background: transparent;
+    color: #bbb;
+    padding: 0 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.15s;
+    align-self: stretch;
+}
+
+.unified-search-clear:hover {
+    color: #9135ED;
+}
+
+.unified-search-clear:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.unified-search-btn {
+    border: none;
+    background: #9135ED;
+    color: #fff;
+    padding: 0 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    align-self: stretch;
+    border-radius: 0 50px 50px 0;
+}
+
+.unified-search-btn:hover {
+    background: #7a2bc7;
+}
+
+.unified-search-btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* ── Sort Pill (select + X inside same border) ── */
+.filter-sort-pill {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #dee2e6;
+    border-radius: 50px;
+    background: #fff;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    width: 100%;
+}
+
+.filter-sort-pill:focus-within {
+    border-color: #9135ED;
+}
+
+.filter-sort-pill select {
+    flex: 1;
+    min-width: 100px;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent;
+    padding: 8px 4px 8px 14px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    appearance: auto;
+    height: 40px;
+}
+
+.sort-clear-inner {
+    border: none;
+    background: transparent;
+    color: #9135ED;
+    padding: 0 12px 0 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.sort-clear-inner:hover {
+    color: #7a2bc7;
+}
+
+.sort-clear-inner:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+
+.sort-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.clear-sort,
+.clear-filter-icon {
+    position: absolute;
+    right: 15px;
+    color: #9135ED;
+    cursor: pointer;
+    font-size: 1rem;
+    z-index: 5;
+    transition: color 0.2s;
+    background: white;
+    padding-left: 5px;
+}
+
+.clear-sort:hover,
+.clear-filter-icon:hover {
+    color: #dc3545;
+}
+
+/* Generic Desktop Table container */
+.table-container-shared {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    padding-top: 0 !important;
+}
+
+/* Responsive Logic */
+@media (max-width: 991px) {
+    .shared-table-desktop {
+        display: none !important;
+    }
+
+    .shared-cards-mobile {
+        display: block !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .shared-table-desktop {
+        display: table !important;
+    }
+
+    .shared-cards-mobile {
+        display: none !important;
+    }
+}
+
+/* Generic Responsive Card */
+.shared-order-card,
+.shared-item-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-left: 5px solid #9135ED;
+    width: 100%;
+    border-top: 1px solid #f0f0f0;
+    border-right: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.card-body p {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+/* Bell Ringing Animation (Return Alerts) */
+@keyframes ring {
+    0% {
+        transform: rotate(0);
+    }
+
+    1% {
+        transform: rotate(30deg);
+    }
+
+    3% {
+        transform: rotate(-28deg);
+    }
+
+    5% {
+        transform: rotate(34deg);
+    }
+
+    7% {
+        transform: rotate(-32deg);
+    }
+
+    9% {
+        transform: rotate(30deg);
+    }
+
+    11% {
+        transform: rotate(-28deg);
+    }
+
+    13% {
+        transform: rotate(26deg);
+    }
+
+    15% {
+        transform: rotate(-24deg);
+    }
+
+    17% {
+        transform: rotate(22deg);
+    }
+
+    19% {
+        transform: rotate(-20deg);
+    }
+
+    21% {
+        transform: rotate(18deg);
+    }
+
+    23% {
+        transform: rotate(-16deg);
+    }
+
+    25% {
+        transform: rotate(14deg);
+    }
+
+    27% {
+        transform: rotate(-12deg);
+    }
+
+    29% {
+        transform: rotate(10deg);
+    }
+
+    31% {
+        transform: rotate(-8deg);
+    }
+
+    33% {
+        transform: rotate(6deg);
+    }
+
+    35% {
+        transform: rotate(-4deg);
+    }
+
+    37% {
+        transform: rotate(2deg);
+    }
+
+    39% {
+        transform: rotate(-1deg);
+    }
+
+    41% {
+        transform: rotate(1deg);
+    }
+
+    43% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(0);
+    }
+}
+
+.bell-ringing {
+    display: inline-block;
+    animation: ring 2.5s ease infinite;
+    transform-origin: 50% 0;
+}
+
+
+/* Premium Desktop Table Styling */
+.shared-table-desktop {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    margin-top: 0 !important;
+}
+
+.shared-table-desktop thead th {
+    background-color: #f8f9fa !important;
+    border-top: none !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #636E72;
+    letter-spacing: 0.5px;
+    padding: 12px 12px !important;
+    vertical-align: middle !important;
+    white-space: nowrap;
+}
+
+.shared-table-desktop tbody td {
+    padding: 8px 12px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f0f0f0;
+    color: #2d3436;
+}
+
+.shared-table-desktop tbody tr:hover {
+    background-color: rgba(145, 53, 237, 0.02);
+}
+
+/* Pagination Overrides & Unification */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0;
+}
+
+.pagination .page-number {
+    height: 36px;
+    min-width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #9135ED;
+}
+
+.pagination .btn-pagination {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1.5px solid #9135ED;
+    color: #9135ED;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.pagination .btn-pagination:hover:not(.disabled) {
+    background-color: #9135ED !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(145, 53, 237, 0.2);
+}
+
+.pagination .btn-pagination.disabled {
+    border-color: #e2e8f0;
+    color: #cbd5e1;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Transaction Status Styles */
+.credited {
+    color: #2e7d32 !important;
+    font-weight: 700;
+    background-color: #e8f5e9;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.debited {
+    color: #c62828 !important;
+    font-weight: 700;
+    background-color: #ffebee;
+    padding: 2px 8px;
+    border-radius: 4px;
+}

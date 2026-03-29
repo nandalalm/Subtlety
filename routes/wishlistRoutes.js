@@ -3,8 +3,9 @@ const router = express.Router();
 import * as wishlistController from '../controller/wishlistController.js';
 import { userAuthenticated } from '../middleware/authentication.js';
 
-router.get('/wishlist', userAuthenticated, wishlistController.getWishlist);
-router.post('/add-to-wishlist', userAuthenticated, wishlistController.addToWishlist);
-router.delete('/wishlist/remove/:productId', userAuthenticated, wishlistController.deleteFromWishlist);
+// Base: /wishlist
+router.get('/', userAuthenticated, wishlistController.getWishlist);
+router.post('/add', userAuthenticated, wishlistController.addToWishlist);
+router.delete('/remove/:productId', userAuthenticated, wishlistController.deleteFromWishlist);
 
 export default router;

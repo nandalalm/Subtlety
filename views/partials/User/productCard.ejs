@@ -38,17 +38,17 @@
 
                     <div class="price-container d-flex align-items-center gap-2">
                         <% if (bestOffer) { %>
-                            <span class="old-price text-muted small text-decoration-line-through" style="color: #777 !important; font-size: 0.65rem;">₹<%= product.price %></span>
-                            <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹<%= bestOffer.discountedPrice.toFixed(0) %></span>
+                            <span class="old-price text-muted small text-decoration-line-through" style="color: #777 !important; font-size: 0.65rem;">₹<%= Math.floor(product.price) %></span>
+                            <span class="new-price font-weight-bold" style="color: #28a745 !important; font-size: 0.82rem;">₹<%= Math.floor(bestOffer.discountedPrice) %></span>
                         <% } else { %>
-                            <span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹<%= product.price %></span>
+                            <span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹<%= Math.floor(product.price) %></span>
                         <% } %>
                     </div>
                 </div>
             </div>
         </a>
         <div class="card-footer p-0 border-0 bg-transparent">
-            <div class="btn-group w-100 cart-controls-container" role="group" data-product-id="<%= product._id %>" style="border-radius: 0;">
+            <div class="btn-group w-100 cart-controls-container" role="group" data-product-id="<%= product._id %>" style="border-radius: 0; height: 40px;">
                 <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
                     <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
                         <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">

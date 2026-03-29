@@ -1,0 +1,29 @@
+<% 
+    const products = typeof productsWithOffers !== 'undefined' ? productsWithOffers : [];
+    const currPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
+%>
+
+<% if (products.length === 0) { %>
+    <div class="row">
+        <div class="col-12 text-center py-5 bg-white rounded shadow-sm">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No results found for the given criteria.</p>
+        </div>
+    </div>
+<% } else { %>
+    <div class="row g-5" id="products-list-inner">
+        <% products.forEach(({ product, bestOffer, averageRating }) => { %>
+            <%- include('productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
+        <% }) %>
+    </div>
+    
+    <div id="load-more-container" class="text-center my-4 mt-5 pt-3" style="display: <%= (typeof hasMore !== 'undefined' && hasMore) ? 'block' : 'none' %>;">
+        <button id="load-more-btn" class="btn rounded-pill px-5 py-2 font-weight-bold text-white" 
+                style="background-color: #9135ED; border-color: #9135ED;"
+                onclick="loadMoreProducts()" 
+                data-current-page="<%= currPg %>"
+                data-limit="<%= typeof limit !== 'undefined' ? limit : 8 %>">
+            Load More
+        </button>
+    </div>
+<% } %>

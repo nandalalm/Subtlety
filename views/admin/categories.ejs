@@ -10,46 +10,17 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
   <link rel="stylesheet" href="/styles/admin/categories.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <style>
-    /* Responsive Layout Logic */
-    @media (min-width: 1200px) {
-      .category-table-container { display: block; }
-      .category-cards-container { display: none; }
-    }
-    @media (max-width: 1199px) {
-      .category-table-container { display: none; }
-      .category-cards-container { display: flex; flex-direction: column; gap: 15px; }
-      .category-card { 
-        background: #fff; 
-        border-radius: 12px; 
-        padding: 20px; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-        width: 100%;
-        border: 1px solid #eee;
-      }
-    }
-
-    .category-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      border-bottom: 1px solid #f0f0f0;
-      padding-bottom: 10px;
-    }
-    
-    .category-card-body p { margin-bottom: 8px; font-size: 0.95rem; }
-  </style>
 </head>
 
 <body class="bg-light text-dark">
-  <%- include('partials/adminNavbar') %>
+  <%- include('../partials/Admin/adminNavbar') %>
   <div class="d-flex" id="wrapper">
-    <%- include('partials/adminSidebar', { activePage: 'categories' }) %>
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'categories' }) %>
 
     <!-- Page Content -->
     <div id="page-content-wrapper" class="w-100">
@@ -65,40 +36,30 @@
 
           <!-- Search -->
           <div class="col-lg-5 col-md-12 mb-3">
-            <form action="/admin/categories" method="GET" class="search-group" id="searchForm">
-              <div class="input-group">
-                <input type="text" name="search" id="searchInput" class="form-control" placeholder="Search by name..." style="border-radius: 20px 0 0 20px; border: 1px solid #9135ED;" value="<%= search %>">
-                <input type="hidden" name="sort" value="<%= sort %>">
-                <div class="input-group-append">
-                  <% if (search) { %>
-                  <a href="/admin/categories?sort=<%= sort %>" class="btn btn-outline-secondary d-flex align-items-center px-2" title="Clear search" style="border-radius:0; border-color: #9135ED; color: #9135ED;">
-                    <i class="fas fa-times"></i>
-                  </a>
-                  <% } %>
-                  <button class="btn" type="submit" style="border-radius: 0 20px 20px 0; background-color: #9135ED; border: 1px solid #9135ED; color: white;"><i class="fas fa-search"></i></button>
-                </div>
-              </div>
-            </form>
+            <%- include('../partials/Common/searchBar', {
+              searchInputId: 'categorySearchInput',
+              searchContainerId: 'categoryTableContainer',
+              searchPlaceholder: 'Search by name...',
+              searchValue: search || '',
+              searchBasePath: 'admin/categories'
+            }) %>
           </div>
 
           <!-- Sort/Status Filter -->
           <div class="col-lg-3 col-md-12 mb-3">
-            <div class="d-flex align-items-center">
-              <form action="/admin/categories" method="GET" class="flex-grow-1 mr-1">
-                <input type="hidden" name="search" value="<%= search %>">
-                <select name="sort" class="form-control filter-select" onchange="this.form.submit()" style="border-radius: 20px; border: 1px solid #9135ED !important; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none !important;">
-                  <option value="latest" <%=!sort || sort==='latest' ? 'selected' : '' %>>Sort: Latest</option>
-                  <option value="oldest" <%=sort==='oldest' ? 'selected' : '' %>>Sort: Oldest</option>
-                  <option disabled>── Status ──</option>
-                  <option value="listed" <%=sort==='listed' ? 'selected' : '' %>>Listed</option>
-                  <option value="unlisted" <%=sort==='unlisted' ? 'selected' : '' %>>Unlisted</option>
-                </select>
-              </form>
-              <% if (sort && sort !== 'latest') { %>
-              <a href="/admin/categories?search=<%= search %>" class="btn btn-sm" title="Clear sort" style="color: #9135ED;">
-                <i class="fas fa-times-circle"></i>
-              </a>
-              <% } %>
+            <div class="filter-sort-pill">
+              <select id="categorySort" onchange="applyAjaxFilter('categoryTableContainer', 'sort', this.value, 'admin/categories'); document.getElementById('clearCategorySortBtn').style.display=this.value!=='latest'?'flex':'none';">
+                <option value="latest" <%=!sort || sort==='latest' ? 'selected' : '' %>>Sort: Latest</option>
+                <option value="oldest" <%=sort==='oldest' ? 'selected' : '' %>>Sort: Oldest</option>
+                <option disabled>── Status ──</option>
+                <option value="listed" <%=sort==='listed' ? 'selected' : '' %>>Listed</option>
+                <option value="unlisted" <%=sort==='unlisted' ? 'selected' : '' %>>Unlisted</option>
+              </select>
+              <button id="clearCategorySortBtn" type="button" class="sort-clear-inner" title="Clear sort"
+                style="display:<%= (sort && sort !== 'latest') ? 'flex' : 'none' %>;"
+                onclick="clearAjaxFilter('categoryTableContainer', 'sort', 'admin/categories'); this.style.display='none'; document.getElementById('categorySort').value='latest';">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -139,138 +100,10 @@
           </div>
         </div>
 
-        <% if (categories.length > 0) { %>
-        <!-- Table View (>= 992px) -->
-        <div class="category-table-container">
-          <div class="bg-white rounded shadow-sm">
-            <table class="table table-hover mb-0">
-              <thead class="thead-light">
-                <tr>
-                  <th style="width: 10%;">S.No</th>
-                  <th style="width: 40%;">Name</th>
-                  <th style="width: 30%;">Image</th>
-                  <th style="width: 20%;">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% categories.forEach((category, index)=> { %>
-                <tr>
-                  <td><%= (currentPage - 1) * limit + (index + 1) %></td>
-                  <td><%= category.name %></td>
-                  <td>
-                    <% if (category.image) { %>
-                    <img src="<%= category.image %>" alt="Category Image" class="rounded" style="max-width: 50px; max-height: 50px; object-fit: cover;">
-                    <% } else { %>
-                    <span class="text-muted small">No image</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <button class="btn btn-outline-warning btn-sm rounded-pill px-3 mr-1" data-toggle="modal" data-target="#editCategoryModal<%= category._id %>">Edit</button>
-                    <button class="btn btn-sm rounded-pill px-3 <%= category.isListed ? 'btn-outline-secondary' : 'btn-outline-primary' %>" onclick="toggleCategoryStatus('<%= category._id %>', '<%= category.isListed ? `unlist` : `relist` %>')">
-                      <%= category.isListed ? 'Unlist' : 'Relist' %>
-                    </button>
-                  </td>
-                </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
+        <div id="categoryTableContainer">
+          <%- include('../partials/Admin/categoryTable') %>
         </div>
 
-        <!-- Card View (< 992px) -->
-        <div class="category-cards-container">
-          <% categories.forEach((category, index)=> { %>
-          <div class="category-card">
-            <div class="category-card-header">
-              <span class="text-muted small">S.No: <%= (currentPage - 1) * limit + (index + 1) %></span>
-              <span class="badge <%= category.isListed ? 'badge-success' : 'badge-secondary' %> px-2 py-1"><%= category.isListed ? 'Listed' : 'Unlisted' %></span>
-            </div>
-            <div class="category-card-body">
-              <div class="row align-items-center">
-                <div class="col-auto">
-                  <% if (category.image) { %>
-                  <img src="<%= category.image %>" class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
-                  <% } else { %>
-                  <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fas fa-image text-muted"></i>
-                  </div>
-                  <% } %>
-                </div>
-                <div class="col">
-                  <h6 class="font-weight-bold mb-0"><%= category.name %></h6>
-                </div>
-              </div>
-              <div class="mt-4 row">
-                <div class="col">
-                  <button class="btn btn-outline-warning btn-block btn-sm rounded-pill" data-toggle="modal" data-target="#editCategoryModal<%= category._id %>">Edit</button>
-                </div>
-                <div class="col">
-                  <button class="btn btn-block btn-sm rounded-pill <%= category.isListed ? 'btn-outline-secondary' : 'btn-outline-primary' %>" onclick="toggleCategoryStatus('<%= category._id %>', '<%= category.isListed ? `unlist` : `relist` %>')">
-                    <%= category.isListed ? 'Unlist' : 'Relist' %>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <% }) %>
-        </div>
-
-        <!-- Edit Category Modals -->
-        <% categories.forEach((category)=> { %>
-        <div class="modal fade" id="editCategoryModal<%= category._id %>" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-              <div class="modal-header bg-light">
-                <h5 class="modal-title font-weight-bold">Edit Category</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <form action="/admin/categories/edit/<%= category._id %>" method="POST" enctype="multipart/form-data" class="editCategoryForm" onsubmit="return validateCategoryForm(this)">
-                <div class="modal-body p-4">
-                  <div class="form-group mb-3">
-                    <label class="font-weight-bold">Category Name</label>
-                    <input type="text" name="name" class="form-control" value="<%= category.name %>" required pattern="^[a-zA-Z]{4,}$">
-                    <div class="valid-feedback">Looks good!</div>
-                    <div class="invalid-feedback">Category name must be at least 4 characters long and contain only letters.</div>
-                  </div>
-                  <div class="form-group mb-3">
-                    <label class="font-weight-bold">Category Image</label>
-                    <input type="file" id="imageEdit<%= category._id %>" name="image" class="form-control-file" accept="image/*">
-                    <div id="imagePreviewEdit<%= category._id %>" class="mt-3" style="display:none;">
-                      <img id="cropImageEdit<%= category._id %>" class="img-fluid rounded" style="max-height: 300px;">
-                    </div>
-                    <div id="error-message-edit<%= category._id %>" class="text-danger mt-2 small" style="display: none;"></div>
-                  </div>
-                  <% if (category.image) { %>
-                  <div class="text-center mt-3">
-                    <p class="small text-muted mb-2">Current Image</p>
-                    <img src="<%= category.image %>" class="img-thumbnail" style="max-height: 100px;">
-                  </div>
-                  <% } %>
-                  <input type="hidden" name="isListed" value="<%= category.isListed %>">
-                </div>
-                <div class="modal-footer bg-light">
-                  <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary rounded-pill px-4">Update Category</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        <% }) %>
-
-        <%- include('partials/adminPagination') %>
-        <% } else { %>
-        <div class="text-center py-5 bg-white rounded shadow-sm">
-          <i class="fas fa-search fa-3x text-muted mb-3"></i>
-          <h4 class="text-muted">No categories found</h4>
-          <p class="text-muted">We couldn't find any categories matching your criteria.</p>
-          <% if (search || sort) { %>
-          <a href="/admin/categories" class="btn btn-primary rounded-pill mt-2">Clear all filters</a>
-          <% } %>
-        </div>
-        <% } %>
     </div>
   </div>
 </div>
@@ -361,9 +194,21 @@
         .then(result => {
           Swal.close(); // Close loading indicator
           if (result.status || result.success) { // Handle variations in server response
-            localStorage.setItem(successMsg, 'true');
-            const url = new URL(window.location.href);
-            window.location.href = '/admin/categories' + url.search;
+            // Close all modals
+            $('#addCategoryModal').modal('hide');
+            $('.modal').modal('hide'); // Close all to be safe
+            
+            // Re-fetch only the table partial
+            refreshTable('categoryTableContainer');
+
+            Toastify({
+              text: result.message || "Operation successful!",
+              duration: 3000,
+              close: true,
+              gravity: "top",
+              position: "center",
+              backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+            }).showToast();
           } else {
             Toastify({
               text: result.message || "Error processing request",
@@ -459,20 +304,19 @@
       });
     });
 
-    function applyFilter(param, value) {
-      const url = new URL(window.location.href);
-      url.searchParams.set(param, value);
-      url.searchParams.set('page', 1);
-      window.location.href = url.toString();
-    }
+    // Search, Filter, and Pagination is now handled by /js/ajaxTable.js
 
-    function toggleCategoryStatus(categoryId, action) {
+    function toggleCategoryStatus(button) {
+      const categoryId = button.getAttribute('data-id');
+      const isCurrentlyListed = button.getAttribute('data-status') === 'true';
+      const action = isCurrentlyListed ? 'unlist' : 'relist';
+
       Swal.fire({
         title: 'Are you sure?',
         text: `Do you want to ${action} this category?`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#9135ED',
         cancelButtonColor: '#d33',
         confirmButtonText: `Yes, ${action}!`
       }).then((result) => {
@@ -480,12 +324,50 @@
           fetch(`/admin/categories/toggle-status/${categoryId}`, {
               method: 'POST'
             })
-            .then(res => {
-              if (res.ok) {
-                const url = new URL(window.location.href);
-                window.location.href = '/admin/categories' + url.search;
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                const isListed = data.category.isListed;
+                
+                // Update Desktop and Mobile status badges
+                const desktopRow = document.querySelector(`tr[data-row-id="${categoryId}"]`);
+                const mobileCard = document.querySelector(`.shared-item-card[data-card-id="${categoryId}"]`);
+                
+                // Desktop row logic (if it exists)
+                if (desktopRow) {
+                  // The desktop doesn't use a status box but I'll add one if needed? 
+                  // Wait, check mobile card first as it definitely has one.
+                }
+                
+                if (mobileCard) {
+                  const badge = mobileCard.querySelector('.status-box');
+                  if (badge) {
+                    badge.textContent = isListed ? 'Listed' : 'Unlisted';
+                    badge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
+                  }
+                }
+
+                // Update ALL toggle buttons for this category
+                const buttons = document.querySelectorAll(`button[data-id="${categoryId}"]`);
+                buttons.forEach(btn => {
+                  if (btn.classList.contains('toggle-status-btn')) {
+                    btn.textContent = isListed ? 'Unlist' : 'Relist';
+                    btn.setAttribute('data-status', isListed.toString());
+                    btn.className = `btn btn-sm rounded-pill ${isListed ? 'btn-outline-secondary' : 'btn-outline-primary'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
+                  }
+                });
+
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Updated!',
+                  text: `Category has been ${isListed ? 'listed' : 'unlisted'}.`,
+                  toast: true,
+                  position: 'top-end',
+                  showConfirmButton: false,
+                  timer: 3000
+                });
               } else {
-                Swal.fire('Error', 'Could not update status.', 'error');
+                Swal.fire('Error', data.message || 'Could not update status.', 'error');
               }
             })
             .catch(() => Swal.fire('Error', 'Network error.', 'error'));
@@ -493,7 +375,7 @@
       });
     }
   </script>
-  <%- include('partials/adminScripts') %>
+  <%- include('../partials/Admin/adminScripts') %>
 </body>
 
 </html>

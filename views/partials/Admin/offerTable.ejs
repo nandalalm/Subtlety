@@ -1,0 +1,281 @@
+<% 
+    const offerList = typeof offers !== 'undefined' ? offers : [];
+    const productList = typeof products !== 'undefined' ? products : [];
+    const categoryList = typeof categories !== 'undefined' ? categories : [];
+    const currPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
+    const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
+%>
+
+<div class="table-container-shared card border-0 shadow-sm">
+    <% if (offerList.length === 0) { %>
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No results found for the given criteria.</p>
+        </div>
+    <% } else { %>
+        <!-- Desktop Table View -->
+        <table class="table table-hover shared-table-desktop mb-0 bg-white">
+            <thead class="thead-light">
+                <tr>
+                    <th style="width: 5%;">S.No</th>
+                    <th style="width: 15%;">Offer For</th>
+                    <th style="width: 25%;">Target</th>
+                    <th style="width: 15%;">Type</th>
+                    <th style="width: 10%;">Value</th>
+                    <th style="width: 15%;">Expires At</th>
+                    <th style="width: 15%;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% offerList.forEach((offer, index) => { 
+                    let targetName = 'Unknown Target';
+                    if (offer.offerFor === 'Product') {
+                        const product = productList.find(p => p._id.toString() === offer.targetId.toString());
+                        targetName = product ? product.name : 'Unknown Product';
+                    } else {
+                        const category = categoryList.find(c => c._id.toString() === offer.targetId.toString());
+                        targetName = category ? category.name : 'Unknown Category';
+                    }
+                %>
+                <tr data-row-id="<%= offer._id %>">
+                    <td><%= (currPg - 1) * pgLimit + index + 1 %></td>
+                    <td>
+                        <span class="badge badge-pill badge-light border px-3 py-2 text-dark">
+                            <%= offer.offerFor %>
+                        </span>
+                    </td>
+                    <td><span class="font-weight-bold text-dark"><%= targetName %></span></td>
+                    <td class="text-capitalize"><%= offer.offerType %></td>
+                    <td>
+                        <span class="font-weight-bold">
+                            <%= offer.offerType === 'flat' ? '₹' : '' %><%= offer.value %><%= offer.offerType === 'percentage' ? '%' : '' %>
+                        </span>
+                    </td>
+                    <td><%= new Date(offer.expiresAt).toLocaleDateString('en-GB') %></td>
+                    <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button class="btn btn-outline-warning btn-sm rounded-pill px-3 mr-2" data-offer='<%= JSON.stringify(offer) %>' onclick="openEditOfferModal(this.dataset.offer)">
+                                Edit
+                            </button>
+                            <button class="btn <%= offer.isActive ? 'btn-outline-secondary' : 'btn-outline-primary' %> btn-sm rounded-pill px-3 toggle-status-btn" 
+                                    data-id="<%= offer._id %>"
+                                    data-status="<%= offer.isActive %>"
+                                    onclick="toggleOfferStatus(this)">
+                                <%= offer.isActive ? 'Unlist' : 'Relist' %>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <!-- Mobile Card View -->
+        <div class="shared-cards-mobile p-3">
+            <% offerList.forEach((offer, index) => { 
+                let targetName = 'Unknown Target';
+                if (offer.offerFor === 'Product') {
+                    const product = productList.find(p => p._id.toString() === offer.targetId.toString());
+                    targetName = product ? product.name : 'Unknown Product';
+                } else {
+                    const category = categoryList.find(c => c._id.toString() === offer.targetId.toString());
+                    targetName = category ? category.name : 'Unknown Category';
+                }
+            %>
+            <div class="shared-item-card" data-card-id="<%= offer._id %>">
+                <div class="card-header-flex">
+                    <span class="font-weight-bold text-dark">#<%= (currPg - 1) * pgLimit + index + 1 %></span>
+                    <span class="status-box status-<%= offer.isActive ? 'successful' : 'failed' %>">
+                        <%= offer.isActive ? 'Active' : 'Unlisted' %>
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="mb-3">
+                        <small class="text-muted d-block text-uppercase font-weight-bold"><%= offer.offerFor %></small>
+                        <h6 class="font-weight-bold text-dark mb-0"><%= targetName %></h6>
+                    </div>
+                    
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Discount</small>
+                            <span class="font-weight-bold"><%= offer.offerType === 'flat' ? '₹' : '' %><%= offer.value %><%= offer.offerType === 'percentage' ? '%' : '' %></span>
+                        </div>
+                        <div class="col-6 text-right">
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Type</small>
+                            <span class="text-capitalize"><%= offer.offerType %></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Expires At</small>
+                            <span><%= new Date(offer.expiresAt).toLocaleDateString() %></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 row">
+                        <div class="col">
+                            <button class="btn btn-outline-warning btn-block btn-sm rounded-pill" data-offer='<%= JSON.stringify(offer) %>' onclick="openEditOfferModal(this.dataset.offer)">Edit</button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-block btn-sm rounded-pill toggle-status-btn <%= offer.isActive ? 'btn-outline-secondary' : 'btn-outline-primary' %>" 
+                                    data-id="<%= offer._id %>"
+                                    data-status="<%= offer.isActive %>"
+                                    onclick="toggleOfferStatus(this)">
+                                <%= offer.isActive ? 'Unlist' : 'Relist' %>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+    <% } %>
+    
+        <!-- Pagination -->
+        <% if (offerList.length > 0 && typeof totalPages !== 'undefined') { %>
+        <div class="px-3 pb-3">
+            <%- include('../Common/pagination') %>
+        </div>
+        <% } %>
+</div>
+
+<!-- All Offer Modals -->
+<!-- Add Offer Modal -->
+<div class="modal fade" id="addOfferModal" tabindex="-1" role="dialog" aria-labelledby="addOfferModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title font-weight-bold" id="addOfferModalLabel">Add New Offer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="offerFormModal" novalidate>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Offer For</label>
+                        <select class="form-control" id="offerFor" required>
+                            <option value="">Select Offer Type</option>
+                            <option value="Product">Product</option>
+                            <option value="Category">Category</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="productSelectContainer" style="display: none;">
+                        <label class="font-weight-bold">Select Product</label>
+                        <select class="form-control scrollable-select" id="productSelect">
+                            <% productList.forEach(product => { %>
+                            <option value="<%= product._id %>"><%= product.name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="categorySelectContainer" style="display: none;">
+                        <label class="font-weight-bold">Select Category</label>
+                        <select class="form-control scrollable-select" id="categorySelect">
+                            <% categoryList.forEach(category => { %>
+                            <option value="<%= category._id %>"><%= category.name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Offer Type</label>
+                        <select class="form-control" id="offerType" required>
+                            <option value="">Select Discount Type</option>
+                            <option value="flat">Flat Discount</option>
+                            <option value="percentage">Percentage Discount</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="minPriceContainer" style="display: none;">
+                        <label class="font-weight-bold">Minimum Product Price</label>
+                        <input type="number" class="form-control" id="minProductPrice" min="1">
+                    </div>
+                    <div class="form-group mb-3" id="maxDiscountContainer" style="display: none;">
+                        <label class="font-weight-bold">Maximum Discount</label>
+                        <input type="number" class="form-control" id="maxDiscount" min="1">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Value</label>
+                        <input type="number" class="form-control" id="value" required min="1">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Expires At</label>
+                        <input type="date" class="form-control" id="expiresAt" required>
+                    </div>
+                    <div class="modal-footer bg-light px-0 pb-0 pt-3 border-0">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #9135ED; border-color: #9135ED;">Add Offer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Offer Modal -->
+<div class="modal fade" id="editOfferModal" tabindex="-1" role="dialog" aria-labelledby="editOfferModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title font-weight-bold">Edit Offer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editOfferFormModal" novalidate>
+                    <input type="hidden" id="editOfferId">
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Offer For</label>
+                        <select class="form-control" id="editOfferFor" required disabled>
+                            <option value="Product">Product</option>
+                            <option value="Category">Category</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="editProductSelectContainer" style="display: none;">
+                        <label class="font-weight-bold">Select Product</label>
+                        <select class="form-control scrollable-select" id="editProductSelect" disabled>
+                            <% productList.forEach(product => { %>
+                            <option value="<%= product._id %>"><%= product.name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="editCategorySelectContainer" style="display: none;">
+                        <label class="font-weight-bold">Select Category</label>
+                        <select class="form-control scrollable-select" id="editCategorySelect" disabled>
+                            <% categoryList.forEach(category => { %>
+                            <option value="<%= category._id %>"><%= category.name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Offer Type</label>
+                        <select class="form-control" id="editOfferType" required>
+                            <option value="flat">Flat Discount</option>
+                            <option value="percentage">Percentage Discount</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="editMinPriceContainer" style="display: none;">
+                        <label class="font-weight-bold">Minimum Product Price</label>
+                        <input type="number" class="form-control" id="editMinProductPrice" min="1">
+                    </div>
+                    <div class="form-group mb-3" id="editMaxDiscountContainer" style="display: none;">
+                        <label class="font-weight-bold">Maximum Discount</label>
+                        <input type="number" class="form-control" id="editMaxDiscount" min="1">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Value</label>
+                        <input type="number" class="form-control" id="editValue" required min="1">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Expires At</label>
+                        <input type="date" class="form-control" id="editExpiresAt" required>
+                    </div>
+                    <div class="modal-footer bg-light px-0 pb-0 pt-3 border-0">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #9135ED; border-color: #9135ED;">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

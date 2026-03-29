@@ -1,0 +1,255 @@
+<% 
+    const couponList = typeof coupons !== 'undefined' ? coupons : [];
+    const currPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
+    const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
+%>
+
+<div class="table-container-shared card border-0 shadow-sm">
+    <% if (couponList.length === 0) { %>
+        <div class="text-center py-5">
+            <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No results found for the given criteria.</p>
+        </div>
+    <% } else { %>
+        <!-- Desktop Table View -->
+        <table class="table table-hover shared-table-desktop mb-0 bg-white">
+            <thead class="thead-light">
+                <tr>
+                    <th style="width: 5%;">S.No</th>
+                    <th style="width: 15%;">Code</th>
+                    <th style="width: 15%;">Type</th>
+                    <th style="width: 15%;">Discount</th>
+                    <th style="width: 10%;">Limit</th>
+                    <th style="width: 15%;">Expires At</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 15%;" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% couponList.forEach((coupon, index) => { 
+                    const isExpired = new Date(coupon.expiresAt) < new Date();
+                %>
+                <tr data-row-id="<%= coupon._id %>">
+                    <td><%= (currPg - 1) * pgLimit + (index + 1) %></td>
+                    <td><span class="font-weight-bold text-dark"><%= coupon.code %></span></td>
+                    <td><%= coupon.discountType === 'flat' ? 'Flat' : 'Percentage' %></td>
+                    <td>
+                        <span class="font-weight-bold">
+                            <%= coupon.discountType === 'flat' ? `₹ ${coupon.discountAmount}` : `${coupon.discountAmount} %` %>
+                        </span>
+                    </td>
+                    <td><%= coupon.usageLimit %></td>
+                    <td>
+                        <span class="<%= isExpired ? 'text-danger font-weight-bold' : 'text-muted' %>">
+                            <%= new Date(coupon.expiresAt).toLocaleDateString('en-GB') %>
+                            <% if (isExpired) { %> (Expired) <% } %>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-box status-<%= coupon.isActive ? 'successful' : 'failed' %>" id="status-badge-<%= coupon._id %>">
+                            <%= coupon.isActive ? 'Listed' : 'Unlisted' %>
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button class="btn btn-outline-warning btn-sm rounded-pill px-3 mr-2" 
+                                    data-coupon='<%= JSON.stringify(coupon) %>' 
+                                    onclick="openEditCouponModal(this.dataset.coupon)">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm rounded-pill px-3 toggle-status-btn <%= coupon.isActive ? 'btn-outline-secondary' : 'btn-outline-primary' %>" 
+                                    data-id="<%= coupon._id %>"
+                                    data-status="<%= coupon.isActive %>"
+                                    onclick="toggleCouponStatus(this)">
+                                <%= coupon.isActive ? 'Unlist' : 'List' %>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <!-- Mobile Card View -->
+        <div class="shared-cards-mobile p-3">
+            <% couponList.forEach((coupon, index) => { 
+                const isExpired = new Date(coupon.expiresAt) < new Date();
+            %>
+            <div class="shared-item-card" data-card-id="<%= coupon._id %>">
+                <div class="card-header-flex">
+                    <span class="font-weight-bold text-dark">#<%= (currPg - 1) * pgLimit + (index + 1) %></span>
+                    <div class="d-flex" style="gap: 5px;">
+                        <% if (isExpired) { %>
+                            <span class="status-box status-failed">Expired</span>
+                        <% } %>
+                        <span class="status-box status-<%= coupon.isActive ? 'successful' : 'failed' %>" id="status-badge-mobile-<%= coupon._id %>">
+                            <%= coupon.isActive ? 'Listed' : 'Unlisted' %>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <h5 class="font-weight-bold text-primary mb-3"><%= coupon.code %></h5>
+                    
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Discount</small>
+                            <span class="font-weight-bold"><%= coupon.discountType === 'flat' ? `₹${coupon.discountAmount}` : `${coupon.discountAmount}%` %></span>
+                        </div>
+                        <div class="col-6 text-right">
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Type</small>
+                            <span><%= coupon.discountType === 'flat' ? 'Flat' : 'Percentage' %></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Expires</small>
+                            <span class="<%= isExpired ? 'text-danger' : '' %>"><%= new Date(coupon.expiresAt).toLocaleDateString() %></span>
+                        </div>
+                        <div class="col-6 text-right">
+                            <small class="text-muted d-block text-uppercase font-weight-bold">Limit</small>
+                            <span><%= coupon.usageLimit %></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 row">
+                        <div class="col">
+                            <button class="btn btn-outline-warning btn-block btn-sm rounded-pill" 
+                                    data-coupon='<%= JSON.stringify(coupon) %>' 
+                                    onclick="openEditCouponModal(this.dataset.coupon)">
+                                Edit
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-block btn-sm rounded-pill toggle-status-btn <%= coupon.isActive ? 'btn-outline-secondary' : 'btn-outline-primary' %>" 
+                                    data-id="<%= coupon._id %>"
+                                    data-status="<%= coupon.isActive %>"
+                                    onclick="toggleCouponStatus(this)">
+                                <%= coupon.isActive ? 'Unlist' : 'List' %>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+    <% } %>
+
+        <!-- Pagination -->
+        <% if (couponList.length > 0 && typeof totalPages !== 'undefined') { %>
+        <div class="px-3 pb-3">
+            <%- include('../Common/pagination') %>
+        </div>
+        <% } %>
+</div>
+
+<!-- All Coupon Modals (Shared for UI consistency) -->
+<!-- Add Coupon Modal -->
+<div class="modal fade" id="addCouponModal" tabindex="-1" role="dialog" aria-labelledby="addCouponModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title font-weight-bold" id="addCouponModalLabel">Add New Coupon</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="addCouponForm" novalidate>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Coupon Code</label>
+            <input type="text" class="form-control" id="code" placeholder="e.g. SUMMER20" required pattern="^[a-zA-Z0-9]*$" title="No spaces or special characters allowed">
+            <div class="invalid-feedback">No spaces or special characters allowed</div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Discount Type</label>
+            <select class="form-control" id="addDiscountType" required>
+              <option value="">Select Type</option>
+              <option value="flat">Flat Discount</option>
+              <option value="percentage">Percentage Discount</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Discount Amount</label>
+            <input type="number" class="form-control" id="addDiscountAmount" min="1" required>
+            <div class="invalid-feedback">Required: Percentage (1-80), Flat (Must be < Min Order)</div>
+          </div>
+          <div class="form-group mb-3" id="addMinOrderValueGroup" style="display: none;">
+            <label class="font-weight-bold">Minimum Order Value</label>
+            <input type="number" class="form-control" id="addMinOrderValue" min="0">
+          </div>
+          <div class="form-group mb-3" id="addMaxDiscountGroup" style="display: none;">
+            <label class="font-weight-bold">Maximum Discount</label>
+            <input type="number" class="form-control" id="addMaxDiscount" min="0">
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Expiry Date</label>
+            <input type="date" class="form-control" id="addExpiresAt" required>
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Usage Limit</label>
+            <input type="number" class="form-control" id="addUsageLimit" min="1" required>
+          </div>
+          <div class="modal-footer bg-light px-0 pb-0 pt-3 border-0">
+              <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #9135ED; border-color: #9135ED;">Add Coupon</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Coupon Modal -->
+<div class="modal fade" id="editCouponModal" tabindex="-1" role="dialog" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title font-weight-bold" id="editCouponModalLabel">Edit Coupon</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="editCouponForm" novalidate>
+          <input type="hidden" id="editCouponId">
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Coupon Code</label>
+            <input type="text" class="form-control" id="editCode" required pattern="^[a-zA-Z0-9]*$">
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Discount Type</label>
+            <select class="form-control" id="editDiscountType" required>
+              <option value="flat">Flat Discount</option>
+              <option value="percentage">Percentage Discount</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Discount Amount</label>
+            <input type="number" class="form-control" id="editDiscountAmount" required>
+          </div>
+          <div class="form-group mb-3" id="editMinOrderValueGroup" style="display: none;">
+            <label class="font-weight-bold">Minimum Order Value</label>
+            <input type="number" class="form-control" id="editMinOrderValue">
+          </div>
+          <div class="form-group mb-3" id="editMaxDiscountGroup" style="display: none;">
+            <label class="font-weight-bold">Maximum Discount</label>
+            <input type="number" class="form-control" id="editMaxDiscount">
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Expiry Date</label>
+            <input type="date" class="form-control" id="editExpiresAt" required>
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold">Usage Limit</label>
+            <input type="number" class="form-control" id="editUsageLimit" required>
+          </div>
+          <div class="modal-footer bg-light px-0 pb-0 pt-3 border-0">
+              <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #9135ED; border-color: #9135ED;">Update Coupon</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

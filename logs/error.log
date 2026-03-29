@@ -1,0 +1,1214 @@
+2026-03-24T14:11:17.170Z | ERROR | GET /user/wallet
+ReferenceError: mongoose is not defined
+    at getWallet (file:///C:/vs%20code/Subtlety/controller/profileController.js:318:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-24T14:11:17.286Z | ERROR | GET /user/wallet | 500
+2026-03-24T14:17:51.227Z | ERROR | GET /admin/offer
+ReferenceError: Offer is not defined
+    at getOffers (file:///C:/vs%20code/Subtlety/controller/offerController.js:38:20)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at isAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:12:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:328:13)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:286:9
+2026-03-24T14:17:51.266Z | ERROR | GET /admin/offer | 500
+2026-03-24T14:17:51.339Z | ERROR | GET /favicon.ico | 404
+2026-03-24T14:18:51.993Z | ERROR | GET /admin/reviews
+ReferenceError: Review is not defined
+    at getReviews (file:///C:/vs%20code/Subtlety/controller/reviewController.js:148:30)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at isAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:12:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:328:13)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:286:9
+2026-03-24T14:18:52.034Z | ERROR | GET /admin/reviews | 500
+2026-03-25T07:48:18.756Z | ERROR | GET /profile/address
+ReferenceError: addressRepository is not defined
+    at Object.getAddresses (file:///C:/vs%20code/Subtlety/services/profileService.js:34:28)
+    at getAddresses (file:///C:/vs%20code/Subtlety/controller/profileController.js:55:39)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at userAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:32:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T07:48:18.799Z | ERROR | GET /profile/address | 500
+2026-03-25T07:50:37.530Z | ERROR | GET /admin/orders
+ReferenceError: C:\vs code\Subtlety\views\admin\orderList.ejs:261
+    259|                 <% orders.forEach((order, index) => { %>
+    260|                 <tr>
+ >> 261|                   <td><%= (currentPage - 1) * limit + (index + 1) %></td>
+    262|                   <td><%= order.orderId %></td>
+    263|                   <td><%= order.userDetails ? order.userDetails.email : 'N/A' %></td>
+    264|                   <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
+
+limit is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:111:46)
+    at Array.forEach (<anonymous>)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:108:15)
+    at orderList (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:191:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T07:50:37.569Z | ERROR | GET /admin/orders | 500
+2026-03-25T07:52:00.932Z | ERROR | GET /admin/orders
+ReferenceError: C:\vs code\Subtlety\views\admin\orderList.ejs:261
+    259|                 <% orders.forEach((order, index) => { %>
+    260|                 <tr>
+ >> 261|                   <td><%= (currentPage - 1) * limit + (index + 1) %></td>
+    262|                   <td><%= order.orderId %></td>
+    263|                   <td><%= order.userDetails ? order.userDetails.email : 'N/A' %></td>
+    264|                   <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
+
+limit is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:111:46)
+    at Array.forEach (<anonymous>)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:108:15)
+    at orderList (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:191:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T07:52:00.969Z | ERROR | GET /admin/orders | 500
+2026-03-25T07:57:34.215Z | ERROR | GET /admin/offers
+TypeError: offerService.getAdminOffers is not a function
+    at getOffers (file:///C:/vs%20code/Subtlety/controller/offerController.js:14:37)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at isAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:12:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:328:13)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:286:9
+2026-03-25T07:57:34.251Z | ERROR | GET /admin/offers | 500
+2026-03-25T07:58:55.674Z | ERROR | GET /admin/offers
+ReferenceError: C:\vs code\Subtlety\views\admin\offer.ejs:176
+    174|                                         <label class="font-weight-bold">Select Product</label>
+    175|                                         <select class="form-control scrollable-select" id="productSelect">
+ >> 176|                                             <% products.forEach(product => { %>
+    177|                                             <option value="<%= product._id %>"><%= product.name %></option>
+    178|                                             <% }) %>
+    179|                                         </select>
+
+products is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:66:8)
+    at offer (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getOffers (file:///C:/vs%20code/Subtlety/controller/offerController.js:16:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T07:58:55.894Z | ERROR | GET /admin/offers | 500
+2026-03-25T08:00:19.035Z | ERROR | POST /admin/orders/changeOrderStatus | 404
+2026-03-25T08:02:04.565Z | ERROR | GET /admin/offers
+ReferenceError: offers is not defined
+    at Object.getAdminOffers (file:///C:/vs%20code/Subtlety/services/offerService.js:21:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getOffers (file:///C:/vs%20code/Subtlety/controller/offerController.js:14:18)
+2026-03-25T08:02:04.634Z | ERROR | GET /admin/offers | 500
+2026-03-25T08:03:07.962Z | ERROR | POST /admin/orders/changeOrderStatus | 404
+2026-03-25T08:16:01.982Z | ERROR | GET /orders
+ReferenceError: C:\vs code\Subtlety\views\user\orders.ejs:209
+    207|               <% orders.forEach((order, index) => { %>
+    208|               <tr>
+ >> 209|                 <td><%= (currentPage - 1) * limit + (index + 1) %></td>
+    210|                 <td ><%= order.orderId %></td>
+    211|                 <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
+    212|                 <td><%= order.paymentMethod %></td>
+
+limit is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:114:46)
+    at Array.forEach (<anonymous>)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:111:15)
+    at orders (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getUserOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:120:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T08:16:02.025Z | ERROR | GET /orders | 500
+2026-03-25T08:27:29.745Z | ERROR | POST /cart/add
+TypeError: cartService.addItem is not a function
+    at addToCart (file:///C:/vs%20code/Subtlety/controller/cartController.js:24:23)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at userAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:32:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T08:27:29.787Z | ERROR | POST /cart/add | 500
+2026-03-25T08:27:50.113Z | ERROR | POST /cart/add
+TypeError: cartService.addItem is not a function
+    at addToCart (file:///C:/vs%20code/Subtlety/controller/cartController.js:24:23)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at userAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:32:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T08:27:50.152Z | ERROR | POST /cart/add | 500
+2026-03-25T08:51:49.345Z | ERROR | POST /user/add-to-wishlist | 404
+2026-03-25T08:52:26.385Z | ERROR | PUT /cart/update | 400
+2026-03-25T08:52:56.365Z | ERROR | GET /user/single-product/69b19509bf0a2e01b6eb04dc
+ReferenceError: C:\vs code\Subtlety\views\user\single-product.ejs:138
+    136|               <span class="ml-1 font-weight-bold" style="color: #555;"><%= averageRating %></span>
+    137|             </span>
+ >> 138|             <span class="text-muted small ml-2">(<%= totalReviewsCount %> Reviews)</span>
+    139|           </div>
+    140|           <div class="price mb-2">
+    141|             <% if (bestOffer) { %>
+
+totalReviewsCount is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:66:26)
+    at single-product (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getSingleProduct (file:///C:/vs%20code/Subtlety/controller/userController.js:60:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T08:52:56.400Z | ERROR | GET /user/single-product/69b19509bf0a2e01b6eb04dc | 500
+2026-03-25T08:53:19.555Z | ERROR | POST /user/add-to-wishlist | 404
+2026-03-25T10:33:04.816Z | ERROR | POST /auth/login
+TypeError: authService.login is not a function
+    at loginUser (file:///C:/vs%20code/Subtlety/controller/authController.js:84:36)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:328:13)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at strategy.pass (C:\vs code\Subtlety\node_modules\passport\lib\middleware\authenticate.js:355:9)
+2026-03-25T10:33:04.862Z | ERROR | POST /auth/login | 500
+2026-03-25T10:33:04.948Z | ERROR | GET /favicon.ico | 404
+2026-03-25T12:25:23.397Z | ERROR | PUT /cart/update | 400
+2026-03-25T12:25:35.736Z | ERROR | PUT /cart/update | 400
+2026-03-25T12:27:25.059Z | ERROR | PUT /cart/update | 400
+2026-03-25T15:02:40.663Z | ERROR | GET /cart
+ReferenceError: C:\vs code\Subtlety\views\user\cart.ejs:244
+    242|       <div class="row">
+    243|         <% let subtotal = 0; %>
+ >> 244|         <% if (cart && cart.products && cart.products.length > 0) { %>
+    245|         <div class="col-md-8 mt-3">
+    246|           <h4>Products</h4>
+    247|           <% cart.products.forEach(cartItem => { %>
+
+cart is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:18:8)
+    at cart (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getCart (file:///C:/vs%20code/Subtlety/controller/cartController.js:9:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T15:02:40.706Z | ERROR | GET /cart | 500
+2026-03-25T15:09:28.338Z | ERROR | GET /user/single-product/69b193d8bf0a2e01b6eb048a
+ReferenceError: C:\vs code\Subtlety\views\user\single-product.ejs:138
+    136|               <span class="ml-1 font-weight-bold" style="color: #555;"><%= averageRating %></span>
+    137|             </span>
+ >> 138|             <span class="text-muted small ml-2">(<%= totalReviewsCount %> Reviews)</span>
+    139|           </div>
+    140|           <div class="price mb-2">
+    141|             <% if (bestOffer) { %>
+
+totalReviewsCount is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:66:26)
+    at single-product (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getSingleProduct (file:///C:/vs%20code/Subtlety/controller/userController.js:60:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T15:09:28.374Z | ERROR | GET /user/single-product/69b193d8bf0a2e01b6eb048a | 500
+2026-03-25T15:18:53.387Z | ERROR | GET /user/home
+ReferenceError: getBestOfferBatch is not defined
+    at Object.getHomeData (file:///C:/vs%20code/Subtlety/services/userService.js:19:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getHome (file:///C:/vs%20code/Subtlety/controller/userController.js:11:18)
+2026-03-25T15:18:53.489Z | ERROR | GET /user/home | 500
+2026-03-25T15:21:49.908Z | ERROR | POST /user/add-to-wishlist | 404
+2026-03-25T15:22:01.356Z | ERROR | GET /user/single-product/69b193d8bf0a2e01b6eb048a
+ReferenceError: C:\vs code\Subtlety\views\user\single-product.ejs:263
+    261|         </div>
+    262|         
+ >> 263|         <% if (hasMoreReviews) { %>
+    264|           <div class="text-center mt-4" id="loadMoreReviewsContainer">
+    265|             <button id="loadMoreReviewsBtn" class="btn btn-outline-dark rounded-pill px-5 py-2 font-weight-bold" 
+    266|                     style="border-width: 2px;"
+
+hasMoreReviews is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:213:8)
+    at single-product (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getSingleProduct (file:///C:/vs%20code/Subtlety/controller/userController.js:60:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-25T15:22:01.396Z | ERROR | GET /user/single-product/69b193d8bf0a2e01b6eb048a | 500
+2026-03-25T15:24:54.411Z | ERROR | POST /user/add-to-wishlist | 404
+2026-03-25T15:25:03.479Z | ERROR | POST /user/add-to-wishlist | 404
+2026-03-25T15:31:21.799Z | ERROR | POST /wishlist/add | 400
+2026-03-25T15:34:15.583Z | ERROR | POST /wishlist/add | 400
+2026-03-25T15:36:26.507Z | ERROR | POST /wishlist/add | 400
+2026-03-25T15:45:35.725Z | ERROR | POST /wishlist/add | 400
+2026-03-25T15:45:59.444Z | ERROR | POST /cart/add | 400
+2026-03-25T15:49:49.708Z | ERROR | POST /wishlist/add | 400
+2026-03-25T15:50:02.939Z | ERROR | POST /wishlist/add | 400
+2026-03-25T16:58:19.415Z | ERROR | POST /wishlist/add | 400
+2026-03-25T17:03:43.078Z | ERROR | POST /wishlist/add | 400
+2026-03-25T17:05:22.540Z | ERROR | POST /orders/checkout/confirm-order | 404
+2026-03-25T17:05:42.524Z | ERROR | POST /orders/checkout/confirm-order | 404
+2026-03-25T17:59:26.910Z | ERROR | POST /orders/checkout/confirm | 400
+2026-03-25T18:25:27.311Z | ERROR | POST /admin/offers/add | 400
+2026-03-25T18:25:56.107Z | ERROR | POST /admin/offers/coupons/add | 400
+2026-03-25T18:35:42.012Z | ERROR | POST /admin/offers/add | 400
+2026-03-25T18:36:42.823Z | ERROR | POST /admin/offers/add
+TypeError: Cannot read properties of undefined (reading 'trim')
+    at Object.addOffer (file:///C:/vs%20code/Subtlety/services/offerService.js:33:89)
+    at addOffer (file:///C:/vs%20code/Subtlety/controller/offerController.js:37:24)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at isAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:12:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:328:13)
+2026-03-25T18:36:42.925Z | ERROR | POST /admin/offers/add | 500
+2026-03-25T18:40:03.295Z | ERROR | POST /admin/offers/add | 400
+2026-03-25T18:40:16.793Z | ERROR | POST /admin/offers/add | 400
+2026-03-25T18:40:23.192Z | ERROR | POST /admin/offers/add | 400
+2026-03-25T18:42:13.226Z | ERROR | PUT /admin/offers/coupons/69b199ac3426856727d9f796
+TypeError: offerService.updateCoupon is not a function
+    at editCoupon (file:///C:/vs%20code/Subtlety/controller/offerController.js:127:40)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at isAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:12:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at param (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:365:14)
+    at param (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:376:14)
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:421:3)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+2026-03-25T18:42:13.262Z | ERROR | PUT /admin/offers/coupons/69b199ac3426856727d9f796 | 500
+2026-03-25T18:43:09.227Z | ERROR | PUT /admin/offers/coupons/69b199ac3426856727d9f796
+TypeError: offerService.updateCoupon is not a function
+    at editCoupon (file:///C:/vs%20code/Subtlety/controller/offerController.js:127:40)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at isAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:12:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at param (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:365:14)
+    at param (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:376:14)
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:421:3)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+2026-03-25T18:43:09.265Z | ERROR | PUT /admin/offers/coupons/69b199ac3426856727d9f796 | 500
+2026-03-25T18:44:20.034Z | ERROR | PUT /admin/offers/coupons/69b199ac3426856727d9f796
+TypeError: offerService.updateCoupon is not a function
+    at editCoupon (file:///C:/vs%20code/Subtlety/controller/offerController.js:127:40)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at isAuthenticated (file:///C:/vs%20code/Subtlety/middleware/authentication.js:12:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\vs code\Subtlety\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+    at C:\vs code\Subtlety\node_modules\express\lib\router\index.js:284:15
+    at param (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:365:14)
+    at param (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:376:14)
+    at Function.process_params (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:421:3)
+    at next (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\vs code\Subtlety\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\vs code\Subtlety\node_modules\express\lib\router\layer.js:95:5)
+2026-03-25T18:44:20.070Z | ERROR | PUT /admin/offers/coupons/69b199ac3426856727d9f796 | 500
+2026-03-26T20:26:16.025Z | ERROR | GET /admin/products
+SyntaxError: Missing catch or finally after try in C:\vs code\Subtlety\views\admin\products.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getProducts (file:///C:/vs%20code/Subtlety/controller/productController.js:72:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T20:26:16.069Z | ERROR | GET /admin/products | 500
+2026-03-26T20:26:20.357Z | ERROR | GET /admin/categories
+SyntaxError: Unexpected token 'else' in C:\vs code\Subtlety\views\admin\categories.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getCategories (file:///C:/vs%20code/Subtlety/controller/categoryController.js:44:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T20:26:20.408Z | ERROR | GET /admin/categories | 500
+2026-03-26T20:26:25.106Z | ERROR | GET /admin/offers
+SyntaxError: Missing catch or finally after try in C:\vs code\Subtlety\views\admin\offer.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getOffers (file:///C:/vs%20code/Subtlety/controller/offerController.js:26:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T20:26:25.183Z | ERROR | GET /admin/offers | 500
+2026-03-26T20:26:26.872Z | ERROR | GET /admin/offers/coupons
+SyntaxError: Missing catch or finally after try in C:\vs code\Subtlety\views\admin\coupons.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getCoupons (file:///C:/vs%20code/Subtlety/controller/offerController.js:112:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T20:26:26.914Z | ERROR | GET /admin/offers/coupons | 500
+2026-03-26T20:27:56.646Z | ERROR | GET /admin/products
+SyntaxError: Missing catch or finally after try in C:\vs code\Subtlety\views\admin\products.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getProducts (file:///C:/vs%20code/Subtlety/controller/productController.js:72:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T20:27:56.697Z | ERROR | GET /admin/products | 500
+2026-03-26T20:28:12.666Z | ERROR | GET /admin/products
+SyntaxError: Missing catch or finally after try in C:\vs code\Subtlety\views\admin\products.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getProducts (file:///C:/vs%20code/Subtlety/controller/productController.js:72:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T20:28:12.715Z | ERROR | GET /admin/products | 500
+2026-03-26T21:11:29.479Z | ERROR | GET /admin/reviews
+SyntaxError: Unexpected token 'else' in C:\vs code\Subtlety\views\admin\reviews.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getReviews (file:///C:/vs%20code/Subtlety/controller/reviewController.js:46:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T21:11:29.547Z | ERROR | GET /admin/reviews | 500
+2026-03-26T21:12:03.847Z | ERROR | GET /admin/reviews
+SyntaxError: Unexpected token 'else' in C:\vs code\Subtlety\views\admin\reviews.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:16)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getReviews (file:///C:/vs%20code/Subtlety/controller/reviewController.js:46:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-26T21:12:03.889Z | ERROR | GET /admin/reviews | 500
+2026-03-27T18:43:48.564Z | ERROR | GET /orders
+Error: C:\vs code\Subtlety\views\user\orders.ejs:30
+    28| 
+    29|   <!-- Navbar -->
+ >> 30|   <%- include('partials/navBar') %>
+    31| 
+    32|   <section class="profile-section">
+    33|     <div class="container profile pt-2">
+
+Could not find the include file "partials/navBar"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:12:17)
+    at orders (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getUserOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:134:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T18:43:48.632Z | ERROR | GET /orders | 500
+2026-03-27T18:43:48.798Z | ERROR | GET /favicon.ico | 404
+2026-03-27T18:43:50.910Z | ERROR | GET /wallet
+Error: C:\vs code\Subtlety\views\user\userWallet.ejs:139
+    137| <body>
+    138| 
+ >> 139|   <%- include('partials/navBar') %>
+    140|   <!-- Wallet Section -->
+    141|   <section class="profile-section">
+    142|     <div class="container profile pt-2">
+
+Could not find the include file "partials/navBar"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:12:17)
+    at userWallet (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWallet (file:///C:/vs%20code/Subtlety/controller/profileController.js:163:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T18:43:50.951Z | ERROR | GET /wallet | 500
+2026-03-27T18:43:52.978Z | ERROR | GET /wishlist
+Error: C:\vs code\Subtlety\views\user\wishlist.ejs:19
+    17| 
+    18| <body>
+ >> 19|   <%- include('partials/navBar') %>
+    20| 
+    21|   <section class="profile-section">
+    22|     <div class="container profile pt-2">
+
+Could not find the include file "partials/navBar"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:15:17)
+    at wishlist (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWishlist (file:///C:/vs%20code/Subtlety/controller/wishlistController.js:22:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T18:43:53.039Z | ERROR | GET /wishlist | 500
+2026-03-27T18:46:33.536Z | ERROR | GET /user/home
+Error: C:\vs code\Subtlety\views\user\home.ejs:93
+    91| 
+    92| <body>
+ >> 93|   <%-include('partials/navBar')%>
+    94| 
+    95|   <!-- Hero Section -->
+    96|   <section class="hero-section text-center py-0" style="background-color: black;">
+
+Could not find the include file "partials/navBar"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:15:16)
+    at home (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getHome (file:///C:/vs%20code/Subtlety/controller/userController.js:13:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T18:46:33.576Z | ERROR | GET /user/home | 500
+2026-03-27T19:14:14.344Z | ERROR | GET /user/home
+Error: C:\vs code\Subtlety\views\user\home.ejs:93
+    91| 
+    92| <body>
+ >> 93|   <%-include('partials/navBar')%>
+    94| 
+    95|   <!-- Hero Section -->
+    96|   <section class="hero-section text-center py-0" style="background-color: black;">
+
+Could not find the include file "partials/navBar"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:15:16)
+    at home (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getHome (file:///C:/vs%20code/Subtlety/controller/userController.js:13:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T19:14:14.390Z | ERROR | GET /user/home | 500
+2026-03-27T19:30:55.830Z | ERROR | GET /user/home
+Error: C:\vs code\Subtlety\views\user\home.ejs:93
+    91| 
+    92| <body>
+ >> 93|   <%-include('partials/navBar')%>
+    94| 
+    95|   <!-- Hero Section -->
+    96|   <section class="hero-section text-center py-0" style="background-color: black;">
+
+Could not find the include file "partials/navBar"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:15:16)
+    at home (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getHome (file:///C:/vs%20code/Subtlety/controller/userController.js:13:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T19:30:55.870Z | ERROR | GET /user/home | 500
+2026-03-27T19:36:44.768Z | ERROR | GET /orders
+Error: C:\vs code\Subtlety\views\user\orders.ejs:114
+    112| 
+    113|           <div id="userOrderContainer">
+ >> 114|             <%- include('../partials/orderTable') %>
+    115|           </div>
+    116|         </div>
+    117|       </div>
+
+Could not find the include file "../partials/orderTable"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:75:17)
+    at orders (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getUserOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:134:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T19:36:44.812Z | ERROR | GET /orders | 500
+2026-03-27T19:36:59.662Z | ERROR | GET /orders
+Error: C:\vs code\Subtlety\views\user\orders.ejs:114
+    112| 
+    113|           <div id="userOrderContainer">
+ >> 114|             <%- include('../partials/orderTable') %>
+    115|           </div>
+    116|         </div>
+    117|       </div>
+
+Could not find the include file "../partials/orderTable"
+    at getIncludePath (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:185:13)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:311:19)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:75:17)
+    at orders (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getUserOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:134:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T19:36:59.714Z | ERROR | GET /orders | 500
+2026-03-27T20:01:12.352Z | ERROR | GET /wishlist?page=2&ajax=true
+Error: Failed to lookup view "user/partials/wishlistGrid" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWishlist (file:///C:/vs%20code/Subtlety/controller/wishlistController.js:15:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T20:01:12.394Z | ERROR | GET /wishlist?page=2&ajax=true | 500
+2026-03-27T20:01:13.082Z | ERROR | GET /wishlist?page=2&ajax=true
+Error: Failed to lookup view "user/partials/wishlistGrid" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWishlist (file:///C:/vs%20code/Subtlety/controller/wishlistController.js:15:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T20:01:13.120Z | ERROR | GET /wishlist?page=2&ajax=true | 500
+2026-03-27T20:01:15.292Z | ERROR | GET /wishlist?page=2&ajax=true
+Error: Failed to lookup view "user/partials/wishlistGrid" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWishlist (file:///C:/vs%20code/Subtlety/controller/wishlistController.js:15:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T20:01:15.365Z | ERROR | GET /wishlist?page=2&ajax=true | 500
+2026-03-27T20:01:15.814Z | ERROR | GET /wishlist?page=2&ajax=true
+Error: Failed to lookup view "user/partials/wishlistGrid" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWishlist (file:///C:/vs%20code/Subtlety/controller/wishlistController.js:15:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T20:01:15.855Z | ERROR | GET /wishlist?page=2&ajax=true | 500
+2026-03-27T20:05:18.866Z | ERROR | POST /profile/change-password | 400
+2026-03-27T20:05:32.380Z | ERROR | POST /profile/change-password | 400
+2026-03-27T20:07:14.662Z | ERROR | POST /profile/change-password | 400
+2026-03-27T20:20:21.578Z | ERROR | POST /profile/change-password | 400
+2026-03-27T20:20:39.990Z | ERROR | POST /profile/change-password | 400
+2026-03-27T20:21:33.827Z | ERROR | GET /profile
+Error: read ECONNRESET
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:218:20)
+2026-03-27T20:21:37.520Z | ERROR | GET /profile/address
+Error: read ECONNRESET
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:218:20)
+2026-03-27T20:21:37.522Z | ERROR | GET /profile/address | 500
+2026-03-27T20:22:50.725Z | ERROR | GET /wishlist?page=2&sort=latest&ajax=true
+Error: Failed to lookup view "user/partials/wishlistGrid" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWishlist (file:///C:/vs%20code/Subtlety/controller/wishlistController.js:27:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T20:22:50.766Z | ERROR | GET /wishlist?page=2&sort=latest&ajax=true | 500
+2026-03-27T20:22:51.425Z | ERROR | GET /wishlist?page=2&sort=latest&ajax=true
+Error: Failed to lookup view "user/partials/wishlistGrid" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getWishlist (file:///C:/vs%20code/Subtlety/controller/wishlistController.js:27:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T20:22:51.460Z | ERROR | GET /wishlist?page=2&sort=latest&ajax=true | 500
+2026-03-27T20:40:14.017Z | ERROR | POST /profile/change-password | 400
+2026-03-27T20:48:18.897Z | ERROR | POST /profile/change-password | 400
+2026-03-27T20:48:53.785Z | ERROR | POST /profile/change-password | 400
+2026-03-27T21:02:09.901Z | ERROR | GET /admin/categories
+SyntaxError: C:\vs code\Subtlety\views\admin\categories.ejs:109
+    107|         </div>
+    108| 
+ >> 109|         <%- include('../partials/Admin/categoryTable') %>
+    110|     </div>
+    111|   </div>
+    112| </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\categoryTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:45:17)
+    at categories (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getCategories (file:///C:/vs%20code/Subtlety/controller/categoryController.js:44:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:02:09.943Z | ERROR | GET /admin/categories | 500
+2026-03-27T21:02:10.089Z | ERROR | GET /favicon.ico | 404
+2026-03-27T21:04:02.942Z | ERROR | GET /admin/offers
+SyntaxError: C:\vs code\Subtlety\views\admin\offer.ejs:101
+    99|                 </div>
+    100| 
+ >> 101|                 <%- include('../partials/Admin/offerTable') %>
+    102|             </div>
+    103|         </div>
+    104|     </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\offerTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:57:17)
+    at offer (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getOffers (file:///C:/vs%20code/Subtlety/controller/offerController.js:26:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:04:03.002Z | ERROR | GET /admin/offers | 500
+2026-03-27T21:07:43.849Z | ERROR | GET /admin/users
+SyntaxError: C:\vs code\Subtlety\views\admin\usersList.ejs:71
+    69|         </div>
+    70| 
+ >> 71|         <%- include('../partials/Admin/usersTable') %>
+    72| 
+    73|       </div>
+    74|     </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\usersTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:45:17)
+    at usersList (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getUsers (file:///C:/vs%20code/Subtlety/controller/adminController.js:32:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:07:43.888Z | ERROR | GET /admin/users | 500
+2026-03-27T21:07:46.405Z | ERROR | GET /admin/products
+SyntaxError: C:\vs code\Subtlety\views\admin\products.ejs:69
+    67| 
+    68| 
+ >> 69|         <%- include('../partials/Admin/productTable') %>
+    70|             </div>
+    71|         </div>
+    72|     </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\productTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:43:17)
+    at products (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getProducts (file:///C:/vs%20code/Subtlety/controller/productController.js:72:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:07:46.473Z | ERROR | GET /admin/products | 500
+2026-03-27T21:07:48.928Z | ERROR | GET /admin/categories
+SyntaxError: C:\vs code\Subtlety\views\admin\categories.ejs:103
+    101|         </div>
+    102| 
+ >> 103|         <%- include('../partials/Admin/categoryTable') %>
+    104|     </div>
+    105|   </div>
+    106| </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\categoryTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:43:17)
+    at categories (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getCategories (file:///C:/vs%20code/Subtlety/controller/categoryController.js:44:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:07:48.969Z | ERROR | GET /admin/categories | 500
+2026-03-27T21:07:54.078Z | ERROR | GET /admin/orders?search=ascasd&page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:209:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:07:54.116Z | ERROR | GET /admin/orders?search=ascasd&page=1&ajax=true | 500
+2026-03-27T21:07:55.798Z | ERROR | GET /admin/orders?page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:209:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:07:55.879Z | ERROR | GET /admin/orders?page=1&ajax=true | 500
+2026-03-27T21:08:28.460Z | ERROR | GET /admin/offers
+SyntaxError: C:\vs code\Subtlety\views\admin\offer.ejs:101
+    99|                 </div>
+    100| 
+ >> 101|                 <%- include('../partials/Admin/offerTable') %>
+    102|             </div>
+    103|         </div>
+    104|     </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\offerTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:57:17)
+    at offer (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getOffers (file:///C:/vs%20code/Subtlety/controller/offerController.js:26:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-27T21:08:28.509Z | ERROR | GET /admin/offers | 500
+2026-03-28T08:10:13.586Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:13:08.111Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:22:35.890Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:22:39.880Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:22:56.872Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:23:04.178Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:23:07.851Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:23:10.682Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:23:13.449Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:23:16.276Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:25:24.974Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:25:28.058Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:25:31.509Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:25:35.223Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:27:10.506Z | ERROR | POST /profile/change-password | 400
+2026-03-28T08:49:28.206Z | ERROR | POST /user/send-otp-password-reset | 404
+2026-03-28T08:53:43.203Z | ERROR | GET /shop | 404
+2026-03-28T10:42:38.418Z | ERROR | GET /favicon.ico | 404
+2026-03-28T10:47:53.088Z | ERROR | POST /orders/cancel/69c7b1c10955ff4d83e9ac99/69b19509bf0a2e01b6eb04dc | 404
+2026-03-28T12:21:34.473Z | ERROR | GET /cart
+ReferenceError: productsWithPrices is not defined
+    at Object.getCart (file:///C:/vs%20code/Subtlety/services/cartService.js:19:44)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getCart (file:///C:/vs%20code/Subtlety/controller/cartController.js:8:18)
+2026-03-28T12:21:34.570Z | ERROR | GET /cart | 500
+2026-03-28T12:21:34.860Z | ERROR | GET /favicon.ico | 404
+2026-03-28T12:22:38.296Z | ERROR | DB ERROR | MongoDB connection error ❌
+2026-03-28T18:10:53.888Z | ERROR | GET /admin/users
+SyntaxError: C:\vs code\Subtlety\views\admin\usersList.ejs:71
+    69|         </div>
+    70| 
+ >> 71|         <%- include('../partials/Admin/usersTable') %>
+    72| 
+    73|       </div>
+    74|     </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\usersTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:45:17)
+    at usersList (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getUsers (file:///C:/vs%20code/Subtlety/controller/adminController.js:32:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T18:10:53.927Z | ERROR | GET /admin/users | 500
+2026-03-28T18:10:54.005Z | ERROR | GET /favicon.ico | 404
+2026-03-28T18:15:50.854Z | ERROR | GET /admin/products
+SyntaxError: C:\vs code\Subtlety\views\admin\products.ejs:69
+    67| 
+    68| 
+ >> 69|         <%- include('../partials/Admin/productTable') %>
+    70|             </div>
+    71|         </div>
+    72|     </div>
+
+Missing catch or finally after try in C:\vs code\Subtlety\views\partials\Admin\productTable.ejs while compiling ejs
+
+If the above error is not helpful, you may want to try EJS-Lint:
+https://github.com/RyanZim/EJS-Lint
+Or, if you meant to create an async function, pass `async: true` as an option.
+    at new Function (<anonymous>)
+    at Template.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12)
+    at Object.compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:398:16)
+    at handleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:235:18)
+    at includeFile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:323:10)
+    at include (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:701:16)
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:43:17)
+    at products (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getProducts (file:///C:/vs%20code/Subtlety/controller/productController.js:72:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T18:15:50.892Z | ERROR | GET /admin/products | 500
+2026-03-28T18:49:31.372Z | ERROR | GET /orders/checkout
+ReferenceError: C:\vs code\Subtlety\views\user\checkout.ejs:336
+    334|                   <span>Coupon Discount:</span>
+    335|                   <span id="couponDiscountDisplay" class="text-success">
+ >> 336|                     <%= Math.floor(couponDiscount || 0) > 0 ? `- ₹ ${Math.floor(couponDiscount)}` : '0' %>
+    337|                   </span>
+    338|                 </li>
+    339|                 <li class="list-group-item d-flex flex-column">
+
+couponDiscount is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:153:37)
+    at checkout (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at checkoutPage (file:///C:/vs%20code/Subtlety/controller/orderController.js:25:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T18:49:31.411Z | ERROR | GET /orders/checkout | 500
+2026-03-28T18:49:31.519Z | ERROR | GET /favicon.ico | 404
+2026-03-28T19:34:29.137Z | ERROR | GET /admin/orders?paymentStatus=Pending&page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:29.172Z | ERROR | GET /admin/orders?paymentStatus=Pending&page=1&ajax=true | 500
+2026-03-28T19:34:31.747Z | ERROR | GET /admin/orders?paymentStatus=Failed&page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:31.783Z | ERROR | GET /admin/orders?paymentStatus=Failed&page=1&ajax=true | 500
+2026-03-28T19:34:35.325Z | ERROR | GET /admin/orders?page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:35.359Z | ERROR | GET /admin/orders?page=1&ajax=true | 500
+2026-03-28T19:34:36.513Z | ERROR | GET /admin/orders?page=1&paymentStatus=Successful&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:36.548Z | ERROR | GET /admin/orders?page=1&paymentStatus=Successful&ajax=true | 500
+2026-03-28T19:34:37.751Z | ERROR | GET /admin/orders?page=1&paymentStatus=Pending&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:37.786Z | ERROR | GET /admin/orders?page=1&paymentStatus=Pending&ajax=true | 500
+2026-03-28T19:34:38.582Z | ERROR | GET /admin/orders?page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:38.616Z | ERROR | GET /admin/orders?page=1&ajax=true | 500
+2026-03-28T19:34:40.156Z | ERROR | GET /admin/orders?page=1&sort=latest&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:40.192Z | ERROR | GET /admin/orders?page=1&sort=latest&ajax=true | 500
+2026-03-28T19:34:41.258Z | ERROR | GET /admin/orders?page=1&sort=oldest&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:41.292Z | ERROR | GET /admin/orders?page=1&sort=oldest&ajax=true | 500
+2026-03-28T19:34:42.667Z | ERROR | GET /admin/orders?page=1&sort=Pending&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:42.701Z | ERROR | GET /admin/orders?page=1&sort=Pending&ajax=true | 500
+2026-03-28T19:34:44.492Z | ERROR | GET /admin/orders?page=1&sort=Completed&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:44.526Z | ERROR | GET /admin/orders?page=1&sort=Completed&ajax=true | 500
+2026-03-28T19:34:45.409Z | ERROR | GET /admin/orders?page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:45.443Z | ERROR | GET /admin/orders?page=1&ajax=true | 500
+2026-03-28T19:34:48.121Z | ERROR | GET /admin/orders?page=1&search=ergdrg&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:48.158Z | ERROR | GET /admin/orders?page=1&search=ergdrg&ajax=true | 500
+2026-03-28T19:34:49.575Z | ERROR | GET /admin/orders?page=1&ajax=true
+Error: Failed to lookup view "partials/orderTable" in views directory "C:\vs code\Subtlety\views"
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:597:17)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getAdminOrders (file:///C:/vs%20code/Subtlety/controller/orderController.js:226:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-28T19:34:49.610Z | ERROR | GET /admin/orders?page=1&ajax=true | 500
+2026-03-28T19:40:18.130Z | ERROR | POST /cart/add | 400
+2026-03-28T19:40:37.199Z | ERROR | POST /admin/products/edit/69b193d8bf0a2e01b6eb048a
+TypeError: Cannot read properties of undefined (reading 'validatePriceAgainstOffers')
+    at Object.updateProduct (file:///C:/vs%20code/Subtlety/services/productService.js:89:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async editProduct (file:///C:/vs%20code/Subtlety/controller/productController.js:138:5)
+2026-03-28T19:40:37.235Z | ERROR | POST /admin/products/edit/69b193d8bf0a2e01b6eb048a | 500
+2026-03-28T20:43:56.865Z | ERROR | GET /user/single-product/69aa9b0f857982f193565666 | 404
+2026-03-28T20:43:56.900Z | ERROR | GET /favicon.ico | 404
