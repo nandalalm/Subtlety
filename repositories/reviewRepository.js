@@ -30,6 +30,10 @@ const reviewRepository = {
     return await Review.findById(id);
   },
 
+  findByIdAndPopulate: async (id, populatePath) => {
+    return await Review.findById(id).populate(populatePath);
+  },
+
   updateById: async (id, updateData, options = { new: true }) => {
     return await Review.findByIdAndUpdate(id, updateData, options);
   },

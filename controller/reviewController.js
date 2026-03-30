@@ -67,9 +67,23 @@ async function toggleReviewStatus(req, res, next) {
   }
 }
 
+async function getReviewView(req, res, next) {
+  try {
+    const review = await reviewService.getAdminReviewDetail(req.params.id);
+    const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}&rating=${req.query.rating || ""}`;
+    res.render("admin/reviewView", { review, backQuery });
+  } catch (error) {
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) {
+      return res.status(error.statusCode).render("404", { message: error.message });
+    }
+    next(error);
+  }
+}
+
 export {
   postReview,
   loadMoreReviews,
   getReviews,
-  toggleReviewStatus
+  toggleReviewStatus,
+  getReviewView
 };

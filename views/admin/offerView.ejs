@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offer Details - SUBTLETY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
+  <style>
+    :root { --accent: #9135ED; }
+    body { font-family: 'Poppins', sans-serif; }
+    .breadcrumb { background: transparent; padding: 0; margin-bottom: 8px; }
+    .breadcrumb-item { font-size: 1rem; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; }
+    .breadcrumb-item.active { color: var(--accent); font-weight: 500; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; color: #ccc; }
+    .detail-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #f0f0f0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      height: 100%;
+    }
+    .detail-card .card-header { background: #fff; border-bottom: 1px solid #f2f2f2; font-weight: 600; }
+    .info-label { color: #8a8f98; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .info-value { font-size: 0.98rem; font-weight: 500; color: #212529; margin-bottom: 14px; word-break: break-word; }
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #f8f4ff;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .offer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px 20px;
+    }
+    .offer-field {
+      min-width: 0;
+    }
+    .offer-field.offer-field-wide {
+      grid-column: 1 / -1;
+    }
+    .offer-target-box {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid #eee7fb;
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+    }
+    .detail-card .card-body {
+      padding: 1.15rem;
+    }
+    @media (max-width: 767px) {
+      .offer-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-light text-dark">
+  <%- include('../partials/Admin/adminNavbar') %>
+  <div class="d-flex" id="wrapper">
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'offers' }) %>
+    <div id="page-content-wrapper" class="w-100">
+      <div class="container-fluid py-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/offers?<%= backQuery %>">Offers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Offer Details</li>
+          </ol>
+        </nav>
+
+        <div class="detail-card card">
+          <div class="card-header">Offer Summary</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <span class="hero-chip"><%= offer.offerFor %> Offer</span>
+            </div>
+            <div class="offer-target-box mb-4">
+              <div class="info-label">Target</div>
+              <div class="info-value mb-0"><%= offer.targetId?.name || 'N/A' %></div>
+            </div>
+
+            <div class="offer-grid">
+              <div class="offer-field">
+                <div class="info-label">Offer Type</div>
+                <div class="info-value text-capitalize"><%= offer.offerType %></div>
+              </div>
+              <div class="offer-field">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                  <span class="status-box status-<%= offer.isActive ? 'successful' : 'failed' %>">
+                    <%= offer.isActive ? 'Listed' : 'Unlisted' %>
+                  </span>
+                </div>
+              </div>
+              <div class="offer-field">
+                <div class="info-label">Value</div>
+                <div class="info-value">
+                  <%= offer.offerType === 'flat' ? `Rs. ${Number(offer.value).toFixed(2)}` : `${offer.value}%` %>
+                </div>
+              </div>
+              <div class="offer-field">
+                <div class="info-label">Expires At</div>
+                <div class="info-value"><%= new Date(offer.expiresAt).toLocaleDateString() %></div>
+              </div>
+              <% if (offer.offerType === 'flat' && offer.minProductPrice) { %>
+                <div class="offer-field">
+                  <div class="info-label">Minimum Product Price</div>
+                  <div class="info-value"><%= `Rs. ${Number(offer.minProductPrice).toFixed(2)}` %></div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/Admin/adminScripts') %>
+</body>
+</html>

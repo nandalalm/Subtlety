@@ -4,7 +4,7 @@
     const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
 %>
 
-<div class="table-container-shared card border-0 shadow-sm" id="reviewTableContainer" style="background: transparent;">
+<div class="table-container-shared card border-0 shadow-sm admin-cards-responsive" id="reviewTableContainer" style="background: transparent;">
     <% if (reviewList.length === 0) { %>
         <div class="text-center py-5 bg-white rounded shadow-sm">
             <i class="fas fa-search fa-3x text-muted mb-3"></i>
@@ -21,7 +21,8 @@
                     <th style="width: 15%;">Rating</th>
                     <th style="width: 20%;">Review</th>
                     <th style="width: 10%;">Date</th>
-                    <th style="width: 10%;" class="text-center">Action</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 18%;" class="text-center">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,21 +42,33 @@
                         </div>
                     </td>
                     <td>
+                        <% const commentPreview = review.comment && review.comment.length > 20 ? `${review.comment.slice(0, 20)}...` : (review.comment || 'No review'); %>
                         <div class="small text-muted text-truncate-2" title="<%= review.comment %>">
-                            <%= review.comment || 'No review' %>
+                            <%= commentPreview %>
                         </div>
                     </td>
                     <td class="small text-muted">
                         <%= new Date(review.createdAt).toLocaleDateString('en-GB') %>
                     </td>
+                    <td>
+                        <span class="status-box status-<%= review.isListed ? 'successful' : 'failed' %>">
+                            <%= review.isListed ? 'Listed' : 'Unlisted' %>
+                        </span>
+                    </td>
                     <td class="text-center">
-                        <button class="btn btn-sm toggle-review-btn <%= review.isListed ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill px-3" 
-                                data-id="<%= review._id %>" 
-                                data-status="<%= review.isListed %>"
-                                onclick="toggleReviewStatus(this)"
-                                style="min-width: 85px;">
-                            <%= review.isListed ? 'Unlist' : 'List' %>
-                        </button>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <a href="/admin/reviews/<%= review._id %>/view?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>&rating=<%= typeof rating !== 'undefined' ? rating : '' %>"
+                               class="btn btn-sm rounded-pill px-3 mr-2 table-action-btn table-btn-view">
+                                View
+                            </a>
+                            <button class="btn btn-sm toggle-review-btn rounded-pill px-3 table-action-btn <%= review.isListed ? 'table-btn-unlist' : 'table-btn-relist' %>" 
+                                    data-id="<%= review._id %>" 
+                                    data-status="<%= review.isListed %>"
+                                    onclick="toggleReviewStatus(this)"
+                                    style="min-width: 85px;">
+                                <%= review.isListed ? 'Unlist' : 'Relist' %>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 <% }) %>
@@ -82,16 +95,25 @@
                     </div>
                     <p><strong>Product:</strong> <%= review.productId ? review.productId.name : 'Deleted Product' %></p>
                     <p><strong>By:</strong> <%= review.userId ? review.userId.firstname : 'Deleted User' %></p>
-                    <p><strong>Review:</strong> <span class="text-muted small"><%= review.comment || 'No review' %></span></p>
+                    <% const mobileCommentPreview = review.comment && review.comment.length > 20 ? `${review.comment.slice(0, 20)}...` : (review.comment || 'No review'); %>
+                    <p><strong>Review:</strong> <span class="text-muted small"><%= mobileCommentPreview %></span></p>
                     <p class="small text-muted mb-0"><%= new Date(review.createdAt).toLocaleDateString('en-GB') %></p>
                     
-                    <div class="mt-4 text-right">
-                        <button class="btn toggle-review-btn btn-sm <%= review.isListed ? 'btn-outline-danger' : 'btn-outline-success' %> rounded-pill px-4" 
+                    <div class="mt-4 row">
+                        <div class="col-12 mb-2">
+                            <a href="/admin/reviews/<%= review._id %>/view?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>&rating=<%= typeof rating !== 'undefined' ? rating : '' %>"
+                               class="btn btn-sm btn-block rounded-pill table-action-btn table-btn-view">
+                                View
+                            </a>
+                        </div>
+                        <div class="col-12">
+                        <button class="btn toggle-review-btn btn-sm btn-block rounded-pill px-4 table-action-btn <%= review.isListed ? 'table-btn-unlist' : 'table-btn-relist' %>" 
                                 data-id="<%= review._id %>" 
                                 data-status="<%= review.isListed %>"
                                 onclick="toggleReviewStatus(this)">
-                            <%= review.isListed ? 'Unlist' : 'List' %>
+                            <%= review.isListed ? 'Unlist' : 'Relist' %>
                         </button>
+                        </div>
                     </div>
                 </div>
             </div>

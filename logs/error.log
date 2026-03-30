@@ -1212,3 +1212,81 @@ TypeError: Cannot read properties of undefined (reading 'validatePriceAgainstOff
 2026-03-28T19:40:37.235Z | ERROR | POST /admin/products/edit/69b193d8bf0a2e01b6eb048a | 500
 2026-03-28T20:43:56.865Z | ERROR | GET /user/single-product/69aa9b0f857982f193565666 | 404
 2026-03-28T20:43:56.900Z | ERROR | GET /favicon.ico | 404
+2026-03-29T08:01:31.311Z | ERROR | GET /orders/checkout
+ReferenceError: C:\vs code\Subtlety\views\user\checkout.ejs:336
+    334|                   <span>Coupon Discount:</span>
+    335|                   <span id="couponDiscountDisplay" class="text-success">
+ >> 336|                     <%= Math.floor(couponDiscount || 0) > 0 ? `- ₹ ${Math.floor(couponDiscount)}` : '0' %>
+    337|                   </span>
+    338|                 </li>
+    339|                 <li class="list-group-item d-flex flex-column">
+
+couponDiscount is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:153:37)
+    at checkout (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at checkoutPage (file:///C:/vs%20code/Subtlety/controller/orderController.js:25:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-03-29T08:01:31.352Z | ERROR | GET /orders/checkout | 500
+2026-03-29T08:01:31.436Z | ERROR | GET /favicon.ico | 404
+2026-03-29T08:03:56.503Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-03-29T08:20:02.849Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-03-29T08:21:33.276Z | ERROR | POST /orders/checkout/confirm | 400
+2026-03-29T08:21:39.694Z | ERROR | POST /orders/checkout/confirm | 400
+2026-03-29T08:22:22.595Z | ERROR | POST /orders/checkout/confirm | 400
+2026-03-29T08:22:58.648Z | ERROR | POST /orders/checkout/confirm | 400
+2026-03-29T08:23:40.399Z | ERROR | POST /orders/checkout/confirm | 400
+2026-03-29T08:25:11.885Z | ERROR | GET /orders/checkout | 400
+2026-03-29T08:36:02.547Z | ERROR | GET /admin/orders/69c7b1c10955ff4d83e9ac99 | 404
+2026-03-30T13:32:45.209Z | ERROR | GET /admin/orders/69c7b1c10955ff4d83e9ac99 | 404
+2026-03-30T13:33:15.249Z | ERROR | GET /admin/orders/69c7b1c10955ff4d83e9ac99 | 404
+2026-03-30T13:35:23.380Z | ERROR | GET /admin/orders/69c7b1c10955ff4d83e9ac99 | 404
+2026-03-30T13:35:26.925Z | ERROR | GET /admin/orders/69c7b1c10955ff4d83e9ac99 | 404
+2026-03-30T13:35:37.184Z | ERROR | GET /admin/orders/69c7b1c10955ff4d83e9ac99 | 404
+2026-03-30T13:40:30.009Z | ERROR | POST /orders/cancel/69c7b1c10955ff4d83e9ac99/69b19509bf0a2e01b6eb04dc | 404
+2026-03-30T13:51:17.082Z | ERROR | GET /admin/products/edit/69b1a9f10e46d77ba921456d?page=1&search=&sort=latest
+Error: read ECONNRESET
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:218:20)
+2026-03-30T13:57:49.832Z | ERROR | GET /favicon.ico | 404
+2026-03-30T14:10:13.182Z | ERROR | POST /profile/change-password | 400
+2026-03-30T14:10:56.440Z | ERROR | POST /orders/cancel/69c7b1c10955ff4d83e9ac99/69b19509bf0a2e01b6eb04dc | 404
+2026-03-30T14:38:39.027Z | ERROR | GET /admin/orders
+Error: read ECONNRESET
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:218:20)
+2026-03-30T16:20:20.142Z | ERROR | GET /.well-known/appspecific/com.chrome.devtools.json | 404
+2026-03-30T19:18:48.917Z | ERROR | POST /admin/categories/edit/69b189e7f950aa9c9d4d204f | 400
+2026-03-30T19:18:51.967Z | ERROR | POST /admin/categories/edit/69b189e7f950aa9c9d4d204f | 400
+2026-03-30T19:19:18.371Z | ERROR | POST /admin/categories/add | 400
+2026-03-30T19:19:21.218Z | ERROR | POST /admin/categories/add
+undefined
+2026-03-30T19:19:21.547Z | ERROR | POST /admin/categories/add | 500
+2026-03-30T19:19:23.890Z | ERROR | POST /admin/categories/add | 400
+2026-03-30T19:19:27.670Z | ERROR | POST /admin/categories/add | 400
+2026-03-30T19:27:25.916Z | ERROR | POST /admin/categories/add | 400
+2026-03-30T21:53:08.042Z | ERROR | POST /admin/offers/add | 400
+2026-03-30T22:12:34.220Z | ERROR | POST /admin/offers/edit/69b1992e3426856727d9f727 | 400
+2026-03-30T22:21:14.395Z | ERROR | POST /admin/offers/add | 400
+2026-03-30T22:22:15.254Z | ERROR | POST /admin/offers/add | 400
+2026-03-30T22:22:35.368Z | ERROR | POST /admin/offers/add | 400
+2026-03-30T22:22:46.083Z | ERROR | POST /admin/offers/add | 400
+2026-03-30T22:55:33.545Z | ERROR | POST /profile/change-password
+Error: Illegal arguments: string, undefined
+    at _async (C:\vs code\Subtlety\node_modules\bcryptjs\dist\bcrypt.js:286:46)
+    at C:\vs code\Subtlety\node_modules\bcryptjs\dist\bcrypt.js:307:17
+    at new Promise (<anonymous>)
+    at bcrypt.compare (C:\vs code\Subtlety\node_modules\bcryptjs\dist\bcrypt.js:306:20)
+    at Object.updatePassword (file:///C:/vs%20code/Subtlety/services/profileService.js:22:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async changePassword (file:///C:/vs%20code/Subtlety/controller/profileController.js:132:5)
+2026-03-30T22:55:33.581Z | ERROR | POST /profile/change-password | 500
+2026-03-30T23:11:07.446Z | ERROR | POST /profile/change-password | 401
+2026-03-30T23:13:40.019Z | ERROR | POST /profile/update | 401
+2026-03-30T23:26:52.475Z | ERROR | POST /auth/login | 404
+2026-03-30T23:26:52.596Z | ERROR | GET /favicon.ico | 404
+2026-03-30T23:27:11.814Z | ERROR | POST /auth/login | 404
+2026-03-30T23:27:40.472Z | ERROR | POST /auth/login | 401

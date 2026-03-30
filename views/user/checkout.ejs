@@ -121,90 +121,78 @@
       display: flex;
       align-items: stretch;
       gap: 10px;
-      flex-wrap: wrap; /* Allow wrapping on small screens */
     }
 
     input#couponCode {
       flex: 1;
-      min-width: 200px; /* Ensure input has a decent width */
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      min-width: 150px;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: border-color 0.3s;
     }
 
-    .apply-btn, .remove-coupon-btn {
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 576px) {
-      .coupon-flex {
-        flex-direction: column;
-      }
-      .apply-btn, .remove-coupon-btn {
-        width: 100%;
-      }
-      input#couponCode {
-        width: 100%;
-      }
+    input#couponCode:focus {
+      border-color: #9135ED;
+      outline: none;
     }
 
     .apply-btn {
-      padding: 10px 15px;
-      /* Vertical and horizontal padding */
-      background-color: #28a745;
-      /* Green background */
+      padding: 10px 20px;
+      background-color: #9135ED;
       color: white;
-      /* Text color */
       border: none;
-      /* Remove border */
-      border-radius: 4px;
-      /* Rounded corners */
+      border-radius: 8px;
+      font-weight: 500;
       cursor: pointer;
-      /* Pointer cursor on hover */
-      transition: background-color 0.3s;
-      /* Smooth transition */
+      transition: all 0.3s;
     }
 
     .apply-btn:hover {
-      background-color: #218838;
-      /* Darker green on hover */
+      background-color: #7b2cc8;
+      transform: translateY(-1px);
     }
 
-    .removeCouponButton {
-      cursor: pointer;
-      /* Pointer cursor on hover */
-    }
-
-    .remove-coupon-btn {
+    .applied-coupon-badge {
+      display: none;
+      background-color: #f0fdf4;
+      border: 1px dashed #22c55e;
       padding: 10px 15px;
-      /* Same padding as apply button */
-      background-color: #dc3545;
-      /* Red background to indicate removal */
-      color: white;
-      /* Text color */
-      border: none;
-      /* Remove border */
-      border-radius: 4px;
-      /* Rounded corners */
-      cursor: pointer;
-      /* Pointer cursor on hover */
-      transition: background-color 0.3s;
-      /* Smooth transition */
-      display: inline-flex;
-      /* Align icon and text */
-      align-items: center;
-      /* Center icon and text vertically */
+      border-radius: 8px;
+      margin-top: 5px;
+      animation: slideDown 0.3s ease-out;
     }
 
-    .remove-coupon-btn:hover {
-      background-color: #c82333;
-      /* Darker red on hover */
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .remove-coupon-btn i {
-      margin-right: 5px;
-      /* Space between icon and text */
+    .coupon-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #166534;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .remove-coupon-link {
+        color: #ef4444;
+        font-size: 0.8rem;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+
+    .remove-coupon-link:hover {
+        background: #fee2e2;
+        text-decoration: none;
+        color: #dc2626;
     }
   </style>
 </head>
@@ -359,13 +347,25 @@
               </ul>
 
               <div class="coupon-container mt-2">
+                <!-- Coupon Input Area -->
                 <div id="couponInputContainer" class="coupon-flex">
                   <input type="text" id="couponCode" placeholder="Enter coupon code" />
-                  <button id="applyCouponButton" class="apply-btn">Apply Coupon</button>
+                  <button id="applyCouponButton" class="apply-btn">Apply</button>
                 </div>
-                <button id="removeCouponButton" class="remove-coupon-btn btn-danger btn-sm mt-1" style="display: none; width: 100%; border-radius: 8px; padding: 8px;">
-                  <i class="fa-solid fa-trash"></i> Remove Registered Coupon
-                </button>
+
+                <!-- Applied Coupon Badge (Hidden by default) -->
+                <div id="appliedCouponBadge" class="applied-coupon-badge">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="coupon-info">
+                            <i class="fas fa-ticket-alt"></i>
+                            <span>Applied: <span id="appliedCouponDisplay" class="text-uppercase font-weight-bold"></span></span>
+                        </div>
+                        <span id="removeCouponButton" class="remove-coupon-link">
+                            <i class="fas fa-times-circle mr-1"></i>Remove
+                        </span>
+                    </div>
+                </div>
+
                 <div id="couponMessage" class="mt-1" style="font-size: 0.85rem;"></div>
               </div>
 
@@ -420,11 +420,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-  <!-- SweetAlert2 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- SwalCustom utility is already included via navBar.ejs -->
   <script>
     const placeOrderButton = document.getElementById("placeOrderButton");
+    const delayedFetch = (url, options, loaderOptions) =>
+      SwalCustom.withDelayedProcessing(() => authAwareFetch(url, options), loaderOptions);
 
     function checkFormValidity() {
       const fullName = document.getElementById("fullName").value;
@@ -590,16 +590,18 @@
         if (!couponCode) return;
 
         try {
-          const response = await fetch("/orders/checkout/apply-coupon", {
+          const response = await authAwareFetch("/orders/checkout/apply-coupon", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ couponCode }),
           });
+          if (!response) return;
 
           const data = await response.json();
 
+          if (!response) return;
           if (response.ok && data.success) {
             appliedCouponCode = couponCode;
             
@@ -626,9 +628,10 @@
             couponMessage.textContent = "Coupon applied successfully!";
             couponMessage.style.color = "green";
             
-            // Hide Input area, show Remove button
+            // Hide Input area, show Badge
             document.getElementById('couponInputContainer').style.display = 'none';
-            removeCouponButton.style.display = 'block';
+            document.getElementById('appliedCouponDisplay').textContent = couponCode;
+            document.getElementById('appliedCouponBadge').style.display = 'block';
           } else {
             couponMessage.textContent = data.message;
             couponMessage.style.color = "red";
@@ -659,9 +662,9 @@
         const originalTotal = subtotal - offerDiscount + delivery;
         document.getElementById("totalAmount").innerText = `₹ ${Math.floor(originalTotal)}`;
 
-        // Show Input area, hide Remove button
+        // Show Input area, hide Badge
         document.getElementById('couponInputContainer').style.display = 'flex';
-        removeCouponButton.style.display = 'none';
+        document.getElementById('appliedCouponBadge').style.display = 'none';
         couponCodeInput.value = "";
         couponMessage.textContent = "Coupon removed.";
         couponMessage.style.color = "blue";
@@ -675,11 +678,7 @@
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
 
         if (!paymentMethod) {
-          Swal.fire({
-            icon: "error",
-            title: "Oops...",
-            text: "Please select a payment method.",
-          });
+          SwalCustom.error("Oops...", "Please select a payment method.");
           placeOrderButton.disabled = false;
           return;
         }
@@ -697,7 +696,8 @@
           (acc, item) => acc + (item.discountedPrice || item.productId.price) * item.quantity,
           0
         );
-        const deliveryCharge = parseFloat(document.getElementById('deliveryChargeDisplay').innerText);
+        const deliveryChargeElement = document.getElementById('deliveryChargeDisplay');
+        const deliveryCharge = deliveryChargeElement ? parseFloat(deliveryChargeElement.innerText) : 0;
 
         const shippingAddress = {
           fullname: fullName,
@@ -706,7 +706,8 @@
           phone: phoneNumber,
         };
 
-        const totalAmountAfterDiscount = subtotal + deliveryCharge - discount;
+        const totalAmountText = document.getElementById("totalAmount").innerText.replace("₹ ", "").trim();
+        const totalAmountAfterDiscount = Math.floor(parseFloat(totalAmountText));
 
         const orderData = {
           items,
@@ -717,39 +718,52 @@
         };
 
         try {
-          const orderResponse = await fetch("/orders/checkout/confirm", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
+          const orderResponse = await delayedFetch(
+            "/orders/checkout/confirm",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(orderData),
             },
-            body: JSON.stringify(orderData),
-          });
+            {
+              title: "Placing order...",
+              text: "Please wait while we confirm your order."
+            }
+          );
 
+          if (!orderResponse) return;
           if (orderResponse.ok) {
             const order = await orderResponse.json();
             const orderId = order.orderId;
 
             if (paymentMethod.value === 'Wallet') {
-              Swal.fire({
-                icon: "success",
-                title: "Success!",
-                text: "Your order has been placed successfully using your wallet balance.",
-                showConfirmButton: false,
-                timer: 1000,
-              }).then(() => {
+              SwalCustom.success(
+                "Success!",
+                "Your order has been placed successfully using your wallet balance."
+              ).then(() => {
                 window.location.href = `/orders/success?orderId=${orderId}`;
               });
             } else if (paymentMethod.value === 'Razorpay') {
-              const razorpayResponse = await fetch("/orders/razorpay/create", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
+              const razorpayResponse = await delayedFetch(
+                "/orders/razorpay/create",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    orderId
+                  }),
                 },
-                body: JSON.stringify({
-                  orderId
-                }),
-              });
+                {
+                  title: "Preparing payment...",
+                  text: "Please wait while we connect to Razorpay."
+                }
+              );
 
+              if (!razorpayResponse) return;
               if (razorpayResponse.ok) {
                 const razorpayData = await razorpayResponse.json();
                 const options = {
@@ -761,112 +775,86 @@
                   order_id: razorpayData.id,
                   handler: async function(response) {
                     try {
-                      const paymentConfirmationResponse = await fetch("/orders/razorpay/confirm", {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
+                      const paymentConfirmationResponse = await delayedFetch(
+                        "/orders/razorpay/confirm",
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            orderId,
+                            paymentResponse: response,
+                          }),
                         },
-                        body: JSON.stringify({
-                          orderId,
-                          paymentResponse: response,
-                        }),
-                      });
+                        {
+                          title: "Confirming payment...",
+                          text: "Please wait while we verify your Razorpay payment."
+                        }
+                      );
 
-                      if (paymentConfirmationResponse.ok) {
+                        if (!paymentConfirmationResponse) return;
+                        if (paymentConfirmationResponse.ok) {
                         const data = await paymentConfirmationResponse.json();
-                        Swal.fire({
-                          icon: "success",
-                          title: "Success!",
-                          text: data.message,
-                          showConfirmButton: false,
-                          timer: 1000,
-                        }).then(() => {
+                        SwalCustom.success("Success!", data.message).then(() => {
                           window.location.href = `/orders/success?orderId=${orderId}`;
                         });
                       } else {
                         const errorData = await paymentConfirmationResponse.json();
-                        Swal.fire({
-                          icon: "error",
-                          title: "Oops...",
-                          text: `Error confirming payment: ${errorData.message}`,
-                        });
+                        SwalCustom.error("Oops...", `Error confirming payment: ${errorData.message}`);
                       }
                     } catch (error) {
-                      Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: "An unexpected error occurred while confirming the payment.",
-                      });
+                      SwalCustom.error(
+                        "Oops...",
+                        "An unexpected error occurred while confirming the payment."
+                      );
                     }
                   },
                   modal: {
                     ondismiss: function() {
-                      Swal.fire({
-                        title: 'Processing...',
-                        text: 'Redirecting to your order details.',
-                        allowOutsideClick: false,
-                        showConfirmButton: false,
-                        willOpen: () => {
-                          Swal.showLoading();
-                        }
-                      });
+                      const redirectDelay = 1000;
+                      setTimeout(() => {
+                        SwalCustom.processing(
+                          'Processing...',
+                          'Redirecting to your order details.'
+                        );
+                      }, 250);
                       setTimeout(() => {
                         window.location.href = `/orders/${orderId}`;
-                      }, 1000);
+                      }, redirectDelay);
                     }
                   }
                 };
 
                 const razorpay = new Razorpay(options);
                 razorpay.on("payment.failed", async (res) => {
-                  await new Promise((resolve) => {
-                    Swal.fire({
-                      icon: "error",
-                      title: "Payment Failed",
-                      text: "The payment failed or was declined. Redirecting to order details for retry.",
-                      willClose: () => resolve(),
-                    });
+                  SwalCustom.error(
+                    "Payment Failed",
+                    "The payment failed or was declined. Redirecting to order details for retry."
+                  ).then(() => {
+                    window.location.href = `/orders/${orderId}`;
                   });
-                  window.location.href = `/orders/${orderId}`;
                 });
                 razorpay.open();
               } else {
                 const errorData = await razorpayResponse.json();
-                Swal.fire({
-                  icon: "error",
-                  title: "Razorpay Error",
-                  text: errorData.message || "Failed to initiate payment.",
-                });
+                SwalCustom.error("Razorpay Error", errorData.message || "Failed to initiate payment.");
                 placeOrderButton.disabled = false;
               }
             } else {
               // Cash on Delivery
-              Swal.fire({
-                icon: "success",
-                title: "Success!",
-                text: "Your order has been placed successfully!",
-                showConfirmButton: false,
-                timer: 1000,
-              }).then(() => {
+              SwalCustom.success("Success!", "Your order has been placed successfully!").then(() => {
                 window.location.href = `/orders/success?orderId=${orderId}`;
               });
             }
           } else {
             const errorData = await orderResponse.json();
-            Swal.fire({
-              icon: "error",
-              title: "Order Failed",
-              text: errorData.message || "Error creating order.",
-            });
+            SwalCustom.error("Order Failed", errorData.message || "Error creating order.");
             placeOrderButton.disabled = false;
           }
         } catch (error) {
           console.error("Order process error:", error);
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Something went wrong. Please try again later.",
-          });
+          SwalCustom.error("Error", "Something went wrong. Please try again later.");
           placeOrderButton.disabled = false;
         }
       }

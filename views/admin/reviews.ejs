@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
   <link rel="stylesheet" href="/styles/shared/tables.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 
 <body class="bg-light text-dark">
@@ -86,17 +85,14 @@
     function toggleReviewStatus(button) {
       const reviewId = button.getAttribute('data-id');
       const isCurrentlyListed = button.getAttribute('data-status') === 'true';
-      const action = isCurrentlyListed ? 'unlist' : 'list';
+      const action = isCurrentlyListed ? 'unlist' : 'relist';
 
-      Swal.fire({
-        title: `Confirm Moderation`,
-        text: `Are you sure you want to ${action} this review?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#9135ED',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: `Yes, ${action} it!`
-      }).then((result) => {
+      SwalCustom.confirm(
+        'Confirm Moderation',
+        `Are you sure you want to ${action} this review?`,
+        `Yes, ${action} it!`,
+        'Cancel'
+      ).then((result) => {
         if (result.isConfirmed) {
           fetch(`/admin/reviews/toggle-listing/${reviewId}`, {
             method: 'POST',
@@ -109,13 +105,22 @@
             if (data.success) {
               const isListed = data.review.isListed;
               
-              // Update mobile badge
+              const desktopRow = document.querySelector(`tr[data-row-id="${reviewId}"]`);
               const mobileCard = document.querySelector(`.shared-item-card[data-card-id="${reviewId}"]`);
+
+              if (desktopRow) {
+                const desktopBadge = desktopRow.querySelector('.status-box');
+                if (desktopBadge) {
+                  desktopBadge.textContent = isListed ? 'Listed' : 'Unlisted';
+                  desktopBadge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
+                }
+              }
+
               if (mobileCard) {
-                const badge = mobileCard.querySelector('.status-box');
-                if (badge) {
-                  badge.textContent = isListed ? 'Listed' : 'Unlisted';
-                  badge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
+                const mobileBadge = mobileCard.querySelector('.status-box');
+                if (mobileBadge) {
+                  mobileBadge.textContent = isListed ? 'Listed' : 'Unlisted';
+                  mobileBadge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
                 }
               }
 
@@ -123,26 +128,21 @@
               const buttons = document.querySelectorAll(`button[data-id="${reviewId}"]`);
               buttons.forEach(btn => {
                 if (btn.classList.contains('toggle-review-btn')) {
-                  btn.textContent = isListed ? 'Unlist' : 'List';
+                  btn.textContent = isListed ? 'Unlist' : 'Relist';
                   btn.setAttribute('data-status', isListed.toString());
-                  btn.className = `btn btn-sm toggle-review-btn ${isListed ? 'btn-outline-danger' : 'btn-outline-success'} rounded-pill ${btn.classList.contains('px-4') ? 'px-4' : 'px-3'}`;
+                  btn.className = `btn btn-sm toggle-review-btn rounded-pill table-action-btn ${isListed ? 'table-btn-unlist' : 'table-btn-relist'} ${btn.classList.contains('px-4') ? 'px-4' : 'px-3'}`;
                 }
               });
 
-              Swal.fire({
-                icon: 'success',
-                title: 'Updated!',
-                text: `The review has been successfully ${isListed ? 'listed' : 'unlisted'}.`,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 2000
-              });
+              SwalCustom.success(
+                'Updated!',
+                `The review has been successfully ${isListed ? 'listed' : 'unlisted'}.`
+              );
             } else {
-              Swal.fire('Error', data.message || 'Failed to update status', 'error');
+              SwalCustom.error('Error', data.message || 'Failed to update status');
             }
           })
-          .catch(() => Swal.fire('Error', 'Network error. Please try again.', 'error'));
+          .catch(() => SwalCustom.error('Error', 'Network error. Please try again.'));
         }
       });
     }

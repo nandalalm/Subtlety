@@ -19,6 +19,10 @@ const profileService = {
       throw { statusCode: 404, message: MESSAGES.PROFILE.USER_NOT_FOUND };
     }
 
+    if (!user.password) {
+      throw { statusCode: 400, message: MESSAGES.PROFILE.PASSWORD_NOT_AVAILABLE };
+    }
+
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       throw { statusCode: 400, message: MESSAGES.PROFILE.PASSWORD_INCORRECT };
@@ -51,6 +55,14 @@ const profileService = {
 
   addAddress: async (userId, addressData) => {
     return await addressRepository.save({ userId, ...addressData });
+  },
+
+  getAddressById: async (addressId) => {
+    const address = await addressRepository.findById(addressId);
+    if (!address) {
+      throw { statusCode: 404, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
+    }
+    return address;
   },
 
   updateAddress: async (addressId, updateData) => {

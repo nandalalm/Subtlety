@@ -18,7 +18,6 @@ const offerSchema = new mongoose.Schema(
       required: true,
     },
     value: Number,
-    maxDiscount: Number,
     minProductPrice: Number,
     expiresAt: Date,
     isActive: { type: Boolean, default: true },

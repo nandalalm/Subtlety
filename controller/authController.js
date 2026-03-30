@@ -20,7 +20,15 @@ async function getSignup(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
-  res.render("user/signup");
+  const tempUser = req.session.tempUser || null;
+  res.render("user/signup", {
+    pendingSignup: tempUser ? {
+      firstname: tempUser.firstname,
+      lastname: tempUser.lastname,
+      email: tempUser.email,
+      otpTimestamp: tempUser.otpTimestamp,
+    } : null
+  });
 }
 
 async function addUser(req, res, next) {
@@ -33,7 +41,10 @@ async function addUser(req, res, next) {
       req.session.referralUserId = referral;
     }
 
-    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.AUTH.OTP_SENT });
+    res.status(HTTP_STATUS.OK).json({
+      message: MESSAGES.AUTH.OTP_SENT,
+      otpTimestamp: tempUser.otpTimestamp
+    });
   } catch (error) {
     next(error);
   }
@@ -45,7 +56,7 @@ async function verifyOtp(req, res, next) {
     const tempUser = req.session.tempUser;
     // Basic session validation here, business logic in service
     if (!tempUser || tempUser.email !== email) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).send(MESSAGES.AUTH.INVALID_OTP);
+      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION });
     }
 
     const newUser = await authService.verifyOtp(tempUser, otp);
@@ -64,7 +75,7 @@ async function resendOtp(req, res, next) {
   try {
     const tempUser = req.session.tempUser;
     if (!tempUser || tempUser.email !== email) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).send(MESSAGES.AUTH.USER_NOT_IN_SESSION);
+      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION });
     }
 
     const { otp, otpTimestamp } = await authService.resendOtp(tempUser);
@@ -72,7 +83,10 @@ async function resendOtp(req, res, next) {
     req.session.tempUser.otp = otp;
     req.session.tempUser.otpTimestamp = otpTimestamp;
 
-    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.AUTH.NEW_OTP_SENT });
+    res.status(HTTP_STATUS.OK).json({
+      message: MESSAGES.AUTH.NEW_OTP_SENT,
+      otpTimestamp
+    });
   } catch (error) {
     next(error);
   }
@@ -83,11 +97,14 @@ async function loginUser(req, res, next) {
   try {
     const user = await authService.login(email, password);
     req.session.user = user;
-    return res.redirect("/user/home");
+    return res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: MESSAGES.AUTH.LOGIN_SUCCESS,
+      redirect: "/user/home"
+    });
   } catch (error) {
-    if (error.statusCode === 401 || error.statusCode === 403) {
-      req.session.errorMessage = error.message;
-      return res.redirect("/auth/login");
+    if ([HTTP_STATUS.BAD_REQUEST, HTTP_STATUS.UNAUTHORIZED, HTTP_STATUS.FORBIDDEN, HTTP_STATUS.NOT_FOUND].includes(error.statusCode)) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
     }
     next(error);
   }
@@ -104,15 +121,25 @@ async function getForgotPassword(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
-  res.render("user/forgot-password");
+  const resetUser = req.session.passwordResetUser || null;
+  res.render("user/forgot-password", {
+    pendingReset: resetUser ? {
+      email: resetUser.email,
+      otpTimestamp: resetUser.otpTimestamp,
+      isOtpVerified: Boolean(resetUser.isOtpVerified),
+    } : null
+  });
 }
 
 async function sendOtpForPasswordReset(req, res, next) {
   const { email } = req.body;
   try {
     const resetData = await authService.sendOtpForPasswordReset(email);
-    req.session.passwordResetUser = resetData;
-    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.AUTH.PASSWORD_RESET_OTP_SENT });
+    req.session.passwordResetUser = { ...resetData, isOtpVerified: false };
+    res.status(HTTP_STATUS.OK).json({
+      message: MESSAGES.AUTH.PASSWORD_RESET_OTP_SENT,
+      otpTimestamp: resetData.otpTimestamp
+    });
   } catch (error) {
     next(error);
   }
@@ -123,10 +150,11 @@ async function verifyOtpForPasswordReset(req, res, next) {
   try {
     const resetUser = req.session.passwordResetUser;
     if (!resetUser || resetUser.email !== email) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).send(MESSAGES.AUTH.INVALID_OTP);
+      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
     }
 
     await authService.verifyOtpForPasswordReset(resetUser, otp);
+    req.session.passwordResetUser.isOtpVerified = true;
     res.status(HTTP_STATUS.OK).json({ message: MESSAGES.AUTH.OTP_VERIFIED_SUCCESS });
   } catch (error) {
     next(error);
@@ -136,6 +164,13 @@ async function verifyOtpForPasswordReset(req, res, next) {
 async function resetPassword(req, res, next) {
   const { email, newPassword } = req.body;
   try {
+    const resetUser = req.session.passwordResetUser;
+    if (!resetUser || resetUser.email !== email) {
+      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
+    }
+    if (!resetUser.isOtpVerified) {
+      return res.status(HTTP_STATUS.CONFLICT).json({ message: MESSAGES.AUTH.INVALID_OTP });
+    }
     await authService.resetPassword(email, newPassword);
     req.session.passwordResetUser = null;
     res.status(HTTP_STATUS.OK).json({ message: MESSAGES.AUTH.PASSWORD_CHANGED });
@@ -149,15 +184,19 @@ async function resendPasswordResetOtp(req, res, next) {
   try {
     const resetUser = req.session.passwordResetUser;
     if (!resetUser || resetUser.email !== email) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).send(MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET);
+      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
     }
 
     const { otp, otpTimestamp } = await authService.resendOtp(resetUser); // Using resendOtp for common logic
     
     req.session.passwordResetUser.otp = otp;
     req.session.passwordResetUser.otpTimestamp = otpTimestamp;
+    req.session.passwordResetUser.isOtpVerified = false;
 
-    res.status(HTTP_STATUS.OK).json({ message: MESSAGES.AUTH.NEW_OTP_SENT });
+    res.status(HTTP_STATUS.OK).json({
+      message: MESSAGES.AUTH.NEW_OTP_SENT,
+      otpTimestamp
+    });
   } catch (error) {
     next(error);
   }

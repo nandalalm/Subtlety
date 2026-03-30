@@ -131,6 +131,7 @@ const orderService = {
       subtotal: originalSubtotal,
       offerDiscount: Math.max(0, offerDiscount),
       deliveryCharge,
+      couponDiscount: 0,
       totalAmount: Math.floor(netTotal + deliveryCharge),
       address: addresses,
       message: priceChanged ? MESSAGES.ORDER.PRICE_CHANGED : null

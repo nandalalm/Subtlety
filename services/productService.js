@@ -99,6 +99,14 @@ const productService = {
     }
     product.isListed = !product.isListed;
     return await product.save();
+  },
+
+  getAdminProductDetail: async (id) => {
+    const product = await productRepository.findByIdAndPopulate(id, "category");
+    if (!product) {
+      throw { statusCode: 404, message: MESSAGES.PRODUCT.NOT_FOUND };
+    }
+    return product;
   }
 };
 

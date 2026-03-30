@@ -19,6 +19,10 @@ const offerRepository = {
     return await Offer.findById(id);
   },
 
+  findByIdAndPopulate: async (id, populatePath) => {
+    return await Offer.findById(id).populate(populatePath);
+  },
+
   save: async (offerData) => {
     const offer = new Offer(offerData);
     return await offer.save();

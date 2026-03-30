@@ -36,8 +36,49 @@ async function getOffers(req, res, next) {
   }
 }
 
+async function getAddOfferPage(req, res, next) {
+  try {
+    res.render("admin/offerForm", {
+      offer: null,
+      mode: "add",
+      backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getEditOfferPage(req, res, next) {
+  try {
+    const offer = await offerService.getAdminOfferDetail(req.params.id);
+    res.render("admin/offerForm", {
+      offer,
+      mode: "edit",
+      backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
+    });
+  } catch (error) {
+    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    next(error);
+  }
+}
+
+async function searchOfferTargets(req, res, next) {
+  try {
+    const targets = await offerService.searchOfferTargets({
+      offerFor: req.query.offerFor,
+      search: req.query.search || "",
+    });
+    res.status(HTTP_STATUS.OK).json({ success: true, targets });
+  } catch (error) {
+    if (error.statusCode === 400) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+}
+
 async function addOffer(req, res, next) {
-  const { offerFor, targetId, offerType, value, maxDiscount, minProductPrice, expiresAt } = req.body;
+  const { offerFor, targetId, offerType, value, minProductPrice, expiresAt } = req.body;
 
   if (!offerFor || !targetId || !offerType || value === undefined || !expiresAt) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.OFFER.REQUIRED_FIELDS });
@@ -46,7 +87,6 @@ async function addOffer(req, res, next) {
   try {
     await offerService.addOffer({
       offerFor, targetId, offerType, value,
-      maxDiscount: offerFor === "Category" ? maxDiscount : undefined,
       minProductPrice: offerFor === "Category" && offerType === "flat" ? minProductPrice : undefined,
       expiresAt,
     });
@@ -61,10 +101,10 @@ async function addOffer(req, res, next) {
 
 async function editOffer(req, res, next) {
   const offerId = req.params.id;
-  const { targetId, offerFor, offerType, value, minProductPrice, maxDiscount, expiresAt } = req.body;
+  const { targetId, offerFor, offerType, value, minProductPrice, expiresAt } = req.body;
   try {
     const updated = await offerService.updateOffer(offerId, { 
-      targetId, offerFor, offerType, value, minProductPrice, maxDiscount, expiresAt 
+      targetId, offerFor, offerType, value, minProductPrice, expiresAt 
     });
     res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.OFFER.UPDATED, offer: updated });
   } catch (error) {
@@ -86,6 +126,17 @@ async function toggleOfferStatus(req, res, next) {
     });
   } catch (error) {
     if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
+    next(error);
+  }
+}
+
+async function getOfferView(req, res, next) {
+  try {
+    const offer = await offerService.getAdminOfferDetail(req.params.id);
+    const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
+    res.render("admin/offerView", { offer, backQuery });
+  } catch (error) {
+    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -118,6 +169,32 @@ async function getCoupons(req, res, next) {
       admin: req.session.admin 
     });
   } catch (error) {
+    next(error);
+  }
+}
+
+async function getAddCouponPage(req, res, next) {
+  try {
+    res.render("admin/couponForm", {
+      coupon: null,
+      mode: "add",
+      backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getEditCouponPage(req, res, next) {
+  try {
+    const coupon = await offerService.getAdminCouponDetail(req.params.id);
+    res.render("admin/couponForm", {
+      coupon,
+      mode: "edit",
+      backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
+    });
+  } catch (error) {
+    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -175,13 +252,31 @@ async function toggleCouponStatus(req, res, next) {
   }
 }
 
+async function getCouponView(req, res, next) {
+  try {
+    const coupon = await offerService.getAdminCouponDetail(req.params.id);
+    const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
+    res.render("admin/couponView", { coupon, backQuery });
+  } catch (error) {
+    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    next(error);
+  }
+}
+
 export {
   getOffers,
+  getAddOfferPage,
+  getEditOfferPage,
+  searchOfferTargets,
   addOffer,
   editOffer,
+  getOfferView,
   toggleOfferStatus,
   getCoupons,
+  getAddCouponPage,
+  getEditCouponPage,
   addCoupon,
   editCoupon,
+  getCouponView,
   toggleCouponStatus,
 };

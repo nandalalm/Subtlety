@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - SUBTLETY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
+  <style>
+    :root { --accent: #9135ED; }
+    body { font-family: 'Poppins', sans-serif; }
+    .breadcrumb { background: transparent; padding: 0; margin-bottom: 8px; }
+    .breadcrumb-item { font-size: 1rem; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; }
+    .breadcrumb-item.active { color: var(--accent); font-weight: 500; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; color: #ccc; }
+    .detail-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #f0f0f0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      height: 100%;
+    }
+    .detail-card .card-header {
+      background: #fff;
+      border-bottom: 1px solid #f2f2f2;
+      font-weight: 600;
+    }
+    .info-label {
+      color: #8a8f98;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 0.98rem;
+      font-weight: 500;
+      color: #212529;
+      margin-bottom: 14px;
+      word-break: break-word;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .gallery-item {
+      background: #fff;
+      border: 1px solid #ececec;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .gallery-item img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+    }
+    .gallery-caption {
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      color: #6c757d;
+      border-top: 1px solid #f5f5f5;
+    }
+    .description-box {
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+      border: 1px solid #ece7fb;
+      border-radius: 14px;
+      padding: 18px;
+      line-height: 1.7;
+      color: #343a40;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    @media (max-width: 768px) {
+      .breadcrumb-item { font-size: 0.85rem; }
+      .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body class="bg-light text-dark">
+  <%- include('../partials/Admin/adminNavbar') %>
+  <div class="d-flex" id="wrapper">
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'products' }) %>
+    <div id="page-content-wrapper" class="w-100">
+      <div class="container-fluid py-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/products?<%= backQuery %>">Products</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Product Details</li>
+          </ol>
+        </nav>
+
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <div class="detail-card card">
+              <div class="card-header">Product Summary</div>
+              <div class="card-body">
+                <div class="info-label">Name</div>
+                <div class="info-value"><%= product.name %></div>
+
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="info-label">Category</div>
+                    <div class="info-value"><%= product.category?.name || 'N/A' %></div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="info-label">Price</div>
+                    <div class="info-value">Rs. <%= Number(product.price).toFixed(2) %></div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="info-label">Stock</div>
+                    <div class="info-value"><%= product.stock %></div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">
+                      <span class="status-box status-<%= product.isListed ? 'successful' : 'failed' %>">
+                        <%= product.isListed ? 'Listed' : 'Unlisted' %>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="info-label">Images</div>
+                    <div class="info-value"><%= (product.images || []).length %> uploaded</div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="info-label">Created</div>
+                    <div class="info-value"><%= new Date(product.createdAt).toLocaleDateString() %></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-3">
+            <div class="detail-card card">
+              <div class="card-header">Full Description</div>
+              <div class="card-body">
+                <div class="description-box"><%= product.description %></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-card card">
+          <div class="card-header">Product Images</div>
+          <div class="card-body">
+            <% if (product.images && product.images.length > 0) { %>
+              <div class="gallery-grid">
+                <% product.images.forEach((image, index) => { %>
+                  <div class="gallery-item">
+                    <img src="<%= image %>" alt="Product image <%= index + 1 %>">
+                    <div class="gallery-caption">Image <%= index + 1 %> of <%= product.images.length %></div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <p class="text-muted mb-0">No product images available.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/Admin/adminScripts') %>
+</body>
+</html>

@@ -1,22 +1,17 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/swalHelper.js"></script>
 <script>
     // Logout confirmation
     document.getElementById('logout-btn').addEventListener('click', function(e) {
         e.preventDefault();
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You will be redirected to the login page.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#007bff',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, logout!',
-            cancelButtonText: 'Cancel',
-            background: '#fff',
-            borderRadius: '15px'
-        }).then((result) => {
+        SwalCustom.confirm(
+            'Are you sure?',
+            'You will be redirected to the login page.',
+            'Yes, logout!',
+            'Cancel'
+        ).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('logout-form').submit();
             }

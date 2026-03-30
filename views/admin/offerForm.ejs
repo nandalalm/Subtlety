@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= mode === 'add' ? 'Add Offer' : 'Edit Offer' %> - SUBTLETY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <style>
+    :root { --primary-color: #9135ED; }
+    body { font-family: 'Poppins', sans-serif; }
+    .breadcrumb { background: transparent; padding: 0; margin-bottom: 5px; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; }
+    .breadcrumb-item.active { color: var(--primary-color); }
+    .card { border: none; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .card-header { background: white; border-bottom: 1px solid #eee; padding: 20px; border-radius: 15px 15px 0 0 !important; }
+    .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); border-radius: 10px; padding: 10px 25px; }
+    .btn-primary:hover { background-color: #7a2bc7; border-color: #7a2bc7; }
+    .form-control:focus, .btn:focus, .btn:active { box-shadow: none !important; }
+    .form-control.is-valid, .form-control.is-invalid { background-image: none !important; box-shadow: none !important; }
+    .form-control.is-invalid { border-color: #dc3545 !important; }
+    .field-feedback { display: none; margin-top: 0.35rem; font-size: 0.82rem; font-weight: 500; }
+    .field-feedback.is-error { display: block; color: #dc3545 !important; }
+    .search-stack { display: flex; flex-direction: column; gap: 0.85rem; }
+    .target-picker {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .picker-shell {
+      border: 1px solid #d8dbe5;
+      border-radius: 14px;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      overflow: hidden;
+    }
+    .picker-shell:focus-within {
+      border-color: #cfd4dc;
+      box-shadow: 0 0 0 1px rgba(33, 37, 41, 0.06);
+    }
+    .picker-shell.is-invalid {
+      border-color: #dc3545 !important;
+      box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.08);
+    }
+    .picker-selected-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.95rem 1rem;
+      background: #f8f9fa;
+    }
+    .picker-selected-copy {
+      min-width: 0;
+    }
+    .picker-selected-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #7a7f8c;
+      margin-bottom: 0.18rem;
+    }
+    .picker-selected-value {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: #1f2430;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .picker-change-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      background: #fff;
+      color: #212529;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+    }
+    .picker-change-btn:hover {
+      background: #212529;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .picker-panel {
+      padding: 0.9rem;
+    }
+    .picker-search-wrap {
+      position: relative;
+      margin-bottom: 0.85rem;
+    }
+    .picker-search-wrap i {
+      position: absolute;
+      top: 50%;
+      left: 0.95rem;
+      transform: translateY(-50%);
+      color: #8c92a3;
+      pointer-events: none;
+    }
+    .picker-search-input {
+      padding-left: 2.7rem;
+      border-radius: 12px;
+      border: 1px solid #dee2e6;
+    }
+    .picker-results {
+      max-height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding-right: 0.15rem;
+    }
+    .picker-result-item {
+      border: 1px solid #e7eaf1;
+      border-radius: 12px;
+      background: #fff;
+      color: #1f2430;
+      text-align: left;
+      padding: 0.8rem 0.95rem;
+      font-weight: 500;
+      transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .picker-result-item:hover {
+      background: #f3f4f6;
+      border-color: #cfd4dc;
+      transform: translateX(2px);
+      box-shadow: 0 8px 18px rgba(33, 37, 41, 0.06);
+    }
+    .picker-result-item.is-active {
+      background: #eceff3;
+      border-color: #adb5bd;
+      color: #212529;
+    }
+    .picker-empty-state {
+      border: 1px dashed #d7dbe6;
+      border-radius: 12px;
+      padding: 1rem 0.95rem;
+      text-align: center;
+      color: #6c757d;
+      background: #f8f9fb;
+      font-weight: 500;
+    }
+    .picker-panel[hidden],
+    .picker-selected-bar[hidden] {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <%- include('../partials/Admin/adminNavbar') %>
+  <div class="d-flex" id="wrapper">
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'offers' }) %>
+    <div id="page-content-wrapper" class="w-100">
+      <div class="container-fluid pt-2 px-1 px-md-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-2">
+            <li class="breadcrumb-item"><a href="/admin/offers?<%= backQuery %>">Offers</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><%= mode === 'add' ? 'Add Offer' : 'Edit Offer' %></li>
+          </ol>
+        </nav>
+        <div class="card">
+          <div class="card-header"><h4 class="mb-0"><%= mode === 'add' ? 'Add New Offer' : 'Edit Offer' %></h4></div>
+          <div class="card-body p-4">
+            <form id="offerForm" novalidate>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-4"><label>Offer For</label><select id="offerFor" class="form-control" <%= mode === 'edit' ? 'disabled' : '' %>><option value="">Choose whether this offer is for a product or category</option><option value="Product" <%= offer?.offerFor === 'Product' ? 'selected' : '' %>>Product</option><option value="Category" <%= offer?.offerFor === 'Category' ? 'selected' : '' %>>Category</option></select><small id="offerFor-error" class="field-feedback"></small></div>
+                  <div class="form-group mb-4" id="productWrap" style="display:none;">
+                    <label>Select Product</label>
+                    <div class="target-picker" id="productPicker">
+                      <input id="targetProduct" type="hidden">
+                      <div class="picker-shell" data-field-for="targetProduct">
+                        <div class="picker-selected-bar" id="productSelectedBar" hidden>
+                          <div class="picker-selected-copy">
+                            <div class="picker-selected-label">Selected product</div>
+                            <div class="picker-selected-value" id="productSelectedValue"></div>
+                          </div>
+                          <button type="button" class="picker-change-btn" id="productChangeBtn" title="Change product">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                          </button>
+                        </div>
+                        <div class="picker-panel" id="productPanel">
+                          <div class="picker-search-wrap">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input id="productSearch" class="form-control picker-search-input" type="text" placeholder="Search products by name">
+                          </div>
+                          <div id="productResults" class="picker-results"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <small id="targetProduct-error" class="field-feedback"></small>
+                  </div>
+                  <div class="form-group mb-4" id="categoryWrap" style="display:none;">
+                    <label>Select Category</label>
+                    <div class="target-picker" id="categoryPicker">
+                      <input id="targetCategory" type="hidden">
+                      <div class="picker-shell" data-field-for="targetCategory">
+                        <div class="picker-selected-bar" id="categorySelectedBar" hidden>
+                          <div class="picker-selected-copy">
+                            <div class="picker-selected-label">Selected category</div>
+                            <div class="picker-selected-value" id="categorySelectedValue"></div>
+                          </div>
+                          <button type="button" class="picker-change-btn" id="categoryChangeBtn" title="Change category">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                          </button>
+                        </div>
+                        <div class="picker-panel" id="categoryPanel">
+                          <div class="picker-search-wrap">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input id="categorySearch" class="form-control picker-search-input" type="text" placeholder="Search categories by name">
+                          </div>
+                          <div id="categoryResults" class="picker-results"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <small id="targetCategory-error" class="field-feedback"></small>
+                  </div>
+                  <div class="form-group mb-4"><label>Offer Type</label><select id="offerType" class="form-control"><option value="">Choose the discount type</option><option value="flat" <%= offer?.offerType === 'flat' ? 'selected' : '' %>>Flat Discount</option><option value="percentage" <%= offer?.offerType === 'percentage' ? 'selected' : '' %>>Percentage Discount</option></select><small id="offerType-error" class="field-feedback"></small></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-4"><label id="valueLabel">Discount Amount</label><input id="value" class="form-control" type="number" min="1" value="<%= offer?.value || '' %>" placeholder="Enter the discount value"><small id="value-error" class="field-feedback"></small></div>
+                  <div class="form-group mb-4" id="minPriceWrap" style="display:none;"><label>Minimum Product Price</label><input id="minProductPrice" class="form-control" type="number" min="1" value="<%= offer?.minProductPrice || '' %>" placeholder="e.g. 1500"><small id="minProductPrice-error" class="field-feedback"></small></div>
+                  <div class="form-group mb-4"><label>Expires At</label><input id="expiresAt" class="form-control" type="date" value="<%= offer?.expiresAt ? new Date(offer.expiresAt).toISOString().split('T')[0] : '' %>" placeholder="Select an expiry date"><small id="expiresAt-error" class="field-feedback"></small></div>
+                </div>
+              </div>
+              <hr class="my-4">
+              <div class="d-flex justify-content-end">
+                <a href="/admin/offers?<%= backQuery %>" class="btn btn-light mr-3">Cancel</a>
+                <button class="btn btn-primary" type="submit"><%= mode === 'add' ? 'Save Offer' : 'Update Offer' %></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/Admin/adminScripts') %>
+  <script>
+    const existingOffer = <%- JSON.stringify(offer || null) %>;
+    const offerFor = document.getElementById('offerFor');
+    const targetProduct = document.getElementById('targetProduct');
+    const targetCategory = document.getElementById('targetCategory');
+    const productSearch = document.getElementById('productSearch');
+    const categorySearch = document.getElementById('categorySearch');
+    const productResults = document.getElementById('productResults');
+    const categoryResults = document.getElementById('categoryResults');
+    const offerType = document.getElementById('offerType');
+    const valueInput = document.getElementById('value');
+    const minProductPrice = document.getElementById('minProductPrice');
+    const expiresAt = document.getElementById('expiresAt');
+    const valueLabel = document.getElementById('valueLabel');
+    const searchAbortControllers = { Product: null, Category: null };
+    const searchTimers = { Product: null, Category: null };
+    const searchState = { Product: [], Category: [] };
+    const pickerConfigs = {
+      Product: {
+        type: 'Product',
+        hiddenInput: targetProduct,
+        searchInput: productSearch,
+        resultsContainer: productResults,
+        selectedBar: document.getElementById('productSelectedBar'),
+        selectedValueEl: document.getElementById('productSelectedValue'),
+        changeButton: document.getElementById('productChangeBtn'),
+        emptyText: 'No matching products found',
+        selectedLabel: 'Selected product',
+        selectedValue: existingOffer?.offerFor === 'Product' ? String(existingOffer.targetId?._id || existingOffer.targetId || '') : '',
+        selectedLabelText: existingOffer?.offerFor === 'Product' ? String(existingOffer.targetId?.name || '') : ''
+      },
+      Category: {
+        type: 'Category',
+        hiddenInput: targetCategory,
+        searchInput: categorySearch,
+        resultsContainer: categoryResults,
+        selectedBar: document.getElementById('categorySelectedBar'),
+        selectedValueEl: document.getElementById('categorySelectedValue'),
+        changeButton: document.getElementById('categoryChangeBtn'),
+        emptyText: 'No matching categories found',
+        selectedLabel: 'Selected category',
+        selectedValue: existingOffer?.offerFor === 'Category' ? String(existingOffer.targetId?._id || existingOffer.targetId || '') : '',
+        selectedLabelText: existingOffer?.offerFor === 'Category' ? String(existingOffer.targetId?.name || '') : ''
+      }
+    };
+    const touchedFields = new Set();
+    let submitAttempted = false;
+    let productPickerExpanded = !pickerConfigs.Product.selectedValue;
+    let categoryPickerExpanded = !pickerConfigs.Category.selectedValue;
+    targetProduct.value = pickerConfigs.Product.selectedValue;
+    targetCategory.value = pickerConfigs.Category.selectedValue;
+    function setFieldState(id, message = '', showError = false) {
+      const input = document.getElementById(id);
+      const feedback = document.getElementById(`${id}-error`);
+      const shell = document.querySelector(`[data-field-for="${id}"]`);
+      if (showError && message) {
+        input.classList.add('is-invalid');
+        if (shell) shell.classList.add('is-invalid');
+        feedback.textContent = message;
+        feedback.className = 'field-feedback is-error';
+        return false;
+      }
+      input.classList.remove('is-invalid');
+      if (shell) shell.classList.remove('is-invalid');
+      feedback.textContent = '';
+      feedback.className = 'field-feedback';
+      return true;
+    }
+    function shouldShowError(id) {
+      return submitAttempted || touchedFields.has(id);
+    }
+    function getPickerConfig(type) {
+      return pickerConfigs[type];
+    }
+    function renderTargetOptions(type, isExpanded) {
+      const config = pickerConfigs[type];
+      config.hiddenInput.value = config.selectedValue;
+      config.selectedBar.hidden = !config.selectedValue;
+      if (config.selectedValue) {
+        config.selectedValueEl.textContent = config.selectedLabelText || 'Selected';
+        config.changeButton.setAttribute('aria-label', `Change ${type.toLowerCase()}`);
+      }
+      config.resultsContainer.innerHTML = '';
+      if (!searchState[type].length) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'picker-empty-state';
+        emptyState.textContent = config.emptyText;
+        config.resultsContainer.appendChild(emptyState);
+      } else {
+        searchState[type].forEach((item) => {
+          const optionButton = document.createElement('button');
+          optionButton.type = 'button';
+          optionButton.className = `picker-result-item${item.value === config.selectedValue ? ' is-active' : ''}`;
+          optionButton.textContent = item.label;
+          optionButton.dataset.value = item.value;
+          optionButton.addEventListener('click', () => {
+            config.selectedValue = item.value;
+            config.selectedLabelText = item.label;
+            config.hiddenInput.value = item.value;
+            if (type === 'Product') productPickerExpanded = false;
+            else categoryPickerExpanded = false;
+            renderTargetOptions(type, false);
+            handleFieldInteraction(config.hiddenInput.id);
+          });
+          config.resultsContainer.appendChild(optionButton);
+        });
+      }
+      const panel = config.searchInput.closest('.picker-panel');
+      panel.hidden = !isExpanded;
+      if (!config.selectedValue && !isExpanded) panel.hidden = false;
+    }
+    function syncTargetLists() {
+      renderTargetOptions('Product', productPickerExpanded);
+      renderTargetOptions('Category', categoryPickerExpanded);
+    }
+    async function fetchTargetOptions(type) {
+      const config = pickerConfigs[type];
+      if (searchAbortControllers[type]) searchAbortControllers[type].abort();
+      const controller = new AbortController();
+      searchAbortControllers[type] = controller;
+      try {
+        const params = new URLSearchParams({
+          offerFor: type,
+          search: config.searchInput.value.trim(),
+        });
+        const response = await fetch(`/admin/offers/search-targets?${params.toString()}`, { signal: controller.signal });
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+          throw new Error(data.message || 'Failed to load matching results');
+        }
+        searchState[type] = data.targets || [];
+        renderTargetOptions(type, type === 'Product' ? productPickerExpanded : categoryPickerExpanded);
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        searchState[type] = [];
+        renderTargetOptions(type, type === 'Product' ? productPickerExpanded : categoryPickerExpanded);
+      }
+    }
+    function queueTargetFetch(type) {
+      if (searchTimers[type]) clearTimeout(searchTimers[type]);
+      searchTimers[type] = setTimeout(() => {
+        fetchTargetOptions(type);
+      }, 250);
+    }
+    async function expandPicker(type) {
+      const config = pickerConfigs[type];
+      if (type === 'Product') productPickerExpanded = true;
+      else categoryPickerExpanded = true;
+      config.searchInput.value = '';
+      await fetchTargetOptions(type);
+      window.requestAnimationFrame(() => config.searchInput.focus());
+    }
+    function getToday() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return today;
+    }
+    function validateField(id, forceShow = false) {
+      const showError = forceShow || shouldShowError(id);
+      let message = '';
+      if (id === 'offerFor') {
+        if (!offerFor.value) message = 'Please choose what this offer applies to.';
+      }
+      if (id === 'targetProduct') {
+        if (offerFor.value === 'Product' && !targetProduct.value) message = 'Please select a product.';
+      }
+      if (id === 'targetCategory') {
+        if (offerFor.value === 'Category' && !targetCategory.value) message = 'Please select a category.';
+      }
+      if (id === 'offerType') {
+        if (!offerType.value) message = 'Please choose an offer type.';
+      }
+      if (id === 'value') {
+        const numericValue = Number(valueInput.value);
+        if (!valueInput.value || numericValue <= 0) {
+          message = 'Discount amount must be greater than 0.';
+        } else if (offerType.value === 'percentage' && (numericValue < 1 || numericValue > 80)) {
+          message = 'Only percentage values from 1 to 80 are allowed.';
+        } else if (offerFor.value === 'Category' && offerType.value === 'flat' && minProductPrice.value && numericValue >= Number(minProductPrice.value)) {
+          message = `Discount Amount must be less than the minimum product price.`;
+        }
+      }
+      if (id === 'minProductPrice') {
+        const numericMinPrice = Number(minProductPrice.value);
+        if (offerFor.value === 'Category' && offerType.value === 'flat' && (!minProductPrice.value || numericMinPrice <= 0)) {
+          message = 'Minimum product price must be greater than 0.';
+        } else if (offerFor.value === 'Category' && offerType.value === 'flat' && valueInput.value && Number(valueInput.value) >= numericMinPrice) {
+          message = `Minimum product price must be greater than the Discount Amount.`;
+        }
+      }
+      if (id === 'expiresAt') {
+        if (!expiresAt.value) message = 'Expiry date is required.';
+        else if (new Date(expiresAt.value) < getToday()) message = 'Expiry date cannot be a past date.';
+      }
+      return setFieldState(id, message, showError);
+    }
+    function syncVisibility() {
+      document.getElementById('productWrap').style.display = offerFor.value === 'Product' ? 'block' : 'none';
+      document.getElementById('categoryWrap').style.display = offerFor.value === 'Category' ? 'block' : 'none';
+      document.getElementById('minPriceWrap').style.display = offerFor.value === 'Category' && offerType.value === 'flat' ? 'block' : 'none';
+      valueLabel.textContent = offerType.value === 'percentage' ? 'Percentage Value' : 'Discount Amount';
+      valueInput.placeholder = offerType.value === 'percentage' ? 'Enter a value from 1 to 80' : 'e.g. 250';
+      valueInput.max = offerType.value === 'percentage' ? '80' : '';
+    }
+    function validateForm(forceShowAll = false) {
+      syncVisibility();
+      if (forceShowAll) submitAttempted = true;
+      let ok = true;
+      ok = validateField('offerFor', forceShowAll) && ok;
+      ok = validateField('offerType', forceShowAll) && ok;
+      ok = validateField('value', forceShowAll) && ok;
+      ok = validateField('expiresAt', forceShowAll) && ok;
+      ok = validateField('targetProduct', forceShowAll) && ok;
+      ok = validateField('targetCategory', forceShowAll) && ok;
+      ok = validateField('minProductPrice', forceShowAll) && ok;
+      return ok;
+    }
+    function handleFieldInteraction(id, relatedFieldIds = []) {
+      touchedFields.add(id);
+      validateField(id);
+      relatedFieldIds.forEach((relatedId) => validateField(relatedId));
+    }
+    offerFor.addEventListener('change', async () => {
+      handleFieldInteraction('offerFor', ['targetProduct', 'targetCategory', 'value', 'minProductPrice']);
+      if (offerFor.value === 'Product' && !pickerConfigs.Product.selectedValue) await fetchTargetOptions('Product');
+      if (offerFor.value === 'Category' && !pickerConfigs.Category.selectedValue) await fetchTargetOptions('Category');
+      syncVisibility();
+    });
+    offerType.addEventListener('change', () => {
+      handleFieldInteraction('offerType', ['value', 'minProductPrice']);
+      syncVisibility();
+    });
+    valueInput.addEventListener('input', () => handleFieldInteraction('value', ['minProductPrice']));
+    minProductPrice.addEventListener('input', () => handleFieldInteraction('minProductPrice', ['value']));
+    expiresAt.addEventListener('input', () => handleFieldInteraction('expiresAt'));
+    productSearch.addEventListener('input', () => {
+      productPickerExpanded = true;
+      queueTargetFetch('Product');
+    });
+    categorySearch.addEventListener('input', () => {
+      categoryPickerExpanded = true;
+      queueTargetFetch('Category');
+    });
+    pickerConfigs.Product.changeButton.addEventListener('click', async () => expandPicker('Product'));
+    pickerConfigs.Category.changeButton.addEventListener('click', async () => expandPicker('Category'));
+    syncTargetLists();
+    syncVisibility();
+    document.getElementById('offerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validateForm(true)) return;
+      const body = { offerFor: offerFor.value, targetId: offerFor.value === 'Product' ? targetProduct.value : targetCategory.value, offerType: offerType.value, value: valueInput.value, minProductPrice: minProductPrice.value, expiresAt: expiresAt.value };
+      const endpoint = '<%= mode === "add" ? "/admin/offers/add" : `/admin/offers/edit/${offer?._id}` %>';
+      const response = await SwalCustom.withDelayedProcessing(
+        () => fetch(endpoint, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) }),
+        { title: 'Saving...', text: 'Please wait while we save the offer.' }
+      );
+      const data = await response.json();
+      if (!response.ok || data.success === false) return SwalCustom.error('Error', data.message || 'Failed to save offer');
+      await SwalCustom.success('Success', data.message || 'Offer saved successfully');
+      window.location.href = '/admin/offers?<%= backQuery %>';
+    });
+  </script>
+</body>
+</html>

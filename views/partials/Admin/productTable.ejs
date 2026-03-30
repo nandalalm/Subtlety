@@ -4,7 +4,7 @@
     const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
 %>
 
-<div class="table-container-shared card border-0 shadow-sm" id="productTableContainer">
+<div class="table-container-shared card border-0 shadow-sm admin-cards-responsive" id="productTableContainer">
     <% if (productList.length === 0) { %>
         <div class="text-center py-5">
             <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
@@ -22,7 +22,7 @@
                     <th style="width: 10%;">Stock</th>
                     <th style="width: 15%;">Images</th>
                     <th style="width: 10%;">Status</th>
-                    <th style="width: 10%;" class="text-center">Action</th>
+                    <th style="width: 18%;" class="text-center">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,11 +61,15 @@
                     </td>
                     <td class="text-center">
                         <div class="d-flex align-items-center justify-content-center">
+                            <a href="/admin/products/<%= product._id %>/view?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>"
+                               class="btn btn-sm rounded-pill px-3 mr-2 table-action-btn table-btn-view">
+                                View
+                            </a>
                             <a href="/admin/products/edit/<%= product._id %>?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>" 
-                               class="btn btn-sm btn-outline-primary rounded-pill px-3 mr-2">
+                               class="btn btn-sm rounded-pill px-3 mr-2 table-action-btn table-btn-edit">
                                 Edit
                             </a>
-                            <button class="btn btn-sm toggle-status-btn <%= product.isListed ? 'btn-outline-secondary' : 'btn-outline-success' %> rounded-pill px-3" 
+                            <button class="btn btn-sm toggle-status-btn rounded-pill px-3 table-action-btn <%= product.isListed ? 'table-btn-unlist' : 'table-btn-relist' %>" 
                                     data-id="<%= product._id %>"
                                     data-status="<%= product.isListed %>"
                                     onclick="toggleProductStatus(this)">
@@ -107,14 +111,20 @@
                     <p><strong>Stock:</strong> <span class="<%= product.stock < 5 ? 'text-danger' : '' %>"><%= product.stock %></span></p>
                     
                     <div class="mt-4 row">
+                        <div class="col-12 mb-2">
+                            <a href="/admin/products/<%= product._id %>/view?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>" 
+                               class="btn btn-sm btn-block rounded-pill table-action-btn table-btn-view">
+                                View
+                            </a>
+                        </div>
                         <div class="col">
                             <a href="/admin/products/edit/<%= product._id %>?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>" 
-                               class="btn btn-sm btn-outline-primary btn-block rounded-pill">
+                               class="btn btn-sm btn-block rounded-pill table-action-btn table-btn-edit">
                                 Edit
                             </a>
                         </div>
                         <div class="col">
-                            <button class="btn btn-sm btn-block toggle-status-btn rounded-pill <%= product.isListed ? 'btn-outline-secondary' : 'btn-outline-success' %>" 
+                            <button class="btn btn-sm btn-block toggle-status-btn rounded-pill table-action-btn <%= product.isListed ? 'table-btn-unlist' : 'table-btn-relist' %>" 
                                     data-id="<%= product._id %>"
                                     data-status="<%= product.isListed %>"
                                     onclick="toggleProductStatus(this)">

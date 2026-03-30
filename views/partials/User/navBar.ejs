@@ -79,11 +79,39 @@
         <a href="/wishlist" class="nav-link"><i class="fas fa-heart"></i></a>
         <a href="/profile" class="nav-link"><i class="fas fa-user"></i></a>
       </div>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-    </div>
   </nav>
+
+  <!-- SweetAlert2 & Custom Helper -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/swalHelper.js"></script>
+  <script>
+    window.handleBlockedSessionResponse = async function(response) {
+      if (!response || response.status !== 401) return response;
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) return response;
+
+      const payload = await response.clone().json().catch(() => null);
+      if (!payload || !payload.logout) return response;
+
+      const message = payload.error || payload.message || 'Your session is no longer available.';
+      const redirect = payload.redirect || '/auth/login';
+      await SwalCustom.error('Session Ended', message);
+      window.location.href = redirect;
+      return null;
+    };
+
+    window.authAwareFetch = async function(url, options = {}) {
+      const mergedOptions = { ...options };
+      const headers = new Headers(options.headers || {});
+      if (!headers.has('Accept')) headers.set('Accept', 'application/json');
+      if (!headers.has('X-Requested-With')) headers.set('X-Requested-With', 'XMLHttpRequest');
+      mergedOptions.headers = headers;
+
+      const response = await fetch(url, mergedOptions);
+      return window.handleBlockedSessionResponse(response);
+    };
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

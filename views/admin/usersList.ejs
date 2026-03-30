@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
   <link rel="stylesheet" href="/styles/shared/tables.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 
 <body class="bg-light text-dark">
@@ -77,15 +76,12 @@
       const blocked = button.getAttribute('data-blocked') === 'true';
       const action = blocked ? 'unblock' : 'block';
 
-      Swal.fire({
-        title: 'Are you sure?',
-        text: `Do you want to ${action} this user?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#9135ED',
-        cancelButtonColor: '#d33',
-        confirmButtonText: `Yes, ${action}!`
-      }).then((result) => {
+      SwalCustom.confirm(
+        'Are you sure?',
+        `Do you want to ${action} this user?`,
+        `Yes, ${action}!`,
+        'Cancel'
+      ).then((result) => {
         if (result.isConfirmed) {
           fetch(`/admin/users/toggle-status/${userId}`, {
               method: 'POST',
@@ -116,23 +112,15 @@
                 buttons.forEach(btn => {
                   btn.textContent = isBlocked ? 'Unblock' : 'Block';
                   btn.setAttribute('data-blocked', isBlocked.toString());
-                  btn.className = `btn btn-sm rounded-pill ${isBlocked ? 'btn-outline-success' : 'btn-outline-danger'} ${btn.classList.contains('px-4') ? 'px-4' : 'px-3'}`;
+                  btn.className = `btn btn-sm rounded-pill table-action-btn ${isBlocked ? 'table-btn-unblock' : 'table-btn-block'} ${btn.classList.contains('px-4') ? 'px-4' : 'px-3'}`;
                 });
 
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Updated!',
-                  text: `User has been ${isBlocked ? 'blocked' : 'unblocked'}.`,
-                  toast: true,
-                  position: 'top-end',
-                  showConfirmButton: false,
-                  timer: 3000
-                });
+                SwalCustom.success('Updated!', `User has been ${isBlocked ? 'blocked' : 'unblocked'}.`);
               } else {
-                Swal.fire('Error', data.message || 'Could not update status.', 'error');
+                SwalCustom.error('Error', data.message || 'Could not update status.');
               }
             })
-            .catch(() => Swal.fire('Error', 'Network error. Please try again.', 'error'));
+            .catch(() => SwalCustom.error('Error', 'Network error. Please try again.'));
         }
       });
     }

@@ -54,6 +54,32 @@ async function getCategories(req, res, next) {
   }
 }
 
+async function getAddCategoryPage(req, res, next) {
+  try {
+    res.render("admin/categoryForm", {
+      category: null,
+      mode: "add",
+      backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getEditCategoryPage(req, res, next) {
+  try {
+    const category = await categoryService.getCategoryById(req.params.id);
+    res.render("admin/categoryForm", {
+      category,
+      mode: "edit",
+      backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
+    });
+  } catch (error) {
+    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    next(error);
+  }
+}
+
 let ongoingRequests = new Set();
 
 async function addCategory(req, res, next) {
@@ -127,6 +153,8 @@ async function toggleCategoryStatus(req, res, next) {
 
 export {
   getCategories,
+  getAddCategoryPage,
+  getEditCategoryPage,
   addCategory,
   editCategory,
   toggleCategoryStatus,

@@ -55,6 +55,14 @@ const categoryService = {
     return await categoryRepository.findByIdAndUpdate(id, updateData);
   },
 
+  getCategoryById: async (id) => {
+    const category = await categoryRepository.findById(id);
+    if (!category) {
+      throw { statusCode: 404, message: MESSAGES.CATEGORY.NOT_FOUND };
+    }
+    return category;
+  },
+
   toggleStatus: async (id) => {
     const category = await categoryRepository.findById(id);
     if (!category) {

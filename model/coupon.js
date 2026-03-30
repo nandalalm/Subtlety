@@ -7,6 +7,8 @@ const couponSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     uppercase: true,
+    minlength: 4,
+    match: /^[A-Z0-9]+$/,
   },
   discountAmount: {
     type: Number,

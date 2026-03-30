@@ -3,9 +3,12 @@
     const isAdm = typeof isAdmin !== 'undefined' ? isAdmin : false;
     const currPg = typeof currentPage !== 'undefined' ? parseInt(currentPage) : 1;
     const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
+    const adminOrderQuery = isAdm
+        ? `?page=${currPg}&search=${encodeURIComponent(typeof search !== 'undefined' ? search : '')}&sort=${typeof sort !== 'undefined' ? sort : 'default'}&paymentStatus=${typeof paymentStatus !== 'undefined' ? paymentStatus : ''}`
+        : '';
 %>
 
-<div class="table-container-shared card border-0 shadow-sm" id="orderTableContainer">
+<div class="table-container-shared card border-0 shadow-sm <%= isAdm ? 'admin-cards-responsive' : 'user-order-responsive' %>" id="orderTableContainer">
     <% if (orderList.length === 0) { %>
         <div class="text-center py-5">
             <% if (typeof totalOrdersUnfiltered !== 'undefined' && totalOrdersUnfiltered === 0) { %>
@@ -67,8 +70,8 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        <a href="<%= isAdm ? `/admin/orders/${order._id}` : `/orders/${order._id}` %>" 
-                           class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        <a href="<%= isAdm ? `/admin/orders/${order._id}/view${adminOrderQuery}` : `/orders/${order._id}` %>" 
+                           class="btn btn-sm rounded-pill px-3 table-action-btn table-btn-view">
                             <%= isAdm ? 'View' : 'Details' %>
                         </a>
                         
@@ -112,8 +115,8 @@
                     <p><strong>Payment:</strong> <%= order.paymentMethod %> (<span class="text-uppercase small <%= order.paymentStatus === 'Successful' ? 'text-success' : 'text-danger' %>"><%= order.paymentStatus %></span>)</p>
                     
                     <div class="mt-3">
-                        <a href="<%= isAdm ? `/admin/orders/${order._id}` : `/orders/${order._id}` %>" 
-                           class="btn btn-sm btn-primary btn-block rounded-pill">
+                        <a href="<%= isAdm ? `/admin/orders/${order._id}/view${adminOrderQuery}` : `/orders/${order._id}` %>" 
+                           class="btn btn-sm btn-block rounded-pill table-action-btn table-btn-view">
                             <%= isAdm ? 'Manage Order' : 'View Details' %>
                         </a>
                     </div>
@@ -125,7 +128,7 @@
     
     <!-- Pagination moved inside for AJAX refresh support -->
     <% if (typeof totalPages !== 'undefined' && totalPages >= 1 && orderList.length > 0) { %>
-        <div class="px-3 pt-3 pb-4">
+        <div class="px-3 pb-3">
             <%- include('./pagination') %>
         </div>
     <% } %>

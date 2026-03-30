@@ -1,3 +1,22 @@
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-y: scroll;
+}
+
+body.modal-open,
+body.swal2-shown,
+body.swal2-height-auto {
+  overflow-y: scroll !important;
+  padding-right: 0 !important;
+}
+
+.modal {
+  padding-right: 0 !important;
+}
+
 .header-nav{
   background: rgb(255, 255, 255);
   position: fixed;

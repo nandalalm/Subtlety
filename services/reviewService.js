@@ -126,6 +126,22 @@ const reviewService = {
     review.isListed = !review.isListed;
     await reviewRepository.updateById(reviewId, { isListed: review.isListed });
     return { isListed: review.isListed };
+  },
+
+  getAdminReviewDetail: async (reviewId) => {
+    const review = await reviewRepository.findByIdAndPopulate(reviewId, [
+      { path: "productId", select: "name images category price isListed" },
+      { path: "userId", select: "firstname lastname email phoneNo" },
+      { path: "orderId", select: "orderId orderDate" }
+    ]);
+
+    if (!review) {
+      const error = new Error(MESSAGES.REVIEW.NOT_FOUND);
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
+      throw error;
+    }
+
+    return review;
   }
 };
 

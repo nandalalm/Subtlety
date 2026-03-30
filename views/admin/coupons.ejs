@@ -12,27 +12,48 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
   <link rel="stylesheet" href="/styles/shared/tables.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <style>
     .modal-body .scrollable-select {
       max-height: 150px;
       overflow-y: auto;
     }
+    .form-control:focus,
+    .btn:focus,
+    .btn:active {
+      box-shadow: none !important;
+    }
 
-    .is-invalid {
-      border-color: #dc3545;
+    .form-control.is-valid,
+    .form-control.is-invalid {
+      background-image: none !important;
+      box-shadow: none !important;
+    }
+
+    .form-control.is-invalid {
+      border-color: #dc3545 !important;
       outline-color: #dc3545;
     }
 
-    .is-valid {
-      border-color: #28a745;
+    .form-control.is-valid {
+      border-color: #28a745 !important;
       outline-color: #28a745;
     }
 
-    .invalid-feedback {
+    .admin-validation-message {
       display: none;
+      font-size: 0.82rem;
+      margin-top: 0.35rem;
+      font-weight: 500;
+    }
+
+    .admin-validation-message.is-error {
+      display: block;
       color: #dc3545;
-      font-size: 80%;
+    }
+
+    .admin-validation-message.is-success {
+      display: block;
+      color: #28a745;
     }
   </style>
 </head>
@@ -50,9 +71,9 @@
         <div class="row mb-3 align-items-center">
             <!-- Add Coupon Button -->
             <div class="col-lg-3 col-md-12 mb-3">
-                <button type="button" class="btn btn-primary btn-block rounded-pill shadow-sm" data-toggle="modal" data-target="#addCouponModal">
-                    <i class="fas fa-plus mr-1"></i> Add New Coupon
-                </button>
+                <a href="/admin/offers/coupons/add?page=<%= currentPage || 1 %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= sort || 'latest' %>" class="btn btn-primary btn-block rounded-pill shadow-sm">
+                    <i class="fas fa-plus mr-2"></i>Add New Coupon
+                </a>
             </div>
 
             <!-- Search -->
@@ -98,221 +119,18 @@
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
   <script>
-    // AJAX Search, Sort, and Pagination is now handled by /js/ajaxTable.js
-
-    // Update visibility based on discount type for add modal
-    function updateAddDiscountTypeVisibility() {
-      const discountType = document.getElementById('addDiscountType').value;
-      document.getElementById('addMinOrderValueGroup').style.display = discountType === 'flat' ? 'block' : 'none';
-      document.getElementById('addMaxDiscountGroup').style.display = discountType === 'percentage' ? 'block' : 'none';
-    }
-
-    // Update visibility based on discount type for edit modal
-    function updateEditDiscountTypeVisibility() {
-      const discountType = document.getElementById('editDiscountType').value;
-      document.getElementById('editMinOrderValueGroup').style.display = discountType === 'flat' ? 'block' : 'none';
-      document.getElementById('editMaxDiscountGroup').style.display = discountType === 'percentage' ? 'block' : 'none';
-    }
-
-    document.getElementById('addDiscountType').addEventListener('change', updateAddDiscountTypeVisibility);
-    document.getElementById('editDiscountType').addEventListener('change', updateEditDiscountTypeVisibility);
-
-    function validateInput(input) {
-      if (input.id === 'code' || input.id === 'editCode') {
-        if (!/^[a-zA-Z0-9]*$/.test(input.value)) {
-          input.setCustomValidity('No leading or trailing spaces and no special characters allowed');
-        } else {
-          input.setCustomValidity('');
-        }
-      }
-
-      const isAdd = input.id.startsWith('add');
-      const discountAmountId = isAdd ? 'addDiscountAmount' : 'editDiscountAmount';
-      const discountTypeId = isAdd ? 'addDiscountType' : 'editDiscountType';
-
-      if (input.id === discountAmountId) {
-        const discountType = document.getElementById(discountTypeId).value;
-        const minOrderValue = document.getElementById(isAdd ? 'addMinOrderValue' : 'editMinOrderValue').value;
-
-        if (discountType === 'percentage') {
-          if (isNaN(input.value) || input.value < 1 || input.value > 80) {
-            input.setCustomValidity('Should be between 1 and 80 for percentage.');
-          } else {
-            input.setCustomValidity('');
-          }
-        } else if (discountType === 'flat') {
-          if (isNaN(input.value) || input.value <= 0) {
-            input.setCustomValidity('Discount must be greater than 0.');
-          } else if (minOrderValue && Number(input.value) >= Number(minOrderValue)) {
-            input.setCustomValidity('Discount must be less than Minimum Order Value.');
-          } else {
-            input.setCustomValidity('');
-          }
-        }
-      }
-
-      if (input.checkValidity()) {
-        input.classList.remove('is-invalid');
-        input.classList.add('is-valid');
-      } else {
-        input.classList.remove('is-valid');
-        input.classList.add('is-invalid');
-      }
-    }
-
-    const inputs = document.querySelectorAll('input, select');
-    inputs.forEach(input => {
-      input.addEventListener('input', () => validateInput(input));
-    });
-
-    document.getElementById('addCouponForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const code = document.getElementById('code').value.trim();
-      const expiresAt = document.getElementById('addExpiresAt').value;
-      
-      if(new Date(expiresAt) < new Date().setHours(0,0,0,0)) {
-        return Swal.fire('Error!', 'Must be today or a future date', 'error');
-      }
-
-      const discountAmount = document.getElementById('addDiscountAmount').value;
-      const discountType = document.getElementById('addDiscountType').value;
-      const minOrderValue = document.getElementById('addMinOrderValue').value;
-
-      if (discountType === 'flat' && Number(discountAmount) >= Number(minOrderValue)) {
-        return Swal.fire('Error!', 'Flat discount must be less than Minimum Order Value', 'error');
-      }
-
-      const body = {
-        code,
-        discountAmount,
-        discountType,
-        maxDiscount: document.getElementById('addMaxDiscount').value,
-        minOrderValue,
-        expiresAt,
-        usageLimit: document.getElementById('addUsageLimit').value
-      };
-
-      fetch('/admin/offers/coupons/add', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success !== false) {
-                $('#addCouponModal').modal('hide');
-                document.getElementById('addCouponForm').reset();
-                refreshTable('couponTableContainer');
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: data.message,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message,
-                    confirmButtonColor: '#9135ED'
-                });
-            }
-        })
-        .catch(err => Swal.fire('Error!', 'Network Error', 'error'));
-    });
-
-    function openEditCouponModal(couponStr) {
-      const coupon = JSON.parse(couponStr);
-      document.getElementById('editCouponId').value = coupon._id;
-      document.getElementById('editCode').value = coupon.code;
-      document.getElementById('editDiscountAmount').value = coupon.discountAmount;
-      document.getElementById('editDiscountType').value = coupon.discountType;
-      updateEditDiscountTypeVisibility();
-      document.getElementById('editMinOrderValue').value = coupon.minOrderValue || '';
-      document.getElementById('editMaxDiscount').value = coupon.maxDiscount || '';
-      document.getElementById('editExpiresAt').value = new Date(coupon.expiresAt).toISOString().split('T')[0];
-      document.getElementById('editUsageLimit').value = coupon.usageLimit;
-      $('#editCouponModal').modal('show');
-    }
-
-    document.getElementById('editCouponForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const couponId = document.getElementById('editCouponId').value;
-      const discountAmount = document.getElementById('editDiscountAmount').value;
-      const discountType = document.getElementById('editDiscountType').value;
-      const minOrderValue = document.getElementById('editMinOrderValue').value;
-
-      if (discountType === 'flat' && Number(discountAmount) >= Number(minOrderValue)) {
-        return Swal.fire('Error!', 'Flat discount must be less than Minimum Order Value', 'error');
-      }
-
-      const body = {
-        code: document.getElementById('editCode').value.trim(),
-        discountAmount,
-        discountType,
-        maxDiscount: document.getElementById('editMaxDiscount').value,
-        minOrderValue,
-        expiresAt: document.getElementById('editExpiresAt').value,
-        usageLimit: document.getElementById('editUsageLimit').value
-      };
-
-      fetch(`/admin/offers/coupons/${couponId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success !== false) {
-                $('#editCouponModal').modal('hide');
-                refreshTable('couponTableContainer');
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Coupon updated successfully!',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message,
-                    confirmButtonColor: '#9135ED'
-                });
-            }
-        })
-        .catch(err => Swal.fire('Error!', 'Network Error', 'error'));
-    });
-
     function toggleCouponStatus(button) {
       const couponId = button.getAttribute('data-id');
       const isCurrentlyActive = button.getAttribute('data-status') === 'true';
-      const action = isCurrentlyActive ? 'unlist' : 'list';
+      const action = isCurrentlyActive ? 'unlist' : 'relist';
 
-      Swal.fire({
-        title: 'Are you sure?',
-        text: `Do you want to ${action} this coupon?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#9135ED',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No'
-      }).then((result) => {
+      SwalCustom.confirm(
+        'Are you sure?',
+        `Do you want to ${action} this coupon?`,
+        'Yes',
+        'No'
+      ).then((result) => {
         if (result.isConfirmed) {
           fetch(`/admin/offers/coupons/toggle-status/${couponId}`, {
               method: 'POST'
@@ -339,26 +157,18 @@
                 const buttons = document.querySelectorAll(`button[data-id="${couponId}"]`);
                 buttons.forEach(btn => {
                   if (btn.classList.contains('toggle-status-btn')) {
-                    btn.textContent = isActive ? 'Unlist' : 'List';
+                    btn.textContent = isActive ? 'Unlist' : 'Relist';
                     btn.setAttribute('data-status', isActive.toString());
-                    btn.className = `btn btn-sm rounded-pill ${isActive ? 'btn-outline-secondary' : 'btn-outline-primary'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
+                    btn.className = `btn btn-sm rounded-pill table-action-btn ${isActive ? 'table-btn-unlist' : 'table-btn-relist'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
                   }
                 });
 
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Updated!',
-                  text: `Coupon has been ${isActive ? 'listed' : 'unlisted'}.`,
-                  toast: true,
-                  position: 'top-end',
-                  showConfirmButton: false,
-                  timer: 3000
-                });
+                SwalCustom.success('Updated!', `Coupon has been ${isActive ? 'listed' : 'unlisted'}.`);
               } else {
-                Swal.fire('Error', data.message || 'Could not update status.', 'error');
+                SwalCustom.error('Error', data.message || 'Could not update status.');
               }
             })
-            .catch(() => Swal.fire('Error', 'Network error. Please try again.', 'error'));
+            .catch(() => SwalCustom.error('Error', 'Network error. Please try again.'));
         }
       });
     }

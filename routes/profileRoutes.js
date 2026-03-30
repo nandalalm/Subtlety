@@ -12,6 +12,8 @@ router.post('/change-password', userAuthenticated, profileController.changePassw
 
 // Address sub-routes (under /profile/address)
 router.get('/address', userAuthenticated, profileController.getAddresses);
+router.get('/address/add', userAuthenticated, profileController.getAddAddressPage);
+router.get('/address/edit/:id', userAuthenticated, profileController.getEditAddressPage);
 router.post('/address/add', userAuthenticated, profileController.addAddress);
 router.put('/address/edit/:id', userAuthenticated, profileController.editAddress);
 router.delete('/address/delete/:id', userAuthenticated, profileController.deleteAddress);

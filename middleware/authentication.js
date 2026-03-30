@@ -5,7 +5,12 @@ import HTTP_STATUS from "../Constants/httpStatus.js";
 function isAuthenticated(req, res, next) {
   if (!req.session.admin) {
     if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.MIDDLEWARE.UNAUTHORIZED });
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        error: MESSAGES.MIDDLEWARE.UNAUTHORIZED,
+        logout: true,
+        redirect: "/admin/login"
+      });
     }
     return res.redirect("/admin/login");
   }
@@ -15,7 +20,12 @@ function isAuthenticated(req, res, next) {
 async function userAuthenticated(req, res, next) {
   if (!req.session.user) {
     if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.MIDDLEWARE.UNAUTHORIZED });
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        error: MESSAGES.MIDDLEWARE.UNAUTHORIZED,
+        logout: true,
+        redirect: "/auth/login"
+      });
     }
     return res.redirect("/auth/login");
   }
@@ -25,7 +35,12 @@ async function userAuthenticated(req, res, next) {
     if (!user || user.isBlocked) {
       req.session.user = null; // Clear user session
       if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
-        return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.MIDDLEWARE.ACCOUNT_BLOCKED_OR_NOT_FOUND });
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: MESSAGES.MIDDLEWARE.ACCOUNT_BLOCKED_OR_NOT_FOUND,
+          logout: true,
+          redirect: "/auth/login"
+        });
       }
       return res.redirect("/auth/login");
     }

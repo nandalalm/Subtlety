@@ -63,6 +63,32 @@ async function getAddresses(req, res, next) {
   }
 }
 
+async function getAddAddressPage(req, res, next) {
+  try {
+    res.render("user/addressForm", {
+      user: req.session.user,
+      address: null,
+      mode: "add"
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getEditAddressPage(req, res, next) {
+  try {
+    const address = await profileService.getAddressById(req.params.id);
+    res.render("user/addressForm", {
+      user: req.session.user,
+      address,
+      mode: "edit"
+    });
+  } catch (error) {
+    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    next(error);
+  }
+}
+
 async function addAddress(req, res, next) {
   const userId = req.session.user._id;
   try {
@@ -179,6 +205,8 @@ export {
   updateEmail,
   updatePhoneNumber,
   getAddresses,
+  getAddAddressPage,
+  getEditAddressPage,
   addAddress,
   editAddress,
   deleteAddress,

@@ -13,8 +13,65 @@
   <link rel="stylesheet" href="/styles/shared/tables.css">
   <link rel="stylesheet" href="/styles/admin/categories.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    .form-control:focus,
+    .custom-file-input:focus ~ .custom-file-label,
+    .btn:focus,
+    .btn:active {
+      box-shadow: none !important;
+    }
+    .form-control.is-valid,
+    .form-control.is-invalid,
+    .custom-file-input.is-valid ~ .custom-file-label,
+    .custom-file-input.is-invalid ~ .custom-file-label {
+      background-image: none !important;
+      box-shadow: none !important;
+    }
+    .form-control.is-valid,
+    .custom-file-input.is-valid ~ .custom-file-label {
+      border-color: #28a745 !important;
+    }
+    .form-control.is-invalid,
+    .custom-file-input.is-invalid ~ .custom-file-label {
+      border-color: #dc3545 !important;
+    }
+    .admin-validation-message {
+      display: none;
+      font-size: 0.82rem;
+      margin-top: 0.35rem;
+      font-weight: 500;
+    }
+    .admin-validation-message.is-error {
+      display: block;
+      color: #dc3545;
+    }
+    .admin-validation-message.is-success {
+      display: block;
+      color: #28a745;
+    }
+    .valid-feedback,
+    .invalid-feedback {
+      display: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .form-control.is-valid ~ .valid-feedback {
+      display: block;
+    }
+    .form-control.is-invalid ~ .invalid-feedback {
+      display: block;
+    }
+    .category-edit-trigger:not(:hover):focus,
+    .category-edit-trigger:not(:hover):focus-visible,
+    .category-edit-trigger:not(:hover).focus,
+    .category-edit-trigger:not(:hover).active {
+      color: #d39e00 !important;
+      background-color: transparent !important;
+      border-color: #d39e00 !important;
+      box-shadow: none !important;
+    }
+  </style>
+  <!-- SweetAlert2 is handled globally via partials -->
 </head>
 
 <body class="bg-light text-dark">
@@ -29,9 +86,9 @@
 
         <div class="row mb-3 align-items-center">
           <div class="col-lg-3 col-md-12 mb-3">
-            <button type="button" class="btn btn-primary btn-block rounded-pill" data-toggle="modal" data-target="#addCategoryModal">
-              <i class="fas fa-plus mr-1"></i> Add New Category
-            </button>
+            <a href="/admin/categories/add?page=<%= currentPage || 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort || 'latest' %>" class="btn btn-primary btn-block rounded-pill">
+              <i class="fas fa-plus mr-2"></i>Add New Category
+            </a>
           </div>
 
           <!-- Search -->
@@ -64,42 +121,6 @@
           </div>
         </div>
 
-        <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-              <div class="modal-header bg-light">
-                <h5 class="modal-title font-weight-bold" id="addCategoryModalLabel">Add New Category</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <form action="/admin/categories/add" method="POST" enctype="multipart/form-data" id="addCategoryForm" class="addCategoryForm" onsubmit="return validateCategoryForm(this)">
-                <div class="modal-body p-4">
-                  <div class="form-group mb-3">
-                    <label class="font-weight-bold">Category Name</label>
-                    <input type="text" name="name" class="form-control" required pattern="^[a-zA-Z]{4,}$">
-                    <div class="valid-feedback">Looks good!</div>
-                    <div class="invalid-feedback">Category name must be at least 4 characters long and contain only letters.</div>
-                  </div>
-                  <div class="form-group">
-                    <label class="font-weight-bold">Category Image</label>
-                    <input type="file" id="imageAdd" name="image" class="form-control-file" accept="image/*" required>
-                    <div id="imagePreviewAdd" class="mt-3" style="display:none;">
-                      <img id="cropImageAdd" class="img-fluid rounded" style="max-height: 300px;">
-                    </div>
-                    <div id="error-message-add" class="text-danger mt-2 small" style="display: none;"></div>
-                  </div>
-                  <input type="hidden" name="isListed" value="true">
-                </div>
-                <div class="modal-footer bg-light">
-                  <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary rounded-pill px-4">Add Category</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
         <div id="categoryTableContainer">
           <%- include('../partials/Admin/categoryTable') %>
         </div>
@@ -107,219 +128,28 @@
     </div>
   </div>
 </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
-
   <script>
-    let cropper; // Variable for Cropper instance
+    function openCategoryImagePreview(imageSrc, categoryName) {
+      const previewImage = document.getElementById('categoryImagePreviewTarget');
+      const previewTitle = document.getElementById('categoryImagePreviewTitle');
 
-    // Image selection and cropping logic for both Add and Edit
-    document.querySelectorAll('input[type="file"]').forEach(input => {
-      input.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        const isEdit = this.id.startsWith('imageEdit');
-        const isAdd = this.id === 'imageAdd';
-        
-        if (!file) return;
+      if (previewImage) previewImage.src = imageSrc;
+      if (previewTitle) previewTitle.textContent = categoryName || 'Category Image';
 
-        const categoryId = isEdit ? this.id.replace('imageEdit', '') : '';
-        const errorId = isAdd ? 'error-message-add' : `error-message-edit${categoryId}`;
-        const errorEl = document.getElementById(errorId);
-
-        // Validation for image types
-        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!validImageTypes.includes(file.type)) {
-          if (errorEl) {
-            errorEl.textContent = 'Please select a valid image file (jpg, png, gif, webp).';
-            errorEl.style.display = 'block';
-          }
-          this.value = '';
-          return;
-        } else if (errorEl) {
-          errorEl.style.display = 'none';
-        }
-
-        const previewImgId = isEdit ? `cropImageEdit${categoryId}` : `cropImageAdd`;
-        const previewContainerId = isEdit ? `imagePreviewEdit${categoryId}` : `imagePreviewAdd`;
-        
-        const imagePreview = document.getElementById(previewImgId);
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-          imagePreview.src = e.target.result;
-          document.getElementById(previewContainerId).style.display = 'block';
-
-          if (cropper) cropper.destroy();
-          cropper = new Cropper(imagePreview, {
-            aspectRatio: 1,
-            viewMode: 2,
-            autoCropArea: 1
-          });
-        };
-        reader.readAsDataURL(file);
-      });
-    });
-
-    // Unified helper for AJAX form submission with Cropper
-    function submitFormWithCropper(form, successMsg, callback) {
-      if (cropper) {
-        cropper.getCroppedCanvas().toBlob((blob) => {
-          if (blob) {
-            const formData = new FormData(form);
-            formData.set('image', blob, 'cropped.png');
-            performSubmit(form.action, formData, successMsg, callback);
-          }
-        }, 'image/png');
-      } else {
-        performSubmit(form.action, new FormData(form), successMsg, callback);
-      }
+      $('#categoryImagePreviewModal').modal('show');
     }
-
-    function performSubmit(action, formData, successMsg, callback) {
-      // Show loading indicator
-      Swal.fire({
-        title: 'Processing...',
-        text: 'Please wait while we upload the image.',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
-      fetch(action, {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(result => {
-          Swal.close(); // Close loading indicator
-          if (result.status || result.success) { // Handle variations in server response
-            // Close all modals
-            $('#addCategoryModal').modal('hide');
-            $('.modal').modal('hide'); // Close all to be safe
-            
-            // Re-fetch only the table partial
-            refreshTable('categoryTableContainer');
-
-            Toastify({
-              text: result.message || "Operation successful!",
-              duration: 3000,
-              close: true,
-              gravity: "top",
-              position: "center",
-              backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-            }).showToast();
-          } else {
-            Toastify({
-              text: result.message || "Error processing request",
-              duration: 3000,
-              close: true,
-              gravity: "top",
-              position: "center",
-              backgroundColor: "linear-gradient(to right, #ff4949, #ee2020)",
-            }).showToast();
-          }
-        })
-        .catch(error => {
-          Swal.close(); // Close loading indicator
-          console.error('Fetch error:', error);
-          Toastify({
-            text: "An error occurred",
-            duration: 3000,
-            close: true,
-            gravity: "top",
-            position: "center",
-            backgroundColor: "linear-gradient(to right, #ff4949, #ee2020)",
-          }).showToast();
-        });
-    }
-
-    // Handle form submission for Add Category
-    document.querySelectorAll('.addCategoryForm').forEach(form => {
-      form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        if (validateCategoryForm(this)) {
-          submitFormWithCropper(this, 'categoryAdded');
-        }
-      });
-    });
-
-    // Handle form submission for Edit Category
-    document.querySelectorAll('.editCategoryForm').forEach(form => {
-      form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        if (validateCategoryForm(this)) {
-          submitFormWithCropper(this, 'categoryEdited');
-        }
-      });
-    });
-
-    // Check for success messages on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      if (localStorage.getItem('categoryAdded') === 'true') {
-        Toastify({
-          text: "New category added successfully!",
-          duration: 3000,
-          close: true,
-          gravity: "top",
-          position: "center",
-          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-        }).showToast();
-        localStorage.removeItem('categoryAdded');
-      }
-      if (localStorage.getItem('categoryEdited') === 'true') {
-        Toastify({
-          text: "Category updated successfully!",
-          duration: 3000,
-          close: true,
-          gravity: "top",
-          position: "center",
-          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-        }).showToast();
-        localStorage.removeItem('categoryEdited');
-      }
-    });
-
-    // Function to validate category form
-    function validateCategoryForm(form) {
-      const nameInput = form.querySelector('input[name="name"]');
-      const nameValue = nameInput.value.trim();
-      const namePattern = /^[a-zA-Z]{4,}$/;
-
-      if (namePattern.test(nameValue)) {
-        nameInput.classList.add('is-valid');
-        nameInput.classList.remove('is-invalid');
-        return true;
-      } else {
-        nameInput.classList.add('is-invalid');
-        nameInput.classList.remove('is-valid');
-        return false;
-      }
-    }
-
-    // Add real-time validation
-    document.querySelectorAll('input[name="name"]').forEach(input => {
-      input.addEventListener('input', function() {
-        validateCategoryForm(this.form);
-      });
-    });
-
-    // Search, Filter, and Pagination is now handled by /js/ajaxTable.js
 
     function toggleCategoryStatus(button) {
       const categoryId = button.getAttribute('data-id');
       const isCurrentlyListed = button.getAttribute('data-status') === 'true';
       const action = isCurrentlyListed ? 'unlist' : 'relist';
 
-      Swal.fire({
-        title: 'Are you sure?',
-        text: `Do you want to ${action} this category?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#9135ED',
-        cancelButtonColor: '#d33',
-        confirmButtonText: `Yes, ${action}!`
-      }).then((result) => {
+      SwalCustom.confirm(
+        'Are you sure?',
+        `Do you want to ${action} this category?`,
+        `Yes, ${action}!`,
+        'Cancel'
+      ).then((result) => {
         if (result.isConfirmed) {
           fetch(`/admin/categories/toggle-status/${categoryId}`, {
               method: 'POST'
@@ -332,18 +162,20 @@
                 // Update Desktop and Mobile status badges
                 const desktopRow = document.querySelector(`tr[data-row-id="${categoryId}"]`);
                 const mobileCard = document.querySelector(`.shared-item-card[data-card-id="${categoryId}"]`);
-                
-                // Desktop row logic (if it exists)
+
                 if (desktopRow) {
-                  // The desktop doesn't use a status box but I'll add one if needed? 
-                  // Wait, check mobile card first as it definitely has one.
+                  const desktopBadge = desktopRow.querySelector('.status-box');
+                  if (desktopBadge) {
+                    desktopBadge.textContent = isListed ? 'Listed' : 'Unlisted';
+                    desktopBadge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
+                  }
                 }
-                
+
                 if (mobileCard) {
-                  const badge = mobileCard.querySelector('.status-box');
-                  if (badge) {
-                    badge.textContent = isListed ? 'Listed' : 'Unlisted';
-                    badge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
+                  const mobileBadge = mobileCard.querySelector('.status-box');
+                  if (mobileBadge) {
+                    mobileBadge.textContent = isListed ? 'Listed' : 'Unlisted';
+                    mobileBadge.className = `status-box status-${isListed ? 'successful' : 'failed'}`;
                   }
                 }
 
@@ -353,24 +185,16 @@
                   if (btn.classList.contains('toggle-status-btn')) {
                     btn.textContent = isListed ? 'Unlist' : 'Relist';
                     btn.setAttribute('data-status', isListed.toString());
-                    btn.className = `btn btn-sm rounded-pill ${isListed ? 'btn-outline-secondary' : 'btn-outline-primary'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
+                    btn.className = `btn btn-sm rounded-pill table-action-btn ${isListed ? 'table-btn-unlist' : 'table-btn-relist'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
                   }
                 });
 
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Updated!',
-                  text: `Category has been ${isListed ? 'listed' : 'unlisted'}.`,
-                  toast: true,
-                  position: 'top-end',
-                  showConfirmButton: false,
-                  timer: 3000
-                });
+                SwalCustom.success('Updated!', `Category has been ${isListed ? 'listed' : 'unlisted'}.`);
               } else {
-                Swal.fire('Error', data.message || 'Could not update status.', 'error');
+                SwalCustom.error('Error', data.message || 'Could not update status.');
               }
             })
-            .catch(() => Swal.fire('Error', 'Network error.', 'error'));
+            .catch(() => SwalCustom.error('Error', 'Network error.'));
         }
       });
     }

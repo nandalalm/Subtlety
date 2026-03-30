@@ -112,6 +112,17 @@ async function getEditProduct(req, res, next) {
   }
 }
 
+async function getProductView(req, res, next) {
+  try {
+    const product = await productService.getAdminProductDetail(req.params.id);
+    const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
+    res.render("admin/productView", { product, backQuery });
+  } catch (error) {
+    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    next(error);
+  }
+}
+
 async function editProduct(req, res, next) {
   try {
     const { id, name, description, category, price, stock } = req.body;
@@ -173,6 +184,7 @@ export {
   getProducts,
   getAddProduct,
   getEditProduct,
+  getProductView,
   editProduct,
   toggleProductStatus,
   productUpload,

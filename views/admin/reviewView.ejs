@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Details - SUBTLETY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
+  <style>
+    :root { --accent: #9135ED; }
+    body { font-family: 'Poppins', sans-serif; }
+    .breadcrumb { background: transparent; padding: 0; margin-bottom: 8px; }
+    .breadcrumb-item { font-size: 1rem; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; }
+    .breadcrumb-item.active { color: var(--accent); font-weight: 500; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; color: #ccc; }
+    .detail-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #f0f0f0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      height: 100%;
+    }
+    .detail-card .card-header { background: #fff; border-bottom: 1px solid #f2f2f2; font-weight: 600; }
+    .info-label { color: #8a8f98; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .info-value { font-size: 0.98rem; font-weight: 500; color: #212529; margin-bottom: 14px; word-break: break-word; }
+    .comment-box {
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+      border: 1px solid #ece7fb;
+      border-radius: 14px;
+      padding: 16px;
+      line-height: 1.7;
+      color: #343a40;
+      white-space: pre-line;
+      min-height: 140px;
+    }
+    .star-row { color: #f4b400; font-size: 1.05rem; }
+    .review-product {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid #f0f0f0;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+      margin-top: 8px;
+    }
+    .review-product img {
+      width: 76px;
+      height: 76px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid #eee;
+    }
+    .review-summary-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.8fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .review-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+    }
+    .review-meta-item {
+      min-width: 0;
+    }
+    .rating-panel {
+      padding: 14px 16px;
+      border: 1px solid #eee7fb;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
+      margin-bottom: 12px;
+    }
+    .rating-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #212529;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .detail-card .card-body {
+      padding: 1.15rem;
+    }
+    @media (max-width: 575px) {
+      .review-product { align-items: flex-start; }
+    }
+    @media (max-width: 991px) {
+      .review-summary-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 575px) {
+      .review-meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="bg-light text-dark">
+  <%- include('../partials/Admin/adminNavbar') %>
+  <div class="d-flex" id="wrapper">
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'reviews' }) %>
+    <div id="page-content-wrapper" class="w-100">
+      <div class="container-fluid py-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/reviews?<%= backQuery %>">Reviews</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Review Details</li>
+          </ol>
+        </nav>
+
+        <div class="review-shell">
+          <div class="detail-card card mb-3">
+            <div class="card-header">Review Summary</div>
+            <div class="card-body">
+              <div class="review-summary-layout">
+                <div>
+                  <div class="info-label">Reviewer</div>
+                  <div class="info-value"><%= review.userId ? `${review.userId.firstname} ${review.userId.lastname || ''}`.trim() : 'Deleted User' %></div>
+
+                  <div class="review-meta-grid">
+                    <div class="review-meta-item">
+                      <div class="info-label">Email</div>
+                      <div class="info-value"><%= review.userId?.email || 'N/A' %></div>
+                    </div>
+                    <div class="review-meta-item">
+                      <div class="info-label">Created</div>
+                      <div class="info-value"><%= new Date(review.createdAt).toLocaleDateString() %></div>
+                    </div>
+                    <div class="review-meta-item">
+                      <div class="info-label">Order ID</div>
+                      <div class="info-value"><%= review.orderId?.orderId || 'N/A' %></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="rating-panel">
+                    <div class="info-label">Rating</div>
+                    <div class="rating-value"><%= Number(review.rating || 0).toFixed(1) %>/5</div>
+                    <div class="star-row">
+                      <% for(let i = 1; i <= 5; i++) { %>
+                        <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <div class="review-meta-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value mb-0">
+                      <span class="status-box status-<%= review.isListed ? 'successful' : 'failed' %>">
+                        <%= review.isListed ? 'Listed' : 'Unlisted' %>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-label mt-4">Reviewed Product</div>
+              <div class="review-product">
+                <img src="<%= review.productId?.images?.[0] || '/images/placeholder.png' %>" alt="<%= review.productId?.name || 'Product' %>">
+                <div>
+                  <div class="info-label">Product</div>
+                  <div class="info-value mb-2"><%= review.productId?.name || 'Deleted Product' %></div>
+                  <div class="info-label">Current Price</div>
+                  <div class="info-value mb-0"><%= review.productId?.price ? `Rs. ${Number(review.productId.price).toFixed(2)}` : 'N/A' %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-card card">
+            <div class="card-header">Full Review</div>
+            <div class="card-body">
+              <div class="comment-box"><%= review.comment || 'No review comment provided.' %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/Admin/adminScripts') %>
+</body>
+</html>

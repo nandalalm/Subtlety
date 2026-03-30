@@ -13,7 +13,8 @@ async function refreshTable(containerId, url = window.location.href) {
         const separator = url.includes('?') ? '&' : '?';
         const ajaxUrl = `${url}${separator}ajax=true`;
 
-        const response = await fetch(ajaxUrl);
+        const response = await (window.authAwareFetch ? window.authAwareFetch(ajaxUrl) : fetch(ajaxUrl));
+        if (!response) return;
         if (!response.ok) throw new Error('Failed to fetch table contents');
 
         const html = await response.text();

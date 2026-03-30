@@ -4,6 +4,15 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth2";
 import User from "./model/user.js"; 
 import MESSAGES from "./Constants/messages.js";
 
+function normalizeGoogleNamePart(value, fallback = "") {
+  const normalized = String(value || "")
+    .replace(/\s+/g, "")
+    .replace(/[^A-Za-z]/g, "")
+    .slice(0, 20);
+
+  return normalized || fallback;
+}
+
 passport.use(
   new GoogleStrategy(
     {
@@ -27,10 +36,16 @@ passport.use(
           return done(null, existingUser);
         }
 
+        const normalizedFirstName =
+          normalizeGoogleNamePart(name?.givenName) ||
+          normalizeGoogleNamePart(name?.familyName) ||
+          normalizeGoogleNamePart(profile?.displayName, "User");
+        const normalizedLastname = normalizeGoogleNamePart(name?.familyName);
+
         const newUser = new User({
           googleId: id,
-          firstname: name.givenName,
-          lastname: name.familyName,
+          firstname: normalizedFirstName.length >= 3 ? normalizedFirstName : "User",
+          lastname: normalizedLastname,
           email: email.value,
         });
         await newUser.save();

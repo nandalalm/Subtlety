@@ -7,6 +7,7 @@ import { isAuthenticated } from '../middleware/authentication.js';
 router.get('/', isAuthenticated, controller.getProducts);
 router.get('/add', isAuthenticated, controller.getAddProduct);
 router.get('/edit/:id', isAuthenticated, controller.getEditProduct);
+router.get('/:id/view', isAuthenticated, controller.getProductView);
 router.post('/add', isAuthenticated, controller.productUpload.any(), controller.addProduct);
 router.post('/edit/:id', isAuthenticated, controller.productUpload.any(), controller.editProduct);
 router.post('/toggle-list/:id', isAuthenticated, controller.toggleProductStatus);

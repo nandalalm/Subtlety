@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= mode === 'add' ? 'Add Address' : 'Edit Address' %> - SUBTLETY</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/styles/user/userProfile.css">
+  <style>
+    .form-control:focus, .btn:focus, .btn:active { box-shadow: none !important; outline: none !important; }
+    .form-control.is-invalid { border-color: red !important; background-image: none !important; }
+    .validation-message { font-size: 0.875em; margin-top: 0.25rem; color: #dc3545; display: none; }
+    .validation-message.is-error { display: block; }
+    .page-card { background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
+  </style>
+</head>
+<body>
+  <%- include('../partials/User/navBar') %>
+  <section class="profile-section">
+    <div class="container profile pt-2">
+      <div class="d-flex justify-content-between align-items-center mb-4 breadcrumbs mt-4 mt-lg-0">
+        <div><a href="/user/home" class="text-decoration-none">Home</a> / <a href="/profile/address" class="text-decoration-none">My Addresses</a> / <span style="color: #9135ED;"><%= mode === 'add' ? 'Add Address' : 'Edit Address' %></span></div>
+        <div><h5>Welcome, <span style="color: #9135ED;"><%= user.firstname %>!</span></h5></div>
+      </div>
+      <div class="row">
+        <div class="col-md-3"><%- include('../partials/User/userSidebar', { activePage: 'address' }) %></div>
+        <div class="col-lg-9 col-12">
+          <div class="page-card p-4">
+            <h2 class="section-main-title mb-4"><%= mode === 'add' ? 'Add Address' : 'Edit Address' %></h2>
+            <form id="addressForm">
+              <div class="form-row">
+                <div class="form-group col-6"><label>Username</label><input id="username" class="form-control" value="<%= address?.username || '' %>"><div id="username-validation" class="validation-message"></div></div>
+                <div class="form-group col-6"><label>Phone No</label><input id="phoneNo" class="form-control" maxlength="10" value="<%= address?.phoneNo || '' %>"><div id="phoneNo-validation" class="validation-message"></div></div>
+              </div>
+              <div class="form-group"><label>Address</label><input id="address" class="form-control" value="<%= address?.address || '' %>"><div id="address-validation" class="validation-message"></div></div>
+              <div class="form-row">
+                <div class="form-group col-4"><label>Country</label><input id="country" class="form-control" value="<%= address?.country || '' %>"><div id="country-validation" class="validation-message"></div></div>
+                <div class="form-group col-4"><label>State</label><input id="state" class="form-control" value="<%= address?.state || '' %>"><div id="state-validation" class="validation-message"></div></div>
+                <div class="form-group col-4"><label>District</label><input id="district" class="form-control" value="<%= address?.district || '' %>"><div id="district-validation" class="validation-message"></div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-4 col-sm-4 col-6"><label>Pincode</label><input id="pincode" class="form-control" maxlength="6" value="<%= address?.pincode || '' %>"><div id="pincode-validation" class="validation-message"></div></div>
+                <div class="form-group col-md-4 col-sm-4 col-6"><label>House/Flat No</label><input id="houseFlatNo" class="form-control" value="<%= address?.houseFlatNo || '' %>"><div id="houseFlatNo-validation" class="validation-message"></div></div>
+                <div class="form-group col-md-4 col-sm-4 col-12"><label>Address Type</label><br>
+                  <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="addressType" id="addressTypeHome" value="home" <%= address?.addressType === 'home' ? 'checked' : '' %>><label class="form-check-label" for="addressTypeHome">Home</label></div>
+                  <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="addressType" id="addressTypeWork" value="work" <%= address?.addressType === 'work' ? 'checked' : '' %>><label class="form-check-label" for="addressTypeWork">Work</label></div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <a href="/profile/address" class="btn btn-light mr-3">Cancel</a>
+                <button class="btn btn-primary" type="submit"><%= mode === 'add' ? 'Save Address' : 'Update Address' %></button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <%- include('../partials/User/footer') %>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const username = document.getElementById('username');
+    const phoneNo = document.getElementById('phoneNo');
+    const addressInput = document.getElementById('address');
+    const country = document.getElementById('country');
+    const state = document.getElementById('state');
+    const district = document.getElementById('district');
+    const pincode = document.getElementById('pincode');
+    const houseFlatNo = document.getElementById('houseFlatNo');
+    const fieldInputs = { username, phoneNo, address: addressInput, country, state, district, pincode, houseFlatNo };
+    const touchedFields = new Set();
+    let submitAttempted = false;
+
+    function setValidation(id, message='') {
+      const input = document.getElementById(id);
+      const msg = document.getElementById(`${id}-validation`);
+      if (message) {
+        input.classList.add('is-invalid');
+        msg.textContent = message;
+        msg.className = 'validation-message is-error';
+        return false;
+      }
+      input.classList.remove('is-invalid');
+      msg.textContent = '';
+      msg.className = 'validation-message';
+      return true;
+    }
+
+    function getFieldValidationMessage(id) {
+      const value = fieldInputs[id].value.trim();
+
+      if (!value) {
+        const requiredMessages = {
+          username: 'Username is required.',
+          phoneNo: 'Phone number is required.',
+          address: 'Address is required.',
+          country: 'Country is required.',
+          state: 'State is required.',
+          district: 'District is required.',
+          pincode: 'Pincode is required.',
+          houseFlatNo: 'House/Flat No is required.'
+        };
+
+        return requiredMessages[id];
+      }
+
+      switch (id) {
+        case 'username':
+          return /^[a-zA-Z]+$/.test(value) && value.length >= 3 && value.length <= 20
+            ? ''
+            : 'At least 3 letters, no spaces or numbers.';
+        case 'phoneNo':
+          return /^\d{10}$/.test(value) ? '' : 'Exactly 10 digits.';
+        case 'address':
+          return /^[a-zA-Z0-9,]+$/.test(value) && value.length >= 10 && value.length <= 50
+            ? ''
+            : '10-50 chars, no spaces, only commas.';
+        case 'country':
+        case 'state':
+        case 'district':
+          return /^[a-zA-Z]+$/.test(value) && value.length >= 4 && value.length <= 15
+            ? ''
+            : '4-15 alphabets, no spaces.';
+        case 'pincode':
+          return /^\d{6}$/.test(value) ? '' : 'Exactly 6 digits.';
+        case 'houseFlatNo':
+          return /^[a-zA-Z0-9]+$/.test(value) && value.length >= 1 && value.length <= 10
+            ? ''
+            : 'Alpha-numeric only.';
+        default:
+          return '';
+      }
+    }
+
+    function validateField(id, forceShow = false) {
+      const message = getFieldValidationMessage(id);
+      const shouldShow = forceShow || touchedFields.has(id);
+      return shouldShow ? setValidation(id, message) : setValidation(id);
+    }
+
+    function validateForm(forceShow = false) {
+      let ok = true;
+      Object.keys(fieldInputs).forEach((id) => {
+        ok = validateField(id, forceShow) && ok;
+      });
+      return ok;
+    }
+
+    ['phoneNo', 'pincode'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '');
+      });
+    });
+
+    Object.entries(fieldInputs).forEach(([id, input]) => {
+      input.addEventListener('input', () => {
+        touchedFields.add(id);
+        validateField(id, submitAttempted);
+      });
+
+      input.addEventListener('blur', () => {
+        touchedFields.add(id);
+        validateField(id, true);
+      });
+    });
+
+    document.getElementById('addressForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitAttempted = true;
+      Object.keys(fieldInputs).forEach((id) => touchedFields.add(id));
+      if (!validateForm(true)) return;
+      const addressType = document.querySelector('input[name="addressType"]:checked');
+      if (!addressType) return SwalCustom.error('Error', 'Please choose an address type');
+      const body = { username: username.value, phoneNo: phoneNo.value, address: addressInput.value, country: country.value, state: state.value, district: district.value, pincode: pincode.value, houseFlatNo: houseFlatNo.value, addressType: addressType.value };
+      const endpoint = '<%= mode === "add" ? "/profile/address/add" : `/profile/address/edit/${address?._id}` %>';
+      const method = '<%= mode === "add" ? "POST" : "PUT" %>';
+      const response = await SwalCustom.withDelayedProcessing(
+        () => authAwareFetch(endpoint, { method, headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) }),
+        { title: 'Saving...', text: 'Please wait while we save the address.' }
+      );
+      if (!response) return;
+      const data = await response.json();
+      if (!response.ok) return SwalCustom.error('Error', data.message || 'Failed to save address');
+      await SwalCustom.success('Success', data.message || 'Address saved successfully');
+      window.location.href = '/profile/address';
+    });
+  </script>
+</body>
+</html>

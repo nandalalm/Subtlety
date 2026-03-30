@@ -13,9 +13,20 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/styles/user/signup.css"> <!-- Point to your CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <!-- SweetAlert2 CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <style>
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-wrapper .input-group {
+      position: relative;
+      align-items: stretch;
+    }
+
+    .password-wrapper .form-control {
+      padding-right: 2.9rem;
+    }
+
     .otp-inputs {
       display: flex;
       justify-content: center;
@@ -50,12 +61,18 @@
       top: 0;
       bottom: 0;
       z-index: 10;
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .input-group-append button {
       height: 100%;
+      width: 100%;
       border: none;
       background: none;
+      box-shadow: none !important;
     }
 
     .form-control.is-valid,
@@ -72,19 +89,19 @@
     <form id="signupForm" method="post">
       <div class="form-group">
         <label for="firstname"><small>Firstname</small></label>
-        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter firstname" required>
+        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter firstname" value="<%= pendingSignup?.firstname || '' %>" required>
         <small id="firstname-error" class="form-text text-danger" style="display: none;"></small>
         <small id="firstname-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <div class="form-group">
         <label for="lastname"><small>Lastname <span class="text-muted">(optional)</span></small></label>
-        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname (optional)">
+        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname (optional)" value="<%= pendingSignup?.lastname || '' %>">
         <small id="lastname-error" class="form-text text-danger" style="display: none;"></small>
         <small id="lastname-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <div class="form-group">
         <label for="email"><small>Email</small></label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" value="<%= pendingSignup?.email || '' %>" required>
         <small id="email-error" class="form-text text-danger" style="display: none;"></small>
         <small id="email-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
@@ -154,11 +171,42 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <!-- SweetAlert2 JS -->
+  <!-- SweetAlert2 and swalHelper -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/swalHelper.js"></script>
 
   <script>
+    const SIGNUP_OTP_STORAGE_KEY = 'signupOtpState';
+    const OTP_VALIDITY_MS = 60 * 1000;
     let otpTimeout;
+
+    function setOtpState(email, otpTimestamp) {
+      if (!email || !otpTimestamp) return;
+      sessionStorage.setItem(SIGNUP_OTP_STORAGE_KEY, JSON.stringify({
+        email,
+        otpTimestamp,
+        expiresAt: Number(otpTimestamp) + OTP_VALIDITY_MS
+      }));
+    }
+
+    function getOtpState() {
+      try {
+        const raw = sessionStorage.getItem(SIGNUP_OTP_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function clearOtpState() {
+      clearInterval(otpTimeout);
+      sessionStorage.removeItem(SIGNUP_OTP_STORAGE_KEY);
+    }
+
+    function showOtpSection() {
+      document.getElementById('otp-section').style.display = 'block';
+      document.getElementById('signupForm').style.display = 'none';
+    }
 
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -239,45 +287,58 @@
 
       document.getElementById('loading').style.display = 'block';
 
-      const response = await fetch('/user/register', {
+      const response = await fetch('/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
         body: JSON.stringify(data)
       });
 
       document.getElementById('loading').style.display = 'none';
 
       if (response.ok) {
-        document.getElementById('otp-section').style.display = 'block';
-        document.getElementById('signupForm').style.display = 'none';
-        startOtpTimer();
+        const result = await response.json();
+        showOtpSection();
+        setOtpState(email, result.otpTimestamp);
+        startOtpTimer(result.otpTimestamp);
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'User already exists with this email.',
-        });
+        const error = await response.json().catch(() => ({}));
+        SwalCustom.error('Error', error.message || 'Unable to continue signup.');
       }
     });
 
-    function startOtpTimer() {
+    function startOtpTimer(otpTimestamp = Date.now()) {
       const timerMessage = document.getElementById('timer-message');
       const resendButton = document.getElementById('resend-otp');
-      let timeLeft = 60; // 60 seconds
+      const expiresAt = Number(otpTimestamp) + OTP_VALIDITY_MS;
+      let timeLeft = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
 
       timerMessage.style.display = 'block'; // Show timer message
-      timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
       resendButton.style.display = 'none'; // Hide resend button initially
+      clearInterval(otpTimeout);
+
+      if (timeLeft <= 0) {
+        timerMessage.innerText = 'OTP has expired. Please resend OTP.';
+        resendButton.style.display = 'block';
+        return;
+      }
+
+      timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
 
       otpTimeout = setInterval(() => {
         timeLeft--;
-        timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
 
         if (timeLeft <= 0) {
           clearInterval(otpTimeout);
-          timerMessage.innerText = 'You can now resend the OTP.';
+          timerMessage.innerText = 'OTP has expired. Please resend OTP.';
           resendButton.style.display = 'block'; // Show resend button
+          return;
         }
+
+        timerMessage.innerText = `OTP valid for 00:${timeLeft.toString().padStart(2, '0')}`;
       }, 1000);
     }
 
@@ -323,10 +384,12 @@
       const urlParams = new URLSearchParams(window.location.search);
       const referral = urlParams.get('referral'); // Get the referral ID from query params
 
-      const response = await fetch('/user/verify-otp', {
+      const response = await fetch('/auth/verify-otp', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
           email,
@@ -337,21 +400,13 @@
 
       if (response.ok) {
         const data = await response.json();
-        clearInterval(otpTimeout);
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'OTP verified successfully!',
-        }).then(() => {
+        clearOtpState();
+        SwalCustom.success('Success!', 'OTP verified successfully!').then(() => {
           window.location.href = data.redirect || '/user/home';
         });
       } else {
-        const errText = await response.text();
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: errText || 'Invalid OTP. Please try again.',
-        });
+        const error = await response.json().catch(() => ({}));
+        SwalCustom.error('Oops...', error.message || 'Invalid OTP. Please try again.');
       }
     });
 
@@ -363,10 +418,12 @@
       document.getElementById('resend-loading').style.display = 'block';
       document.getElementById('resend-otp').style.display = 'none'; // Hide resend button
 
-      const response = await fetch('/user/resend-otp', {
+      const response = await fetch('/auth/resend-otp', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
           email
@@ -379,21 +436,15 @@
       document.getElementById('resend-loading').style.display = 'none';
 
       if (response.ok) {
-        Swal.fire({
-          icon: 'success',
-          title: 'OTP Resent',
-          text: 'OTP has been resent to your email.',
-        });
+        const result = await response.json();
+        SwalCustom.success('OTP Resent', result.message || 'OTP has been resent to your email.');
         otpBoxes.forEach(box => box.value = ''); // Clear OTP inputs
         otpBoxes[0].focus(); // Focus on the first box
-        startOtpTimer(); // Restart the timer
+        setOtpState(email, result.otpTimestamp);
+        startOtpTimer(result.otpTimestamp); // Restart the timer
       } else {
         const errorData = await response.json(); // Get error message
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: `Error resending OTP: ${errorData.message || 'Unknown error'}`,
-        });
+        SwalCustom.error('Error', `Error resending OTP: ${errorData.message || 'Unknown error'}`);
         console.error('Error resending OTP:', errorData); // Log error data to console
       }
     });
@@ -495,6 +546,25 @@
         this.querySelector('i').classList.toggle('fa-eye');
         this.querySelector('i').classList.toggle('fa-eye-slash');
       });
+    });
+
+    window.addEventListener('pageshow', () => {
+      const pendingSignup = <%- JSON.stringify(pendingSignup || null) %>;
+      const storedState = getOtpState();
+      const activeState = storedState || (pendingSignup ? {
+        email: pendingSignup.email,
+        otpTimestamp: pendingSignup.otpTimestamp,
+        expiresAt: Number(pendingSignup.otpTimestamp) + OTP_VALIDITY_MS
+      } : null);
+
+      if (!activeState || !activeState.email || !activeState.otpTimestamp) {
+        clearOtpState();
+        return;
+      }
+
+      setOtpState(activeState.email, activeState.otpTimestamp);
+      showOtpSection();
+      startOtpTimer(activeState.otpTimestamp);
     });
   </script>
 </body>

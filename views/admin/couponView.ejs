@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coupon Details - SUBTLETY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/admin/dashboard.css">
+  <link rel="stylesheet" href="/styles/shared/tables.css">
+  <style>
+    :root { --accent: #9135ED; }
+    body { font-family: 'Poppins', sans-serif; }
+    .breadcrumb { background: transparent; padding: 0; margin-bottom: 8px; }
+    .breadcrumb-item { font-size: 1rem; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; }
+    .breadcrumb-item.active { color: var(--accent); font-weight: 500; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; color: #ccc; }
+    .detail-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #f0f0f0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      height: 100%;
+    }
+    .detail-card .card-header { background: #fff; border-bottom: 1px solid #f2f2f2; font-weight: 600; }
+    .info-label { color: #8a8f98; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .info-value { font-size: 0.98rem; font-weight: 500; color: #212529; margin-bottom: 14px; word-break: break-word; }
+    .code-box {
+      background: linear-gradient(135deg, #faf7ff 0%, #ffffff 100%);
+      border: 1px dashed #d7c6fb;
+      border-radius: 14px;
+      padding: 18px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #5a2ca0;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body class="bg-light text-dark">
+  <%- include('../partials/Admin/adminNavbar') %>
+  <div class="d-flex" id="wrapper">
+    <%- include('../partials/Admin/adminSidebar', { activePage: 'coupons' }) %>
+    <div id="page-content-wrapper" class="w-100">
+      <div class="container-fluid py-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/offers/coupons?<%= backQuery %>">Coupons</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Coupon Details</li>
+          </ol>
+        </nav>
+
+        <div class="detail-card card">
+          <div class="card-header">Coupon Details</div>
+          <div class="card-body">
+            <div class="info-label">Coupon Code</div>
+            <div class="code-box"><%= coupon.code %></div>
+
+            <div class="row">
+              <div class="col-md-4 col-sm-6">
+                <div class="info-label">Discount Type</div>
+                <div class="info-value text-capitalize"><%= coupon.discountType %></div>
+              </div>
+              <div class="col-md-4 col-sm-6">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                  <span class="status-box status-<%= coupon.isActive ? 'successful' : 'failed' %>">
+                    <%= coupon.isActive ? 'Listed' : 'Unlisted' %>
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-6">
+                <div class="info-label">Discount Amount</div>
+                <div class="info-value">
+                  <%= coupon.discountType === 'flat' ? `Rs. ${Number(coupon.discountAmount).toFixed(2)}` : `${coupon.discountAmount}%` %>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-6">
+                <div class="info-label">Expires At</div>
+                <div class="info-value"><%= new Date(coupon.expiresAt).toLocaleDateString() %></div>
+              </div>
+              <div class="col-md-4 col-sm-6">
+                <div class="info-label">Usage Limit</div>
+                <div class="info-value"><%= coupon.usageLimit %></div>
+              </div>
+              <div class="col-md-4 col-sm-6">
+                <div class="info-label">Used Count</div>
+                <div class="info-value"><%= coupon.usedCount %></div>
+              </div>
+              <% if (coupon.discountType === 'percentage') { %>
+                <div class="col-md-4 col-sm-6">
+                  <div class="info-label">Maximum Discount</div>
+                  <div class="info-value"><%= coupon.maxDiscount ? `Rs. ${Number(coupon.maxDiscount).toFixed(2)}` : 'Not set' %></div>
+                </div>
+              <% } %>
+              <% if (coupon.discountType === 'flat') { %>
+                <div class="col-md-4 col-sm-6">
+                  <div class="info-label">Minimum Order Value</div>
+                  <div class="info-value"><%= coupon.minOrderValue ? `Rs. ${Number(coupon.minOrderValue).toFixed(2)}` : 'Not set' %></div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/Admin/adminScripts') %>
+</body>
+</html>

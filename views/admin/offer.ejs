@@ -12,25 +12,41 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="/styles/admin/dashboard.css">
     <link rel="stylesheet" href="/styles/shared/tables.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="/styles/admin/offer.css">
     <style>
         .modal-body .scrollable-select {
             max-height: 150px;
             overflow-y: auto;
         }
-
-        .is-invalid {
-            border-color: #dc3545;
+        .form-control:focus,
+        .btn:focus,
+        .btn:active {
+            box-shadow: none !important;
         }
-
-        .is-valid {
-            border-color: #28a745;
+        .form-control.is-valid,
+        .form-control.is-invalid {
+            background-image: none !important;
+            box-shadow: none !important;
         }
-
-        .invalid-feedback {
+        .form-control.is-invalid {
+            border-color: #dc3545 !important;
+        }
+        .form-control.is-valid {
+            border-color: #28a745 !important;
+        }
+        .admin-validation-message {
             display: none;
+            font-size: 0.82rem;
+            margin-top: 0.35rem;
+            font-weight: 500;
+        }
+        .admin-validation-message.is-error {
+            display: block;
             color: #dc3545;
-            font-size: 80%;
+        }
+        .admin-validation-message.is-success {
+            display: block;
+            color: #28a745;
         }
     </style>
 </head>
@@ -49,9 +65,9 @@
                 <div class="row mb-3 align-items-center">
                     <!-- Add Offer Button -->
                     <div class="col-lg-3 col-md-12 mb-3">
-                        <button type="button" class="btn btn-primary btn-block rounded-pill" data-toggle="modal" data-target="#addOfferModal">
-                            <i class="fas fa-plus mr-1"></i> Add New Offer
-                        </button>
+                        <a href="/admin/offers/add?page=<%= currentPage || 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort || 'latest' %>" class="btn btn-primary btn-block rounded-pill">
+                            <i class="fas fa-plus mr-2"></i>Add New Offer
+                        </a>
                     </div>
 
                     <!-- Search -->
@@ -98,163 +114,18 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        // AJAX Search, Sort, and Pagination is now handled by /js/ajaxTable.js
-
-        // Modal Visibility Logic
-        function updateVisibility() {
-            const offerFor = document.getElementById('offerFor').value;
-            const offerType = document.getElementById('offerType').value;
-
-            document.getElementById('productSelectContainer').style.display = offerFor === 'Product' ? 'block' : 'none';
-            document.getElementById('categorySelectContainer').style.display = offerFor === 'Category' ? 'block' : 'none';
-
-            if (offerFor === 'Category') {
-                document.getElementById('minPriceContainer').style.display = offerType === 'flat' ? 'block' : 'none';
-                document.getElementById('maxDiscountContainer').style.display = offerType === 'percentage' ? 'block' : 'none';
-            } else {
-                document.getElementById('minPriceContainer').style.display = 'none';
-                document.getElementById('maxDiscountContainer').style.display = 'none';
-            }
-        }
-
-        document.getElementById('offerFor').addEventListener('change', updateVisibility);
-        document.getElementById('offerType').addEventListener('change', updateVisibility);
-
-        function openEditOfferModal(offerData) {
-            const offer = typeof offerData === 'string' ? JSON.parse(offerData) : offerData;
-            document.getElementById('editOfferId').value = offer._id;
-            document.getElementById('editOfferFor').value = offer.offerFor;
-            
-            document.getElementById('editProductSelectContainer').style.display = offer.offerFor === 'Product' ? 'block' : 'none';
-            document.getElementById('editCategorySelectContainer').style.display = offer.offerFor === 'Category' ? 'block' : 'none';
-            
-            if(offer.offerFor === 'Product') document.getElementById('editProductSelect').value = offer.targetId;
-            else document.getElementById('editCategorySelect').value = offer.targetId;
-
-            document.getElementById('editOfferType').value = offer.offerType;
-            document.getElementById('editValue').value = offer.value;
-            document.getElementById('editExpiresAt').value = new Date(offer.expiresAt).toISOString().split('T')[0];
-
-            if (offer.offerFor === 'Category') {
-                document.getElementById('editMinPriceContainer').style.display = offer.offerType === 'flat' ? 'block' : 'none';
-                document.getElementById('editMaxDiscountContainer').style.display = offer.offerType === 'percentage' ? 'block' : 'none';
-                document.getElementById('editMinProductPrice').value = offer.minProductPrice || '';
-                document.getElementById('editMaxDiscount').value = offer.maxDiscount || '';
-            }
-
-            $('#editOfferModal').modal('show');
-        }
-
-        document.getElementById('offerFormModal').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const offerFor = document.getElementById('offerFor').value;
-            const targetId = offerFor === 'Product' ? document.getElementById('productSelect').value : document.getElementById('categorySelect').value;
-            
-            fetch('/admin/offers/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    targetId,
-                    offerFor,
-                    offerType: document.getElementById('offerType').value,
-                    value: document.getElementById('value').value,
-                    minProductPrice: document.getElementById('minProductPrice').value,
-                    maxDiscount: document.getElementById('maxDiscount').value,
-                    expiresAt: document.getElementById('expiresAt').value
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    $('#addOfferModal').modal('hide');
-                    document.getElementById('offerFormModal').reset();
-                    refreshTable('offerTableContainer');
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: data.message,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message,
-                        confirmButtonColor: '#9135ED'
-                    });
-                }
-            });
-        });
-
-        document.getElementById('editOfferFormModal').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const id = document.getElementById('editOfferId').value;
-            const offerFor = document.getElementById('editOfferFor').value;
-            const targetId = offerFor === 'Product' ? document.getElementById('editProductSelect').value : document.getElementById('editCategorySelect').value;
-            
-            fetch(`/admin/offers/edit/${id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    targetId,
-                    offerFor,
-                    offerType: document.getElementById('editOfferType').value,
-                    value: document.getElementById('editValue').value,
-                    minProductPrice: document.getElementById('editMinProductPrice').value,
-                    maxDiscount: document.getElementById('editMaxDiscount').value,
-                    expiresAt: document.getElementById('editExpiresAt').value
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    $('#editOfferModal').modal('hide');
-                    refreshTable('offerTableContainer');
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'Offer updated successfully',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message,
-                        confirmButtonColor: '#9135ED'
-                    });
-                }
-            });
-        });
-
         function toggleOfferStatus(button) {
             const id = button.getAttribute('data-id');
             const isActive = button.getAttribute('data-status') === 'true';
             const action = isActive ? 'unlist' : 'relist';
 
-            Swal.fire({
-                title: 'Are you sure?',
-                text: `Do you want to ${action} this offer?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#9135ED',
-                cancelButtonColor: '#d33',
-                confirmButtonText: `Yes, ${action}!`
-            }).then(result => {
+            SwalCustom.confirm(
+                'Are you sure?',
+                `Do you want to ${action} this offer?`,
+                `Yes, ${action}!`,
+                'Cancel'
+            ).then(result => {
                 if (result.isConfirmed) {
                     fetch(`/admin/offers/toggle-status/${id}`, { method: 'POST' })
                     .then(res => res.json())
@@ -265,17 +136,23 @@
                             // Update status badges (Desktop & Mobile)
                             const desktopRow = document.querySelector(`tr[data-row-id="${id}"]`);
                             const mobileCard = document.querySelector(`.shared-item-card[data-card-id="${id}"]`);
-                            
-                            if (mobileCard) {
-                                const badge = mobileCard.querySelector('.status-box');
-                                if (badge) {
-                                    badge.textContent = newIsActive ? 'Active' : 'Unlisted';
-                                    badge.className = `status-box status-${newIsActive ? 'successful' : 'failed'}`;
+
+                            if (desktopRow) {
+                                const desktopBadges = desktopRow.querySelectorAll('.status-box');
+                                const desktopBadge = desktopBadges[desktopBadges.length - 1];
+                                if (desktopBadge) {
+                                    desktopBadge.textContent = newIsActive ? 'Listed' : 'Unlisted';
+                                    desktopBadge.className = `status-box status-${newIsActive ? 'successful' : 'failed'}`;
                                 }
                             }
 
-                            // Optional: Update desktop row if it has a status badge in the future
-                            // For now, only the toggle buttons change on desktop
+                            if (mobileCard) {
+                                const mobileBadge = mobileCard.querySelector('.status-box');
+                                if (mobileBadge) {
+                                    mobileBadge.textContent = newIsActive ? 'Active' : 'Unlisted';
+                                    mobileBadge.className = `status-box status-${newIsActive ? 'successful' : 'failed'}`;
+                                }
+                            }
 
                             // Update ALL toggle buttons for this offer
                             const buttons = document.querySelectorAll(`button[data-id="${id}"]`);
@@ -283,27 +160,20 @@
                                 if (btn.classList.contains('toggle-status-btn')) {
                                     btn.textContent = newIsActive ? 'Unlist' : 'Relist';
                                     btn.setAttribute('data-status', newIsActive.toString());
-                                    btn.className = `btn btn-sm rounded-pill ${newIsActive ? 'btn-outline-secondary' : 'btn-outline-primary'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
+                                    btn.className = `btn btn-sm rounded-pill table-action-btn ${newIsActive ? 'table-btn-unlist' : 'table-btn-relist'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
                                 }
                             });
 
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Updated!',
-                                text: `Offer has been ${newIsActive ? 'listed' : 'unlisted'}.`,
-                                toast: true,
-                                position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 3000
-                            });
+                            SwalCustom.success('Updated!', `Offer has been ${newIsActive ? 'listed' : 'unlisted'}.`);
                         } else {
-                            Swal.fire('Error', data.message || 'Could not update status.', 'error');
+                            SwalCustom.error('Error', data.message || 'Could not update status.');
                         }
                     })
-                    .catch(err => Swal.fire('Error', 'Network error. Please try again.', 'error'));
+                    .catch(err => SwalCustom.error('Error', 'Network error. Please try again.'));
                 }
             });
         }
+
     </script>
     <%- include('../partials/Admin/adminScripts') %>
 </body>

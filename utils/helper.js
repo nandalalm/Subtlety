@@ -94,9 +94,7 @@ export function calculateDiscountedPrice(offer, product) {
     ) {
       discountedPrice -= offer.value;
     } else if (offer.offerType === OFFER_TYPES.PERCENTAGE) {
-      const potentialDiscount = product.price * (offer.value / 100);
-      const maxDiscount = offer.maxDiscount;
-      discountedPrice -= Math.min(potentialDiscount, maxDiscount);
+      discountedPrice *= 1 - (offer.value / 100);
     }
     discountedPrice = Math.floor(discountedPrice);
   }

@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }).showToast();
   };
 
+  const guardedJsonFetch = async (url, options) => {
+    const response = await window.authAwareFetch(url, options);
+    if (!response) return null;
+    const data = await response.json();
+    return { response, data };
+  };
+
   const syncProductAvailability = (productId, status) => {
     // Determine if we are on the single product page for this specific product
     const isSingleProductPage = window.location.pathname.includes(`/single-product/${productId}`);
@@ -151,12 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const performUpdate = async (productId, newQty, currentQty) => {
     try {
-      const res = await fetch('/cart/update', {
+      const result = await guardedJsonFetch('/cart/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: newQty })
       });
-      const data = await res.json();
+      if (!result) return;
+      const { response: res, data } = result;
       if (res.ok) {
         if (data.newQuantity !== newQty) {
           showToast(data.message, 'warning');
@@ -196,8 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!userId && (target.classList.contains('btn-add-to-cart') ||
       target.classList.contains('btn-increment') ||
       target.classList.contains('btn-decrement') ||
-      target.classList.contains('btn-add-to-wishlist'))) {
-      showToast("Please log in to continue", 'error');
+      target.classList.contains('btn-add-to-wishlist') ||
+      target.classList.contains('buy-buy'))) {
+      window.location.href = '/auth/login';
       return;
     }
 
@@ -210,12 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
       updateUI(productId, 1);
       
       try {
-        const res = await fetch('/cart/add', {
+        const result = await guardedJsonFetch('/cart/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user: userId, productId, quantity: 1 })
         });
-        const data = await res.json();
+        if (!result) return;
+        const { response: res, data } = result;
         if (res.ok) {
           showToast(data.message);
           // Sync with potentially different quantity (e.g. if already in cart)
@@ -286,12 +296,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // REMOVE FROM CART - Instant removal
         clearTimeout(debounceTimers[productId]); // Clear any pending update for this product
         try {
-          const res = await fetch('/cart/remove', {
+          const result = await guardedJsonFetch('/cart/remove', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productId })
           });
-          const data = await res.json();
+          if (!result) return;
+          const { response: res, data } = result;
           if (res.ok) {
             showToast("Item removed from cart");
             updateUI(productId, 0);
@@ -310,16 +321,17 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       target.blur();
       try {
-        const res = await fetch('/wishlist/add', {
+        const response = await window.authAwareFetch('/wishlist/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ productId })
         });
+        if (!response) return;
         
-        const contentType = res.headers.get("content-type");
+        const contentType = response.headers.get("content-type");
         if (contentType && contentType.indexOf("application/json") !== -1) {
-          const data = await res.json();
-          showToast(data.message, res.ok ? 'success' : 'error');
+          const data = await response.json();
+          showToast(data.message, response.ok ? 'success' : 'error');
         } else {
           showToast("Something went wrong", 'error');
         }
@@ -333,27 +345,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target.classList.contains('btn-remove-from-wishlist')) {
       e.preventDefault();
       target.blur();
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "You want to remove this product from your wishlist!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, remove it!'
-      }).then(async (result) => {
+      SwalCustom.confirm(
+        'Are you sure?',
+        "You want to remove this product from your wishlist!",
+        'Yes, remove it!',
+        'Cancel'
+      ).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const res = await fetch(`/wishlist/remove/${productId}`, {
+            const response = await window.authAwareFetch(`/wishlist/remove/${productId}`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId })
             });
+            if (!response) return;
 
-            const contentType = res.headers.get("content-type");
+            const contentType = response.headers.get("content-type");
             if (contentType && contentType.indexOf("application/json") !== -1) {
-              const data = await res.json();
-              if (res.ok) {
+              const data = await response.json();
+              if (response.ok) {
                 const card = target.closest('.card-div');
                 if (card) {
                   card.remove();
@@ -391,12 +401,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const res = await fetch('/cart/add', {
+            const result = await guardedJsonFetch('/cart/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user: userId, productId, quantity: 1 })
             });
-            const data = await res.json();
+            if (!result) return;
+            const { response: res, data } = result;
             if (res.ok) {
                 window.location.href = '/cart';
             } else {

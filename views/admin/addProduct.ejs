@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="/styles/admin/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
 
     <style>
         :root {
@@ -47,6 +45,14 @@
         .card-header { background: white; border-bottom: 1px solid #eee; padding: 20px; border-radius: 15px 15px 0 0 !important; }
         .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); border-radius: 10px; padding: 10px 25px; }
         .btn-primary:hover { background-color: #7a2bc7; border-color: #7a2bc7; }
+        .form-section {
+            border: 1px solid #edf0f5;
+            border-radius: 14px;
+            padding: 1.25rem;
+            background: #fff;
+            height: 100%;
+        }
+        .form-section-title { margin-bottom: 1rem; font-size: 1rem; font-weight: 600; color: #212529; }
         
         /* Image Slot System personally verified */
         .image-slots-container {
@@ -125,9 +131,33 @@
         .form-control.is-valid {
             background-image: none !important;
             border-color: #28a745 !important;
+            box-shadow: none !important;
         }
         .form-control.is-invalid {
             background-image: none !important;
+            border-color: #dc3545 !important;
+            box-shadow: none !important;
+        }
+        .form-control:focus,
+        .btn:focus,
+        .btn:active {
+            box-shadow: none !important;
+        }
+        .field-feedback {
+            display: none;
+            margin-top: 0.35rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+        .field-feedback.is-error {
+            display: block;
+            color: #dc3545 !important;
+        }
+        .field-feedback.is-success {
+            display: block;
+            color: #28a745 !important;
+        }
+        .image-slot.image-slot-error {
             border-color: #dc3545 !important;
         }
     </style>
@@ -155,14 +185,16 @@
                                 <h4 class="mb-0">Add New Product</h4>
                             </div>
                             <div class="card-body p-4">
-                                <form id="addProductForm">
+                                <form id="addProductForm" novalidate>
                                     <div class="row">
                                         <!-- Basic Info personally verified -->
-                                        <div class="col-md-6">
+                                        <div class="col-md-6 mb-4 mb-md-0">
+                                            <div class="form-section">
+                                            <h5 class="form-section-title">Basic Information</h5>
                                             <div class="form-group mb-4">
                                                 <label class="font-weight-600">Product Name</label>
                                                 <input type="text" name="name" class="form-control" placeholder="Enter product name" minlength="3">
-                                                <small id="name-error" class="text-danger" style="display: none;"></small>
+                                                <small id="name-error" class="field-feedback"></small>
                                             </div>
                                             <div class="form-group mb-4">
                                                 <label class="font-weight-600">Category</label>
@@ -172,53 +204,59 @@
                                                         <option value="<%= cat._id %>"><%= cat.name %></option>
                                                     <% }) %>
                                                 </select>
-                                                <small id="category-error" class="text-danger" style="display: none;"></small>
+                                                <small id="category-error" class="field-feedback"></small>
                                             </div>
                                             <div class="row">
                                                 <div class="col-6">
                                                     <div class="form-group mb-4">
                                                         <label class="font-weight-600">Price (₹)</label>
                                                         <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01">
-                                                        <small id="price-error" class="text-danger" style="display: none;"></small>
+                                                        <small id="price-error" class="field-feedback"></small>
                                                     </div>
                                                 </div>
                                                 <div class="col-6">
                                                     <div class="form-group mb-4">
                                                         <label class="font-weight-600">Stock</label>
                                                         <input type="number" name="stock" class="form-control" placeholder="0">
-                                                        <small id="stock-error" class="text-danger" style="display: none;"></small>
+                                                        <small id="stock-error" class="field-feedback"></small>
                                                     </div>
                                                 </div>
+                                            </div>
                                             </div>
                                         </div>
 
                                         <!-- Description personally verified -->
                                         <div class="col-md-6">
-                                            <div class="form-group mb-4">
+                                            <div class="form-section">
+                                            <h5 class="form-section-title">Description</h5>
+                                            <div class="form-group mb-0">
                                                 <label class="font-weight-600">Description</label>
                                                 <textarea name="description" class="form-control" rows="8" placeholder="Enter product description" minlength="10"></textarea>
-                                                <small id="description-error" class="text-danger" style="display: none;"></small>
+                                                <small id="description-error" class="field-feedback"></small>
+                                            </div>
                                             </div>
                                         </div>
 
                                         <!-- Images Section personally verified -->
                                         <div class="col-12 mt-4">
-                                            <h5 class="mb-3">Product Images <small class="text-muted">(Min 3, Max 8)</small></h5>
+                                            <div class="form-section">
+                                            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+                                            <h5 class="form-section-title mb-0">Product Images <small class="text-muted">(Min 3, Max 8)</small></h5>
+                                            <button type="button" class="btn btn-outline-primary btn-sm mt-2 mt-sm-0" id="add-more-images-btn">
+                                                <i class="fas fa-plus mr-1"></i> Add More Images
+                                            </button>
+                                            </div>
                                             <div id="add-image-slots" class="image-slots-container">
                                                 <!-- Slots generated by JS personally verified -->
                                             </div>
-                                            <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="add-more-images-btn">
-                                                <i class="fas fa-plus mr-1"></i> Add More Images
-                                            </button>
-                                            <div id="image-count-error" class="text-danger small mb-3" style="display: none;">You must upload at least 3 images.</div>
+                                            <div id="image-count-error" class="field-feedback mb-0">You must upload at least 3 images.</div>
                                             
                                             <hr class="my-4">
                                             
                                             <div class="d-flex justify-content-end">
-                                                <button type="button" class="btn btn-light mr-3" onclick="window.location.href='/admin/products'">Cancel</button>
-                                                <button type="submit" class="btn btn-success">
-                                                    <i class="fas fa-check mr-2"></i> Save Product
-                                                </button>
+                                                <a href="/admin/products" class="btn btn-light mr-3">Cancel</a>
+                                                <button type="submit" class="btn btn-primary">Save Product</button>
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
@@ -254,11 +292,12 @@
 
     <%- include('../partials/Admin/adminScripts') %>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert2 and swalHelper are now global via adminScripts partial -->
 
     <script>
         const productImagesState = new Map();
+        const productImageValidationState = new Map();
+        const productImageFileErrorState = new Map();
         let cropper = null;
         let currentModalId = null;
         let currentSlotIndex = null;
@@ -274,6 +313,12 @@
                 for (let i = 0; i < 3; i++) state.push({ file: null, url: null, isOriginal: false });
             }
             productImagesState.set(containerId, state);
+            if (!productImageValidationState.has(containerId)) {
+                productImageValidationState.set(containerId, false);
+            }
+            if (!productImageFileErrorState.has(containerId)) {
+                productImageFileErrorState.set(containerId, null);
+            }
             renderSlots(containerId);
         }
 
@@ -303,15 +348,20 @@
             });
             const addBtn = document.getElementById('add-more-images-btn');
             if (addBtn) addBtn.style.display = state.length < 8 ? 'inline-block' : 'none';
+            validateImageCount(containerId);
         }
 
         function handleImageSelect(event, containerId, index) {
             const file = event.target.files[0];
             if (!file) return;
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-                Toastify({ text: "Use JPG, PNG or WEBP", backgroundColor: "#ff5f6d" }).showToast();
+                productImageFileErrorState.set(containerId, index);
+                validateImageCount(containerId, 3, true, 'Only JPG, PNG, or WEBP images are allowed.');
+                event.target.value = '';
                 return;
             }
+            productImageFileErrorState.set(containerId, null);
+            validateImageCount(containerId);
             currentModalId = containerId;
             currentSlotIndex = index;
             const reader = new FileReader();
@@ -346,12 +396,11 @@
         function removeImageSlot(event, containerId, index) {
             event.stopPropagation();
             const state = productImagesState.get(containerId);
-            if (state.length <= 3) {
-                Toastify({ text: "Min 3 images required", backgroundColor: "#ff5f6d" }).showToast();
-                return;
-            }
-            state.splice(index, 1);
+            if (!state || !state[index]) return;
+            state[index] = { file: null, url: null, isOriginal: false };
+            productImageFileErrorState.set(containerId, null);
             renderSlots(containerId);
+            validateImageCount(containerId);
         }
 
         function addMoreImageSlot(containerId) {
@@ -359,39 +408,96 @@
             if (state.length >= 8) return;
             state.push({ file: null, url: null, isOriginal: false });
             renderSlots(containerId);
+            validateImageCount(containerId);
         }
 
-        function validateInput(input, regex, errorId, errorMessage) {
-            const errorElement = document.getElementById(errorId);
-            let isValid = false;
+        function setFieldMessage(errorElement, state, message = '') {
+            errorElement.textContent = message;
+            errorElement.className = `field-feedback${state ? ` ${state}` : ''}`;
+        }
+
+        function validateInput(input, config) {
+            const errorElement = document.getElementById(config.errorId);
             const val = input.value.trim();
+            let isValid = false;
 
             if (input.type === 'number') {
-                const num = parseFloat(val);
-                if (input.name === 'stock') {
-                    isValid = !isNaN(num) && num >= 0;
+                if (!val) {
+                    setFieldMessage(errorElement, 'is-error', config.requiredMessage);
                 } else {
-                    isValid = !isNaN(num) && num > 0;
+                    const num = parseFloat(val);
+                    const minValue = typeof config.minValue === 'number' ? config.minValue : 0;
+                    isValid = !isNaN(num) && num >= minValue;
+                    if (!isValid) setFieldMessage(errorElement, 'is-error', config.invalidMessage);
                 }
             } else if (input.tagName === 'SELECT') {
                 isValid = input.value !== "";
+                if (!isValid) setFieldMessage(errorElement, 'is-error', config.requiredMessage);
             } else {
-                const minLen = parseInt(input.getAttribute('minlength')) || 0;
-                // For name and description, we validate the TRIMMED value
-                isValid = regex.test(val) && val.length >= minLen;
+                if (!val) {
+                    setFieldMessage(errorElement, 'is-error', config.requiredMessage);
+                } else if (config.regex && !config.regex.test(val)) {
+                    setFieldMessage(errorElement, 'is-error', config.invalidMessage);
+                } else if (config.minLength && val.length < config.minLength) {
+                    setFieldMessage(errorElement, 'is-error', config.invalidMessage);
+                } else {
+                    isValid = true;
+                }
             }
 
             if (!isValid) {
-                errorElement.textContent = errorMessage;
-                errorElement.style.display = 'block';
                 input.classList.add('is-invalid');
                 input.classList.remove('is-valid');
             } else {
-                errorElement.style.display = 'none';
+                setFieldMessage(errorElement, '', '');
                 input.classList.remove('is-invalid');
                 input.classList.add('is-valid');
             }
             return isValid;
+        }
+
+        function validateImageCount(containerId, minRequired = 3, showNow = false, customMessage = '') {
+            const container = document.getElementById(containerId);
+            const state = productImagesState.get(containerId) || [];
+            const filledSlots = state.filter(s => s.url);
+            const errorElement = document.getElementById('image-count-error');
+            const shouldShow = showNow || productImageValidationState.get(containerId);
+            const invalidSlotIndex = productImageFileErrorState.get(containerId);
+
+            if (showNow) {
+                productImageValidationState.set(containerId, true);
+            }
+
+            container.querySelectorAll('.image-slot').forEach((slot) => {
+                slot.classList.remove('image-slot-error');
+            });
+
+            if (typeof invalidSlotIndex === 'number') {
+                const invalidSlot = container.querySelectorAll('.image-slot')[invalidSlotIndex];
+                if (invalidSlot) invalidSlot.classList.add('image-slot-error');
+                setFieldMessage(errorElement, 'is-error', customMessage || 'Only JPG, PNG, or WEBP images are allowed.');
+                return false;
+            }
+
+            if (filledSlots.length < minRequired) {
+                if (shouldShow) {
+                    const missingCount = minRequired - filledSlots.length;
+                    let marked = 0;
+                    container.querySelectorAll('.image-slot:not(.has-image)').forEach((slot) => {
+                        if (marked < missingCount) {
+                            slot.classList.add('image-slot-error');
+                            marked += 1;
+                        }
+                    });
+                    setFieldMessage(errorElement, 'is-error', `At least ${minRequired} images are required.`);
+                } else {
+                    setFieldMessage(errorElement, '', '');
+                }
+                return false;
+            }
+
+            setFieldMessage(errorElement, '', '');
+            return true;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -403,14 +509,44 @@
             const priceInp = form.querySelector('[name="price"]');
             const stockInp = form.querySelector('[name="stock"]');
 
-            const nameRegex = /^[a-zA-Z0-9]+(?:\s[a-zA-Z0-9]+)*$/;
-            const descRegex = /^(?!\s+$)[\s\S]*$/;
+            const textRegex = /^[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)*$/;
+            const descriptionRegex = /^[A-Za-z0-9:;,.()]+(?:\s+[A-Za-z0-9:;,.()]+)*$/;
+            const nameConfig = {
+                errorId: 'name-error',
+                regex: textRegex,
+                minLength: 3,
+                requiredMessage: 'Non-empty product name is required.',
+                invalidMessage: 'No special characters allowed. Use at least 3 letters or numbers.'
+            };
+            const descriptionConfig = {
+                errorId: 'description-error',
+                regex: descriptionRegex,
+                minLength: 10,
+                requiredMessage: 'Non-empty description is required.',
+                invalidMessage: 'Only : ; , . ( ) are allowed as special characters. Use at least 10 characters.'
+            };
+            const categoryConfig = {
+                errorId: 'category-error',
+                requiredMessage: 'Category is required.'
+            };
+            const priceConfig = {
+                errorId: 'price-error',
+                minValue: 0.01,
+                requiredMessage: 'Price is required.',
+                invalidMessage: 'Price must be greater than 0.'
+            };
+            const stockConfig = {
+                errorId: 'stock-error',
+                minValue: 1,
+                requiredMessage: 'Stock is required.',
+                invalidMessage: 'Stock must be at least 1 for a new product.'
+            };
 
-            nameInp.addEventListener('input', () => validateInput(nameInp, nameRegex, 'name-error', 'Min 3 alphanumeric chars'));
-            descInp.addEventListener('input', () => validateInput(descInp, descRegex, 'description-error', 'Min 10 characters required'));
-            catSel.addEventListener('change', () => validateInput(catSel, null, 'category-error', 'Select a category'));
-            priceInp.addEventListener('input', () => validateInput(priceInp, null, 'price-error', 'Price must be > 0'));
-            stockInp.addEventListener('input', () => validateInput(stockInp, null, 'stock-error', 'Stock must be >= 0'));
+            nameInp.addEventListener('input', () => validateInput(nameInp, nameConfig));
+            descInp.addEventListener('input', () => validateInput(descInp, descriptionConfig));
+            catSel.addEventListener('change', () => validateInput(catSel, categoryConfig));
+            priceInp.addEventListener('input', () => validateInput(priceInp, priceConfig));
+            stockInp.addEventListener('input', () => validateInput(stockInp, stockConfig));
 
             document.getElementById('add-more-images-btn').onclick = () => addMoreImageSlot('add-image-slots');
 
@@ -418,25 +554,16 @@
                 e.preventDefault();
                 const state = productImagesState.get('add-image-slots');
                 const filledSlots = state.filter(s => s.url);
-                if (filledSlots.length < 3) {
-                    Toastify({ text: "At least 3 images required", backgroundColor: "#ff5f6d" }).showToast();
-                    return;
-                }
-                const isValid = validateInput(nameInp, nameRegex, 'name-error', 'Min 3 alphanumeric chars') &&
-                                validateInput(descInp, descRegex, 'description-error', 'Min 10 chars. Allowed symbols: , . -') &&
-                                validateInput(catSel, null, 'category-error', 'Select a category') &&
-                                validateInput(priceInp, null, 'price-error', 'Price must be > 0') &&
-                                validateInput(stockInp, null, 'stock-error', 'Stock must be >= 0');
+                const isValid = [
+                                validateInput(nameInp, nameConfig),
+                                validateInput(descInp, descriptionConfig),
+                                validateInput(catSel, categoryConfig),
+                                validateInput(priceInp, priceConfig),
+                                validateInput(stockInp, stockConfig),
+                                validateImageCount('add-image-slots', 3, true)
+                              ].every(Boolean);
                 if (!isValid) return;
 
-                Swal.fire({
-                    title: 'Processing...',
-                    text: 'Please wait while we upload the image.',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
                 const formData = new FormData();
                 formData.append('name', nameInp.value.trim());
                 formData.append('description', descInp.value.trim());
@@ -448,16 +575,17 @@
                 });
 
                 try {
-                    const res = await fetch('/admin/products/add', { method: 'POST', body: formData });
+                    const res = await SwalCustom.withDelayedProcessing(
+                        () => fetch('/admin/products/add', { method: 'POST', body: formData }),
+                        { title: 'Uploading...', text: 'Please wait while we upload the product images.' }
+                    );
                     const data = await res.json();
-                    Swal.close();
                     if (data.success) {
-                        Swal.fire('Success', 'Product added!', 'success').then(() => window.location.href = '/admin/products');
+                        SwalCustom.success('Success', 'Product added!').then(() => window.location.href = '/admin/products');
                     } else {
                         Toastify({ text: data.message || "Error", backgroundColor: "#ff5f6d" }).showToast();
                     }
                 } catch (err) {
-                    Swal.close();
                     Toastify({ text: "Network error", backgroundColor: "#ff5f6d" }).showToast();
                 }
             });

@@ -10,9 +10,7 @@
   <!-- Stylesheets -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="/styles/user/userProfile.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
   <style>
     /* Custom CSS to remove default focus styles */
     input:focus,
@@ -147,10 +145,8 @@
 
   <%- include('../partials/User/footer') %>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+  <!-- SweetAlert2 and swalHelper are now global via navBar partial -->
 
   <!-- JavaScript -->
   <script>
@@ -240,14 +236,15 @@
         return;
       }
 
-      fetch('/profile/update', {
+      authAwareFetch('/profile/update', {
         method: 'POST',
         body: JSON.stringify({ firstname: firstNameInput.value, lastname: lastNameInput.value }),
         headers: { 'Content-Type': 'application/json' }
       })
-      .then(r => r.ok ? r.json() : Promise.reject('Update failed'))
+      .then(r => r ? (r.ok ? r.json() : Promise.reject('Update failed')) : null)
       .then(data => {
-        Swal.fire('Success', data.message, 'success');
+        if (!data) return;
+        SwalCustom.success('Success', data.message);
         firstNameInput.disabled = true;
         lastNameInput.disabled  = true;
         editBtn.textContent     = 'Edit';
@@ -257,7 +254,7 @@
         const welcomeName = document.querySelector('.breadcrumbs h5 span');
         if (welcomeName) welcomeName.textContent = firstNameInput.value + '!';
       })
-      .catch(() => Swal.fire('Error', 'Failed to update profile', 'error'));
+      .catch(() => SwalCustom.error('Error', 'Failed to update profile'));
     });
 
     // ─────────────────────────────────────────────
@@ -303,20 +300,21 @@
         setInputError(phoneInput, phoneError, 'Enter a valid 10-digit phone number');
         return;
       }
-      fetch('/profile/update-phone', {
+      authAwareFetch('/profile/update-phone', {
         method: 'POST',
         body: JSON.stringify({ phone: phoneInput.value }),
         headers: { 'Content-Type': 'application/json' }
       })
-      .then(r => r.ok ? r.json() : Promise.reject('Update failed'))
+      .then(r => r ? (r.ok ? r.json() : Promise.reject('Update failed')) : null)
       .then(data => {
-        Swal.fire('Success', data.message, 'success');
+        if (!data) return;
+        SwalCustom.success('Success', data.message);
         phoneInput.disabled = true;
         editPhoneBtn.textContent   = 'Edit';
         savePhoneBtn.style.display = 'none';
         clearInputState(phoneInput, phoneError);
       })
-      .catch(() => Swal.fire('Error', 'Failed to update phone number', 'error'));
+      .catch(() => SwalCustom.error('Error', 'Failed to update phone number'));
     });
 
     // ─────────────────────────────────────────────
@@ -395,7 +393,7 @@
         return;
       }
 
-      fetch('/profile/change-password', {
+      authAwareFetch('/profile/change-password', {
         method: 'POST',
         body: JSON.stringify({
           currentPassword: currentVal,
@@ -405,11 +403,13 @@
         headers: { 'Content-Type': 'application/json' }
       })
       .then(async response => {
+        if (!response) return null;
         const data = await response.json();
         if (!response.ok) throw data;
         return data;
       })
       .then(data => {
+        if (!data) return;
         // Reset form first, then close modal (ensures fields are cleared)
         document.getElementById('change-password-form').reset();
         [currentPasswordInput, newPasswordInput, confirmPasswordInput].forEach(inp => inp.style.borderColor = '');
@@ -418,7 +418,7 @@
         clearInputState(confirmPasswordInput, confirmPasswordError);
         // Close modal by clicking the native dismiss button
         document.querySelector('#changePasswordModal [data-dismiss="modal"]').click();
-        setTimeout(() => Swal.fire('Success', data.message || 'Password changed successfully', 'success'), 300);
+        setTimeout(() => SwalCustom.success('Success', data.message || 'Password changed successfully'), 300);
       })
       .catch(error => {
         if (error.message && error.message.toLowerCase().includes('current password')) {
@@ -426,7 +426,7 @@
         } else if (error.message && error.message.toLowerCase().includes('same')) {
           setInputError(newPasswordInput, newPasswordError, error.message);
         } else {
-          Swal.fire('Error', error.message || 'Failed to change password', 'error');
+          SwalCustom.error('Error', error.message || 'Failed to change password');
         }
       });
     });

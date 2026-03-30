@@ -6,7 +6,7 @@
     const pgLimit = typeof limit !== 'undefined' ? parseInt(limit) : 10;
 %>
 
-<div class="table-container-shared card border-0 shadow-sm">
+<div class="table-container-shared card border-0 shadow-sm admin-cards-responsive">
     <% if (offerList.length === 0) { %>
         <div class="text-center py-5">
             <i class="fas fa-search fa-3x text-muted mb-3"></i>
@@ -23,11 +23,13 @@
                     <th style="width: 15%;">Type</th>
                     <th style="width: 10%;">Value</th>
                     <th style="width: 15%;">Expires At</th>
-                    <th style="width: 15%;" class="text-center">Actions</th>
+                    <th style="width: 12%;">Status</th>
+                    <th style="width: 18%;" class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <% offerList.forEach((offer, index) => { 
+                    const isExpired = new Date(offer.expiresAt) < new Date();
                     let targetName = 'Unknown Target';
                     if (offer.offerFor === 'Product') {
                         const product = productList.find(p => p._id.toString() === offer.targetId.toString());
@@ -51,13 +53,20 @@
                             <%= offer.offerType === 'flat' ? '₹' : '' %><%= offer.value %><%= offer.offerType === 'percentage' ? '%' : '' %>
                         </span>
                     </td>
-                    <td><%= new Date(offer.expiresAt).toLocaleDateString('en-GB') %></td>
+                    <td><span class="<%= isExpired ? 'table-expired-date' : '' %>"><%= new Date(offer.expiresAt).toLocaleDateString('en-GB') %></span></td>
+                    <td>
+                        <span class="status-box status-<%= offer.isActive ? 'successful' : 'failed' %>">
+                            <%= offer.isActive ? 'Listed' : 'Unlisted' %>
+                        </span>
+                    </td>
                     <td class="text-center">
                         <div class="d-flex align-items-center justify-content-center">
-                            <button class="btn btn-outline-warning btn-sm rounded-pill px-3 mr-2" data-offer='<%= JSON.stringify(offer) %>' onclick="openEditOfferModal(this.dataset.offer)">
-                                Edit
-                            </button>
-                            <button class="btn <%= offer.isActive ? 'btn-outline-secondary' : 'btn-outline-primary' %> btn-sm rounded-pill px-3 toggle-status-btn" 
+                            <a href="/admin/offers/<%= offer._id %>/view?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>"
+                               class="btn btn-sm rounded-pill px-3 mr-2 table-action-btn table-btn-view">
+                                View
+                            </a>
+                            <a href="/admin/offers/edit/<%= offer._id %>?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>" class="btn btn-sm rounded-pill px-3 mr-2 table-action-btn table-btn-edit">Edit</a>
+                            <button class="btn btn-sm rounded-pill px-3 toggle-status-btn table-action-btn <%= offer.isActive ? 'table-btn-unlist' : 'table-btn-relist' %>" 
                                     data-id="<%= offer._id %>"
                                     data-status="<%= offer.isActive %>"
                                     onclick="toggleOfferStatus(this)">
@@ -73,6 +82,7 @@
         <!-- Mobile Card View -->
         <div class="shared-cards-mobile p-3">
             <% offerList.forEach((offer, index) => { 
+                const isExpired = new Date(offer.expiresAt) < new Date();
                 let targetName = 'Unknown Target';
                 if (offer.offerFor === 'Product') {
                     const product = productList.find(p => p._id.toString() === offer.targetId.toString());
@@ -109,16 +119,22 @@
                     <div class="row">
                         <div class="col-12">
                             <small class="text-muted d-block text-uppercase font-weight-bold">Expires At</small>
-                            <span><%= new Date(offer.expiresAt).toLocaleDateString() %></span>
+                            <span class="<%= isExpired ? 'table-expired-date' : '' %>"><%= new Date(offer.expiresAt).toLocaleDateString() %></span>
                         </div>
                     </div>
                     
                     <div class="mt-4 row">
-                        <div class="col">
-                            <button class="btn btn-outline-warning btn-block btn-sm rounded-pill" data-offer='<%= JSON.stringify(offer) %>' onclick="openEditOfferModal(this.dataset.offer)">Edit</button>
+                        <div class="col-12 mb-2">
+                            <a href="/admin/offers/<%= offer._id %>/view?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>"
+                               class="btn btn-block btn-sm rounded-pill table-action-btn table-btn-view">
+                                View
+                            </a>
                         </div>
                         <div class="col">
-                            <button class="btn btn-block btn-sm rounded-pill toggle-status-btn <%= offer.isActive ? 'btn-outline-secondary' : 'btn-outline-primary' %>" 
+                            <a href="/admin/offers/edit/<%= offer._id %>?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>" class="btn btn-block btn-sm rounded-pill table-action-btn table-btn-edit">Edit</a>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-block btn-sm rounded-pill toggle-status-btn table-action-btn <%= offer.isActive ? 'table-btn-unlist' : 'table-btn-relist' %>" 
                                     data-id="<%= offer._id %>"
                                     data-status="<%= offer.isActive %>"
                                     onclick="toggleOfferStatus(this)">
@@ -138,144 +154,4 @@
             <%- include('../Common/pagination') %>
         </div>
         <% } %>
-</div>
-
-<!-- All Offer Modals -->
-<!-- Add Offer Modal -->
-<div class="modal fade" id="addOfferModal" tabindex="-1" role="dialog" aria-labelledby="addOfferModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title font-weight-bold" id="addOfferModalLabel">Add New Offer</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="offerFormModal" novalidate>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Offer For</label>
-                        <select class="form-control" id="offerFor" required>
-                            <option value="">Select Offer Type</option>
-                            <option value="Product">Product</option>
-                            <option value="Category">Category</option>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="productSelectContainer" style="display: none;">
-                        <label class="font-weight-bold">Select Product</label>
-                        <select class="form-control scrollable-select" id="productSelect">
-                            <% productList.forEach(product => { %>
-                            <option value="<%= product._id %>"><%= product.name %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="categorySelectContainer" style="display: none;">
-                        <label class="font-weight-bold">Select Category</label>
-                        <select class="form-control scrollable-select" id="categorySelect">
-                            <% categoryList.forEach(category => { %>
-                            <option value="<%= category._id %>"><%= category.name %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Offer Type</label>
-                        <select class="form-control" id="offerType" required>
-                            <option value="">Select Discount Type</option>
-                            <option value="flat">Flat Discount</option>
-                            <option value="percentage">Percentage Discount</option>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="minPriceContainer" style="display: none;">
-                        <label class="font-weight-bold">Minimum Product Price</label>
-                        <input type="number" class="form-control" id="minProductPrice" min="1">
-                    </div>
-                    <div class="form-group mb-3" id="maxDiscountContainer" style="display: none;">
-                        <label class="font-weight-bold">Maximum Discount</label>
-                        <input type="number" class="form-control" id="maxDiscount" min="1">
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Value</label>
-                        <input type="number" class="form-control" id="value" required min="1">
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Expires At</label>
-                        <input type="date" class="form-control" id="expiresAt" required>
-                    </div>
-                    <div class="modal-footer bg-light px-0 pb-0 pt-3 border-0">
-                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #9135ED; border-color: #9135ED;">Add Offer</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Offer Modal -->
-<div class="modal fade" id="editOfferModal" tabindex="-1" role="dialog" aria-labelledby="editOfferModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title font-weight-bold">Edit Offer</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="editOfferFormModal" novalidate>
-                    <input type="hidden" id="editOfferId">
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Offer For</label>
-                        <select class="form-control" id="editOfferFor" required disabled>
-                            <option value="Product">Product</option>
-                            <option value="Category">Category</option>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="editProductSelectContainer" style="display: none;">
-                        <label class="font-weight-bold">Select Product</label>
-                        <select class="form-control scrollable-select" id="editProductSelect" disabled>
-                            <% productList.forEach(product => { %>
-                            <option value="<%= product._id %>"><%= product.name %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="editCategorySelectContainer" style="display: none;">
-                        <label class="font-weight-bold">Select Category</label>
-                        <select class="form-control scrollable-select" id="editCategorySelect" disabled>
-                            <% categoryList.forEach(category => { %>
-                            <option value="<%= category._id %>"><%= category.name %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Offer Type</label>
-                        <select class="form-control" id="editOfferType" required>
-                            <option value="flat">Flat Discount</option>
-                            <option value="percentage">Percentage Discount</option>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="editMinPriceContainer" style="display: none;">
-                        <label class="font-weight-bold">Minimum Product Price</label>
-                        <input type="number" class="form-control" id="editMinProductPrice" min="1">
-                    </div>
-                    <div class="form-group mb-3" id="editMaxDiscountContainer" style="display: none;">
-                        <label class="font-weight-bold">Maximum Discount</label>
-                        <input type="number" class="form-control" id="editMaxDiscount" min="1">
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Value</label>
-                        <input type="number" class="form-control" id="editValue" required min="1">
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Expires At</label>
-                        <input type="date" class="form-control" id="editExpiresAt" required>
-                    </div>
-                    <div class="modal-footer bg-light px-0 pb-0 pt-3 border-0">
-                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #9135ED; border-color: #9135ED;">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>

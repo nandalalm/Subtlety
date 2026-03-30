@@ -14,6 +14,29 @@
   <link rel="stylesheet" href="/styles/user/login.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-input-shell {
+      position: relative;
+    }
+
+    .password-input-shell .form-control {
+      padding-right: 2.75rem;
+    }
+
+    #togglePassword {
+      position: absolute;
+      top: 50%;
+      right: 0.9rem;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #6c757d;
+      line-height: 1;
+      z-index: 2;
+    }
+
     .otp-inputs {
       display: flex;
       justify-content: center;
@@ -75,24 +98,19 @@
   <div class="login-container">
     <h2 style="color: #9135ED;" class="text-center">SUBTLETY</h2>
 
-    <!-- Error message placeholder -->
-    <% if (errorMessage) { %>
-    <div class="alert alert-danger" role="alert" id="errorAlert">
-      <%= errorMessage %>
-    </div>
-    <% } %>
-
     <form id="loginForm" action="/auth/login" method="post">
       <div class="form-group">
         <label for="usermail"><small>Email</small></label>
         <input type="email" class="form-control " id="email" name="email" placeholder="Enter email" required>
-        <div class="invalid-feedback"><small>Please enter a valid email address.</small></div>
+        <div class="invalid-feedback" id="emailFeedback"><small><%= errorMessage || 'Please enter a valid email address.' %></small></div>
       </div>
       <div class="form-group password-wrapper">
         <label for="password"><small>Password</small></label>
-        <input type="password" class="form-control " id="password" name="password" placeholder="Enter password" required>
-        <i class="fa-regular fa-eye" id="togglePassword"></i>
-        <div class="invalid-feedback"><small>Password must be at least 6 characters long.</small></div>
+        <div class="password-input-shell">
+          <input type="password" class="form-control " id="password" name="password" placeholder="Enter password" required>
+          <i class="fa-regular fa-eye" id="togglePassword"></i>
+        </div>
+        <div class="invalid-feedback" id="passwordFeedback"><small>Password must be at least 6 characters long.</small></div>
       </div>
       <button type="submit" class="btn btn-primary btn-block  hello mt-4">Login</button>
     </form>
@@ -117,7 +135,6 @@
     <script src="https://code.jquery.com/jquery-3.5.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       // Demo login functionality
       document.getElementById('demoLoginButton').onclick = function() {

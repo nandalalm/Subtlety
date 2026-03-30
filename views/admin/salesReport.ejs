@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link rel="stylesheet" href="/styles/admin/dashboard.css">
   <link rel="stylesheet" href="/styles/shared/tables.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
   <style>
     /* Standardized Filter Select Style */
     .filter-select {
@@ -98,6 +97,98 @@
     .badge-mild-warning { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
     .badge-mild-info { background-color: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
 
+    .sales-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .sales-toolbar-left {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        flex: 1 1 560px;
+    }
+
+    .sales-toolbar-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex: 0 0 auto;
+    }
+
+    #customDateRange {
+        margin-bottom: 0 !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sales-toolbar .sort-clear-inner,
+    .sales-toolbar .sort-clear-inner i,
+    .sales-toolbar .btn-pagination,
+    .sales-toolbar .btn-pagination i,
+    #salesTableContainer .btn-pagination,
+    #salesTableContainer .btn-pagination i,
+    .sidebar .sidebar-item i,
+    #downloadPdf i,
+    #downloadExcel i {
+        color: inherit;
+    }
+
+    #clearSalesReportBtn {
+        color: #9135ED !important;
+    }
+
+    #clearSalesReportBtn:hover {
+        color: #7a2bc7 !important;
+    }
+
+    .sidebar .sidebar-item.active i {
+        color: #ffffff !important;
+    }
+
+    .sidebar .sidebar-item:not(.active) i {
+        color: #636E72 !important;
+    }
+
+    .sidebar .sidebar-item:hover i {
+        color: #9135ED !important;
+    }
+
+    .sidebar .sidebar-item.bg-transparent i,
+    .sidebar .sidebar-item.bg-transparent:hover i {
+        color: #dc3545 !important;
+    }
+
+    #salesTableContainer .btn-pagination {
+        color: #9135ED !important;
+    }
+
+    #salesTableContainer .btn-pagination:hover:not(.disabled) {
+        color: #ffffff !important;
+    }
+
+    #salesTableContainer .page-info {
+        color: #9135ED !important;
+    }
+
+    @media (max-width: 991px) {
+        .sales-toolbar-right {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        #customDateRange {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+    }
+
   </style>
 </head>
 
@@ -111,8 +202,8 @@
         <h2 class="mb-4">Sales Report</h2>
 
         <!-- Action Bar -->
-        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap">
-          <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+        <div class="sales-toolbar mb-4">
+          <div class="sales-toolbar-left">
             <!-- Report Type Filter -->
             <div style="min-width: 175px;">
               <div class="filter-sort-pill shadow-sm">
@@ -132,7 +223,7 @@
             </div>
 
             <!-- Custom Date Inputs -->
-            <div id="customDateRange" class="align-items-center mb-3" style="display: <%= reportType === 'custom' ? 'flex' : 'none' %>; gap: 8px;">
+            <div id="customDateRange" class="align-items-center" style="display: <%= reportType === 'custom' ? 'flex' : 'none' %>;">
               <div class="filter-sort-pill shadow-sm px-2" style="background: white;">
                 <input type="date" id="startDate" class="border-0 bg-transparent" style="height: 38px; outline: none;" value="<%= startDate %>">
                 <span class="text-muted mx-1">to</span>
@@ -145,7 +236,7 @@
             </div>
           </div>
 
-          <div class="d-flex align-items-center mt-lg-0 mt-3">
+          <div class="sales-toolbar-right">
             <button id="downloadPdf" class="btn btn-outline-danger shadow-sm rounded-pill px-4 mr-2" style="height: 40px;">
               <i class="fas fa-file-pdf mr-1"></i> PDF
             </button>
@@ -163,10 +254,7 @@
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     function toggleCustomDates(value) {
@@ -183,7 +271,7 @@
         const endDate = document.getElementById('endDate').value;
 
         if (reportType === 'custom' && (!startDate || !endDate)) {
-            return Swal.fire('Error', 'Please select both start and end dates', 'error');
+            return SwalCustom.error('Error', 'Please select both start and end dates');
         }
 
         const url = new URL(window.location.href);
@@ -221,7 +309,7 @@
           a.click();
           window.URL.revokeObjectURL(url);
         })
-        .catch(error => Swal.fire('Error', 'Failed to generate PDF', 'error'));
+        .catch(error => SwalCustom.error('Error', 'Failed to generate PDF'));
     });
 
     // Excel Download
@@ -245,7 +333,7 @@
           a.click();
           window.URL.revokeObjectURL(url);
         })
-        .catch(error => Swal.fire('Error', 'Failed to generate Excel', 'error'));
+        .catch(error => SwalCustom.error('Error', 'Failed to generate Excel'));
     });
   </script>
   <%- include('../partials/Admin/adminScripts') %>

@@ -11,7 +11,6 @@
   <!-- Google Fonts: Poppins -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
   <style>
     body {
       height: 100% !important;
@@ -511,13 +510,13 @@
   <%- include('../partials/User/footer') %>
 
   <!-- Bootstrap JS and dependencies -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <script>
+    const delayedFetch = (url, options, loaderOptions) =>
+      SwalCustom.withDelayedProcessing(() => authAwareFetch(url, options), loaderOptions);
+
     // Handle cancellation of the product
     document.querySelectorAll(".cancel-order-btn").forEach((button) => {
       button.addEventListener("click", function(e) {
@@ -525,49 +524,43 @@
         const orderId = this.getAttribute("data-order-id");
         const productId = this.getAttribute("data-product-id");
 
-        Swal.fire({
-          title: "Are you sure?",
-          text: "Once cancelled, you will not be able to recover this product!",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Yes, cancel it!",
-        }).then((result) => {
+        SwalCustom.confirm(
+          "Are you sure?",
+          "Once cancelled, you will not be able to recover this product!",
+          "Yes, cancel it!",
+          "Cancel"
+        ).then((result) => {
           if (result.isConfirmed) {
-            fetch(`/orders/cancel/${orderId}/${productId}`, {
+            authAwareFetch(`/orders/cancel/${orderId}/${productId}`, {
                 method: "POST",
               })
-              .then((response) => response.json())
+              .then((response) => {
+                if (!response) return null;
+                return response.json();
+              })
               .then((data) => {
+                if (!data) return;
                 if (data.success) {
-                  Swal.fire(
+                  SwalCustom.success(
                     "Cancelled!",
-                    "The product has been cancelled.",
-                    "success"
+                    "The product has been cancelled."
                   ).then(() => {
                     location.reload();
                   });
                 } else {
-                  Swal.fire(
+                  SwalCustom.error(
                     "Error!",
                     data.message ||
-                    "There was a problem cancelling the product.",
-                    "error"
-                  ).then(() => {
-                    location.reload();
-                  });
+                    "There was a problem cancelling the product."
+                  );
                 }
               })
               .catch((error) => {
                 console.error("Error:", error);
-                Swal.fire(
+                SwalCustom.error(
                   "Error!",
-                  "There was a problem cancelling the product.",
-                  "error"
-                ).then(() => {
-                  location.reload();
-                });
+                  "There was a problem cancelling the product."
+                );
               });
           }
         });
@@ -592,11 +585,11 @@
         const returnReason = document.getElementById("returnReason")?.value;
 
         if (!returnReason) {
-          Swal.fire("Error!", "Please provide a reason for return.", "error");
+          SwalCustom.error("Error!", "Please provide a reason for return.");
           return;
         }
 
-        fetch(`/orders/return/${orderId}/${productId}`, {
+        authAwareFetch(`/orders/return/${orderId}/${productId}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -606,35 +599,35 @@
             }),
           })
           .then((response) => {
+            if (!response) return null;
+            if (!response) return null;
             if (!response.ok) {
               throw new Error("Network response was not ok");
             }
             return response.json();
           })
           .then((data) => {
+            if (!data) return;
             if (data.success) {
-              Swal.fire(
+              SwalCustom.success(
                 "Success!",
-                "Your return request has been submitted.",
-                "success"
+                "Your return request has been submitted."
               ).then(() => {
                 location.reload(); // Refresh the page
               });
             } else {
-              Swal.fire(
+              SwalCustom.error(
                 "Error!",
                 data.message ||
-                "There was a problem submitting your return request.",
-                "error"
+                "There was a problem submitting your return request."
               );
             }
           })
           .catch((error) => {
             console.error("Error:", error);
-            Swal.fire(
+            SwalCustom.error(
               "Error!",
-              "There was a problem submitting your return request.",
-              "error"
+              "There was a problem submitting your return request."
             );
           });
       });
@@ -719,84 +712,91 @@
         const amount = this.getAttribute("data-amount"); // assuming the amount to be deducted is passed as a data attribute
 
         // Display the confirmation dialog for retrying payment
-        Swal.fire({
-          title: "Are you sure?",
-          text: "You are about to retry payment for this order!",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Yes, retry payment!",
-        }).then(async (result) => {
+        SwalCustom.confirm(
+          "Are you sure?",
+          "You are about to retry payment for this order!",
+          "Yes, retry payment!",
+          "Cancel"
+        ).then(async (result) => {
           if (result.isConfirmed) {
             // Check if payment method is Wallet
             if (paymentStatus === "Failed" && paymentMethod === "Wallet") {
               // Handle wallet deduction logic by calling your controller
               try {
-                const walletResponse = await fetch(`/wallet/deduct`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
+                const walletResponse = await delayedFetch(
+                  `/wallet/deduct`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      orderId,
+                      amount,
+                    }),
                   },
-                  body: JSON.stringify({
-                    orderId, // Send the orderId to identify the order
-                    amount, // Send the amount to deduct from wallet
-                  }),
-                });
+                  {
+                    title: "Processing wallet payment...",
+                    text: "Please wait while we retry the payment using your wallet."
+                  }
+                );
 
+                if (!walletResponse) return;
                 if (walletResponse.ok) {
                   const walletData = await walletResponse.json();
 
                   // Check if the wallet payment was successful based on the 'message' field
                   if (walletData.message === "Wallet payment successful") {
                     // Show success SweetAlert if wallet deduction is successful
-                    Swal.fire({
-                      icon: "success",
-                      title: "Success!",
-                      text: `Payment successfully deducted from wallet. Remaining balance: ₹${walletData.remainingBalance}`,
-                      showConfirmButton: false,
-                      timer: 2000, // Show success message for 1 second
-                    }).then(() => {
+                    SwalCustom.success(
+                      "Success!",
+                      `Payment successfully deducted from wallet. Remaining balance: ₹${walletData.remainingBalance}`
+                    ).then(() => {
                       // After the success SweetAlert closes, reload the page
                       location.reload();
                     });
                   } else {
                     // If wallet deduction failed, show an error message
-                    Swal.fire({
-                      icon: "error",
-                      title: "Wallet Deduction Failed",
-                      text: walletData.message || "There was an issue deducting from your wallet.",
-                    });
+                    SwalCustom.error(
+                      "Wallet Deduction Failed",
+                      walletData.message || "There was an issue deducting from your wallet."
+                    );
                   }
                 } else {
                   const errorData = await walletResponse.json();
-                  Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: errorData.message || "Error processing wallet deduction.",
-                  });
+                  SwalCustom.error(
+                    "Oops...",
+                    errorData.message || "Error processing wallet deduction."
+                  );
                 }
               } catch (error) {
-                Swal.fire({
-                  icon: "error",
-                  title: "Oops...",
-                  text: "An unexpected error occurred while retrying payment via wallet.",
-                });
+                SwalCustom.error(
+                  "Oops...",
+                  "An unexpected error occurred while retrying payment via wallet."
+                );
               }
             } else if (paymentMethod === "Razorpay") {
               // Existing Razorpay payment retry logic
               try {
                 // Create Razorpay order
-                const razorpayResponse = await fetch("/orders/razorpay/create", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
+                const razorpayResponse = await delayedFetch(
+                  "/orders/razorpay/create",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      orderId,
+                    }),
                   },
-                  body: JSON.stringify({
-                    orderId,
-                  }), // Send order ID
-                });
+                  {
+                    title: "Preparing payment...",
+                    text: "Please wait while we connect to Razorpay."
+                  }
+                );
 
+                if (!razorpayResponse) return;
                 if (razorpayResponse.ok) {
                   const razorpayData = await razorpayResponse.json();
                   const options = {
@@ -809,53 +809,49 @@
                     handler: async function(response) {
                       try {
                         // Confirm payment
-                        const paymentConfirmationResponse = await fetch("/orders/razorpay/confirm", {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
+                        const paymentConfirmationResponse = await delayedFetch(
+                          "/orders/razorpay/confirm",
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              orderId,
+                              paymentResponse: response,
+                            }),
                           },
-                          body: JSON.stringify({
-                            orderId,
-                            paymentResponse: response,
-                          }),
-                        });
+                          {
+                            title: "Confirming payment...",
+                            text: "Please wait while we verify your Razorpay payment."
+                          }
+                        );
 
+                        if (!paymentConfirmationResponse) return;
                         if (paymentConfirmationResponse.ok) {
                           const data = await paymentConfirmationResponse.json();
-                          Swal.fire({
-                            icon: "success",
-                            title: "Success!",
-                            text: data.message,
-                            showConfirmButton: false,
-                            timer: 1000,
-                          }).then(() => {
+                          SwalCustom.success("Success!", data.message).then(() => {
                             window.location.href = `/orders/success?orderId=${orderId}`;
                           });
                         } else {
                           const errorData = await paymentConfirmationResponse.json();
-                          await Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: `Error confirming payment: ${errorData.message}`,
-                          });
+                          SwalCustom.error("Oops...", `Error confirming payment: ${errorData.message}`);
                         }
                       } catch (error) {
-                        await Swal.fire({
-                          icon: "error",
-                          title: "Oops...",
-                          text: "An unexpected error occurred while confirming the payment.",
-                        });
+                        SwalCustom.error(
+                          "Oops...",
+                          "An unexpected error occurred while confirming the payment."
+                        );
                       }
                     },
                   };
 
                   const razorpay = new Razorpay(options);
                   razorpay.on("payment.failed", async (res) => {
-                    await Swal.fire({
-                      icon: "error",
-                      title: "Payment Failed",
-                      text: "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank.",
-                    });
+                    await SwalCustom.error(
+                      "Payment Failed",
+                      "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank."
+                    );
                     window.location.href = "/user/home"; // Redirect after alert
                   });
 
@@ -863,18 +859,13 @@
                   razorpay.open();
                 } else {
                   const errorData = await razorpayResponse.json();
-                  await Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: `Error creating Razorpay order: ${errorData.message}`,
-                  });
+                  SwalCustom.error("Oops...", `Error creating Razorpay order: ${errorData.message}`);
                 }
               } catch (error) {
-                await Swal.fire({
-                  icon: "error",
-                  title: "Oops...",
-                  text: "An unexpected error occurred.",
-                });
+                SwalCustom.error(
+                  "Oops...",
+                  "An unexpected error occurred."
+                );
               }
             }
           }
@@ -927,21 +918,16 @@
         };
 
         try {
-          const response = await fetch('/reviews/add', {
+          const response = await authAwareFetch('/reviews/add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
           });
+          if (!response) return;
           const data = await response.json();
           
           if (data.success) {
-            Swal.fire({
-              title: 'Thank you!',
-              text: data.message,
-              icon: 'success',
-              timer: 1500,
-              showConfirmButton: false
-            }).then(() => {
+            SwalCustom.success('Thank you!', data.message).then(() => {
               // Robust Modal Closing
               const modal = $('#rateReviewModal');
               // 1. Try standard hide
@@ -969,11 +955,11 @@
               }
             });
           } else {
-            Swal.fire('Error', data.message, 'error');
+            SwalCustom.error('Error', data.message);
           }
         } catch (error) {
           console.error(error);
-          Swal.fire('Error', 'Something went wrong', 'error');
+          SwalCustom.error('Error', 'Something went wrong');
         }
       });
     });
