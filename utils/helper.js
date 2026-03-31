@@ -4,24 +4,20 @@ import Cart from "../model/cart.js";
 import Offer from "../model/offer.js";
 import Review from "../model/review.js";
 
-// Prices and discounts are stored/displayed as floored integers across the app.
 export const roundToTwo = (num) => {
   return Math.floor(Number(num) || 0);
 };
 
-// Helper to generate unique Order ID
 export const generateOrderId = () => {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const random = Math.floor(100000 + Math.random() * 900000);
   return `ORD-${date}-${random}`;
 };
 
-// Helper to generate unique Transaction ID
 export async function generateTransactionId() {
   return `TRA-${Date.now()}-${crypto.randomInt(1000, 9999)}`;
 }
 
-// Helper to get cart item quantities map for the current user
 export async function getCartItemMap(userId) {
   if (!userId) return {};
   const cart = await Cart.findOne({ user: userId });
@@ -59,7 +55,6 @@ export async function getBestOffer(product) {
   let bestDiscountedPrice = product.price;
 
   offers.forEach((offer) => {
-    // Check if offer is active and not expired
     const isExpired = offer.expiresAt && new Date(offer.expiresAt) <= new Date();
     if (offer.isActive && !isExpired) {
       const discountedPrice = calculateDiscountedPrice(offer, product);
@@ -99,7 +94,6 @@ export function calculateDiscountedPrice(offer, product) {
     discountedPrice = Math.floor(discountedPrice);
   }
 
-  // Ensure price doesn't go below zero and truncate
   return Math.floor(Math.max(discountedPrice, 0));
 }
 
@@ -109,7 +103,6 @@ export async function getBestOfferBatch(products) {
   const productIds = products.map(p => p._id);
   const categoryIds = products.map(p => p.category?._id || p.category).filter(c => c);
 
-  // Fetch all relevant active offers in one query
   const allOffers = await Offer.find({
     isActive: true,
     $or: [

@@ -3,7 +3,6 @@ const router = express.Router();
 import * as controller from "../controller/orderController.js";
 import { userAuthenticated } from "../middleware/authentication.js";
 
-// Base: /orders (user-facing)
 router.get('/checkout', userAuthenticated, controller.checkoutPage);
 router.post('/checkout/confirm', userAuthenticated, controller.confirmOrder);
 router.post('/checkout/apply-coupon', userAuthenticated, controller.applyCoupon);

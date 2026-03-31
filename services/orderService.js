@@ -22,7 +22,6 @@ const razorpayInstance = new Razorpay({
   key_secret: "ttwYmmlesedbxjWK8AF59uJq",
 });
 
-// Internal helper for totals
 async function calculateTotalsInternal(cartItems) {
     let originalSubtotal = 0;
     let offerDiscount = 0;

@@ -54,7 +54,6 @@ async function verifyOtp(req, res, next) {
   const { email, otp, referral } = req.body;
   try {
     const tempUser = req.session.tempUser;
-    // Basic session validation here, business logic in service
     if (!tempUser || tempUser.email !== email) {
       return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION });
     }
@@ -187,7 +186,7 @@ async function resendPasswordResetOtp(req, res, next) {
       return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
     }
 
-    const { otp, otpTimestamp } = await authService.resendOtp(resetUser); // Using resendOtp for common logic
+    const { otp, otpTimestamp } = await authService.resendOtp(resetUser); 
     
     req.session.passwordResetUser.otp = otp;
     req.session.passwordResetUser.otpTimestamp = otpTimestamp;
@@ -202,7 +201,6 @@ async function resendPasswordResetOtp(req, res, next) {
   }
 }
 
-// Admin Auth Functions
 function getAdminLogin(req, res) {
   if (req.session.admin) {
     return res.redirect("/admin/dashboard");

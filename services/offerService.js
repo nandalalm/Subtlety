@@ -281,19 +281,16 @@ const offerService = {
 
     const now = new Date();
 
-    // Status/type filters — applied to MongoDB query
     if (sort === "listed") query.isActive = true;
     else if (sort === "unlisted") query.isActive = false;
     else if (sort === "active") {
-      // Active = listed AND not expired
       query.isActive = true;
       query.expiresAt = { $gte: now };
     }
     else if (sort === "expired") query.expiresAt = { $lt: now };
     else if (sort === "flat" || sort === "percentage") query.discountType = sort;
 
-    // Sort order — use _id since coupon schema has no timestamps
-    let sortOrder = { _id: -1 }; // latest first by default
+    let sortOrder = { _id: -1 };
     if (sort === "oldest") sortOrder = { _id: 1 };
 
     const coupons = await couponRepository.find(query, sortOrder, skip, limit);

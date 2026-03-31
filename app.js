@@ -46,8 +46,6 @@ app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-// Local uploads no longer needed (moved to Cloudinary)
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(cors());
 
@@ -109,4 +107,4 @@ app.use(errorHandler);
 
 export default app;
 
-app.listen(3000, () => { console.log('Server running on http://localhost:3000') });
+app.listen(3000, () => { console.log('Server running on http://localhost:3000') });

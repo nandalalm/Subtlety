@@ -29,7 +29,6 @@ const profileService = {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PROFILE.PASSWORD_INCORRECT };
     }
 
-    // Check if new password is same as current 
     const isNewSameAsOld = await bcrypt.compare(newPassword, user.password);
     if (isNewSameAsOld) {
         throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PROFILE.SAME_PASSWORD };

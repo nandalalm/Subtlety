@@ -33,7 +33,7 @@ async function userAuthenticated(req, res, next) {
   try {
     const user = await User.findById(req.session.user._id);
     if (!user || user.isBlocked) {
-      req.session.user = null; // Clear user session
+      req.session.user = null; 
       if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') > -1)) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
           success: false,

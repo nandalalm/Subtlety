@@ -1,4 +1,3 @@
-import userRepository from "../repositories/userRepository.js";
 import productRepository from "../repositories/productRepository.js";
 import categoryRepository from "../repositories/categoryRepository.js";
 import orderRepository from "../repositories/orderRepository.js";
@@ -9,7 +8,6 @@ import mongoose from "mongoose";
 
 const userService = {
   getHomeData: async () => {
-    // Fetch all needed data for home page
     const [categories, products] = await Promise.all([
       categoryRepository.find({ isListed: true }),
       productRepository.find({ isListed: true })
@@ -130,7 +128,6 @@ const userService = {
 
     const totalRelated = await productRepository.countDocuments({ category: product.category, _id: { $ne: product._id }, isListed: true });
     
-    // Coupon logic
     const validCoupons = activeCoupons.filter(c => {
       if (c.discountType === 'percentage') return true;
       if (c.discountType === 'flat' && product.price >= (c.minOrderValue || 0)) return true;

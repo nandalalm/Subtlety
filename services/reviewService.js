@@ -20,7 +20,6 @@ const reviewService = {
       throw error;
     }
 
-    // Check if the product was delivered in this order
     const order = await orderRepository.findOne({
       _id: orderId,
       userId: userId,
@@ -38,7 +37,6 @@ const reviewService = {
       throw error;
     }
 
-    // Check if item was returned or has a pending return
     const returnRequest = (order.returnRequests || []).find(
       (r) => r.productId.toString() === productId
     );
@@ -71,7 +69,6 @@ const reviewService = {
       throw err;
     }
 
-    // Mark the item as rated so the Rate & Review button disappears
     const orderItem = order.items.find(
       (i) => i.productId.toString() === productId
     );

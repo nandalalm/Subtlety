@@ -41,7 +41,7 @@ export const dbLogger = (message, isError = false) => {
     console.error(`${timestamp} | ${errorMsg}`);
     logErrorToFile(errorMsg);
   } else {
-    // console.log(`${timestamp} | DB | ${message}`); // Removed terminal logging as per user request
+    // console.log(`${timestamp} | DB | ${message}`);
   }
 };
 

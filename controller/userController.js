@@ -37,7 +37,6 @@ async function getShopPage(req, res, next) {
     if (req.query.ajax) {
       res.set('X-Has-More', data.hasMore.toString());
       if (req.query.append) {
-        // Return only the product cards for appending
         return res.render("partials/User/productGridAppend", {
           ...data,
           user,

@@ -50,7 +50,6 @@ async function applyCoupon(req, res, next) {
     const userId = req.session.user?._id;
     if (!userId) return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: MESSAGES.ORDER.USER_NOT_AUTHENTICATED });
 
-    // Get current checkout data to have the correct base total
     checkoutData = await orderService.getCheckoutData(userId);
     if (checkoutData.validationIssues && checkoutData.validationIssues.length > 0) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -61,10 +60,8 @@ async function applyCoupon(req, res, next) {
     }
     const netTotalBeforeCoupon = checkoutData.totalAmount;
 
-    // Validate the coupon against the net total (after offer discounts and delivery)
     const result = await orderService.validateCoupon(userId, couponCode, netTotalBeforeCoupon);
     
-    // Calculate final total
     const couponDiscount = Math.floor(result.discount);
     const finalTotal = Math.floor(netTotalBeforeCoupon - couponDiscount);
 
@@ -383,7 +380,7 @@ async function getSalesReport(req, res, next) {
 
 async function generateSalesReport(req, res, next) {
   try {
-    const data = await orderService.getSalesReportData({ ...req.body, page: null }); // Get all for JSON
+    const data = await orderService.getSalesReportData({ ...req.body, page: null }); 
     res.json({ success: true, ...data });
   } catch (error) {
     next(error);

@@ -3,7 +3,6 @@ const router = express.Router();
 import * as controller from '../controller/categoryController.js';
 import { isAuthenticated } from '../middleware/authentication.js';
 
-// Base: /admin/categories
 router.get('/', isAuthenticated, controller.getCategories);
 router.get('/add', isAuthenticated, controller.getAddCategoryPage);
 router.get('/edit/:id', isAuthenticated, controller.getEditCategoryPage);

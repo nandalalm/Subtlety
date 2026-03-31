@@ -3,10 +3,8 @@ const router = express.Router();
 import * as controller from "../controller/orderController.js";
 import { isAuthenticated } from "../middleware/authentication.js";
 
-// Base: /admin/orders
 router.get('/', isAuthenticated, controller.getAdminOrders);
 
-// Sales Report (under /admin/orders/sales-report)
 router.get('/sales-report', isAuthenticated, controller.getSalesReport);
 router.post('/sales-report/generate', isAuthenticated, controller.generateSalesReport);
 router.post('/sales-report/download/pdf', isAuthenticated, controller.downloadSalesReportPdf);

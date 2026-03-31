@@ -92,10 +92,8 @@ async function getAddProduct(req, res, next) {
 async function getEditProduct(req, res, next) {
   try {
     const { id } = req.params;
-    // We can use productRepository directly for simple fetch if no complex logic, but better through service
-    const data = await productService.getAdminProducts({ page: 1, limit: 1, search: id }); // Using search as id is a hack, better adding getById
-    // Actually let's use a simpler way
-    const product = await productService.updateProduct(id, {}); // Dry run to check existence
+    const data = await productService.getAdminProducts({ page: 1, limit: 1, search: id }); 
+    const product = await productService.updateProduct(id, {}); 
     const categoriesData = await categoryService.getCategories({ limit: 1000 });
     
     res.render("admin/editProduct", { 

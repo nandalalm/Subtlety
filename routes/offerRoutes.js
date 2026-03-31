@@ -3,9 +3,6 @@ const router = express.Router();
 import * as offerController from '../controller/offerController.js';
 import { isAuthenticated } from '../middleware/authentication.js';
 
-// Base: /admin/offers
-
-// Offer Management
 router.get('/', isAuthenticated, offerController.getOffers);
 router.get('/add', isAuthenticated, offerController.getAddOfferPage);
 router.get('/edit/:id', isAuthenticated, offerController.getEditOfferPage);
@@ -15,7 +12,6 @@ router.post('/add', isAuthenticated, offerController.addOffer);
 router.post('/edit/:id', isAuthenticated, offerController.editOffer);
 router.post('/toggle-status/:id', isAuthenticated, offerController.toggleOfferStatus);
 
-// Coupon Management (under /admin/offers/coupons)
 router.get('/coupons', isAuthenticated, offerController.getCoupons);
 router.get('/coupons/add', isAuthenticated, offerController.getAddCouponPage);
 router.get('/coupons/edit/:id', isAuthenticated, offerController.getEditCouponPage);

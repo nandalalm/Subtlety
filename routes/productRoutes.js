@@ -3,7 +3,6 @@ const router = express.Router();
 import * as controller from '../controller/productController.js';
 import { isAuthenticated } from '../middleware/authentication.js';
 
-// Base: /admin/products
 router.get('/', isAuthenticated, controller.getProducts);
 router.get('/add', isAuthenticated, controller.getAddProduct);
 router.get('/edit/:id', isAuthenticated, controller.getEditProduct);

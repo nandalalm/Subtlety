@@ -3,7 +3,6 @@ const router = express.Router();
 import * as reviewController from '../controller/reviewController.js';
 import { isAuthenticated } from '../middleware/authentication.js';
 
-// Base: /admin/reviews
 router.get('/', isAuthenticated, reviewController.getReviews);
 router.get('/:id/view', isAuthenticated, reviewController.getReviewView);
 router.post('/toggle-listing/:id', isAuthenticated, reviewController.toggleReviewStatus);

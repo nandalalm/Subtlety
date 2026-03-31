@@ -4,9 +4,6 @@ import passport from 'passport';
 import * as controller from '../controller/authController.js';
 import { userAuthenticated } from '../middleware/authentication.js';
 
-// Base: /auth
-
-// Google OAuth
 router.get('/google', passport.authenticate('google', {
     scope: ['profile', 'email'],
     prompt: 'select_account'
