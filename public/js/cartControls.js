@@ -1,3 +1,6 @@
+if (!window.__subtletyCartControlsInitialized) {
+  window.__subtletyCartControlsInitialized = true;
+
 document.addEventListener('DOMContentLoaded', () => {
   const getUserId = () => {
     const meta = document.querySelector('meta[name="user-id"]');
@@ -27,34 +30,95 @@ document.addEventListener('DOMContentLoaded', () => {
     return { response, data };
   };
 
+  const getVisibleProductIds = (grid) => {
+    return Array.from(grid.querySelectorAll('.card-div .cart-controls-container[data-product-id]'))
+      .map((element) => element.getAttribute('data-product-id'))
+      .filter(Boolean);
+  };
+
+  const requestReplacementCard = async (grid, section, extraParams = {}) => {
+    const params = new URLSearchParams({
+      section,
+      exclude: getVisibleProductIds(grid).join(',')
+    });
+
+    Object.entries(extraParams).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+
+    const response = await window.authAwareFetch(`/user/section-product/replacement?${params.toString()}`);
+    if (!response) return null;
+    const data = await response.json();
+    if (!response.ok || !data.success || !data.html) return null;
+    return data;
+  };
+
+  const refillGridIfPossible = async (gridContext) => {
+    if (!gridContext) return;
+
+    const wishlistGrid = gridContext.closest ? gridContext.closest('#wishlist-grid') : null;
+    if (wishlistGrid && typeof window.refreshTable === 'function') {
+      await window.refreshTable('wishlistContainer');
+      return;
+    }
+
+    const relatedGrid = gridContext.id === 'related-product-grid' ? gridContext : gridContext.closest?.('#related-product-grid');
+    if (relatedGrid) {
+      const replacement = await requestReplacementCard(relatedGrid, 'related', {
+        productId: relatedGrid.dataset.productId,
+        categoryId: relatedGrid.dataset.categoryId
+      });
+      if (replacement) relatedGrid.insertAdjacentHTML('beforeend', replacement.html);
+      return;
+    }
+
+    const latestGrid = gridContext.id === 'latest-products-grid' ? gridContext : gridContext.closest?.('#latest-products-grid');
+    if (latestGrid) {
+      const replacement = await requestReplacementCard(latestGrid, 'latest');
+      if (replacement) latestGrid.insertAdjacentHTML('beforeend', replacement.html);
+      return;
+    }
+
+    const bestSellingGrid = gridContext.id === 'best-selling-grid' ? gridContext : gridContext.closest?.('#best-selling-grid');
+    if (bestSellingGrid) {
+      const replacement = await requestReplacementCard(bestSellingGrid, 'best-selling');
+      if (replacement) bestSellingGrid.insertAdjacentHTML('beforeend', replacement.html);
+    }
+  };
+
+  const removeProductCards = async (productId) => {
+    const controls = document.querySelectorAll(`.cart-controls-container[data-product-id="${productId}"], .btn-add-to-wishlist[data-product-id="${productId}"], .btn-remove-from-wishlist[data-product-id="${productId}"]`);
+    const cards = [...new Set(Array.from(controls).map((element) => element.closest('.card-div')).filter(Boolean))];
+
+    for (const card of cards) {
+      const parentGrid = card.parentElement;
+      card.style.transition = 'opacity 0.3s ease';
+      card.style.opacity = '0';
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      card.remove();
+      await refillGridIfPossible(parentGrid);
+    }
+  };
+
   const syncProductAvailability = (productId, status) => {
     // Determine if we are on the single product page for this specific product
     const isSingleProductPage = window.location.pathname.includes(`/single-product/${productId}`);
 
-    if (status === 'unlisted') {
+    if (status === 'unlisted' || status === 'category-unlisted') {
       if (isSingleProductPage) {
         // On single product page: Show unavailable alert and hide controls
         const section = document.querySelector('.single-product-section .container');
         if (section) {
           section.innerHTML = `
             <div class="alert alert-warning mt-5" role="alert">
-              The product you are looking for is currently unavailable.
+              The product you are looking for is no longer available.
             </div>
             <div class="text-center mt-3">
               <a href="/user/home" class="btn btn-dark">Back to Home</a>
             </div>`;
         }
       } else {
-        // On other pages: Remove all card instances for this product
-        const targets = document.querySelectorAll(`[data-product-id="${productId}"]`);
-        targets.forEach(t => {
-          const card = t.closest('.card-div');
-          if (card) {
-            card.style.transition = 'opacity 0.3s ease';
-            card.style.opacity = '0';
-            setTimeout(() => card.remove(), 300);
-          }
-        });
+        removeProductCards(productId);
       }
     } else if (status === 'out-of-stock') {
       if (isSingleProductPage) {
@@ -176,8 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         showToast(data.message, 'error');
-        if (data.status === 'unlisted') {
-          syncProductAvailability(productId, 'unlisted');
+        if (data.status === 'unlisted' || data.status === 'category-unlisted') {
+          syncProductAvailability(productId, data.status);
         } else if (data.status === 'out-of-stock') {
           syncProductAvailability(productId, 'out-of-stock');
         } else {
@@ -234,8 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(data.message, 'error');
           // Rollback
           updateUI(productId, 0);
-          if (data.status === 'unlisted') {
-            syncProductAvailability(productId, 'unlisted');
+          if (data.status === 'unlisted' || data.status === 'category-unlisted') {
+            syncProductAvailability(productId, data.status);
           } else if (data.status === 'out-of-stock') {
             syncProductAvailability(productId, 'out-of-stock');
           }
@@ -332,6 +396,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (contentType && contentType.indexOf("application/json") !== -1) {
           const data = await response.json();
           showToast(data.message, response.ok ? 'success' : 'error');
+          if (!response.ok && (data.status === 'unlisted' || data.status === 'category-unlisted')) {
+            syncProductAvailability(productId, data.status);
+          }
         } else {
           showToast("Something went wrong", 'error');
         }
@@ -366,13 +433,16 @@ document.addEventListener('DOMContentLoaded', () => {
               if (response.ok) {
                 const card = target.closest('.card-div');
                 if (card) {
+                  const parentGrid = card.parentElement;
+                  card.style.transition = 'opacity 0.3s ease';
+                  card.style.opacity = '0';
+                  await new Promise((resolve) => setTimeout(resolve, 250));
                   card.remove();
-                  if (document.querySelectorAll('.card-div').length === 0) {
-                    location.reload();
-                  }
+                  await refillGridIfPossible(parentGrid);
                 } else {
                   showToast("Removed from wishlist");
                 }
+                showToast(data.message || "Removed from wishlist");
               } else {
                 showToast(data.message, 'error');
               }
@@ -412,8 +482,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = '/cart';
             } else {
                 showToast(data.message, 'error');
-                if (data.status === 'unlisted') {
-                    syncProductAvailability(productId, 'unlisted');
+                if (data.status === 'unlisted' || data.status === 'category-unlisted') {
+                    syncProductAvailability(productId, data.status);
                 } else if (data.status === 'out-of-stock') {
                     syncProductAvailability(productId, 'out-of-stock');
                 }
@@ -427,3 +497,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+}

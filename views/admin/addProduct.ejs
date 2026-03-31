@@ -436,6 +436,15 @@
             } else {
                 if (!val) {
                     setFieldMessage(errorElement, 'is-error', config.requiredMessage);
+                } else if (typeof config.customValidate === 'function') {
+                    const customMessage = config.customValidate(val);
+                    if (customMessage) {
+                        setFieldMessage(errorElement, 'is-error', customMessage);
+                    } else if (config.minLength && val.length < config.minLength) {
+                        setFieldMessage(errorElement, 'is-error', config.invalidMessage);
+                    } else {
+                        isValid = true;
+                    }
                 } else if (config.regex && !config.regex.test(val)) {
                     setFieldMessage(errorElement, 'is-error', config.invalidMessage);
                 } else if (config.minLength && val.length < config.minLength) {
@@ -510,7 +519,6 @@
             const stockInp = form.querySelector('[name="stock"]');
 
             const textRegex = /^[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)*$/;
-            const descriptionRegex = /^[A-Za-z0-9:;,.()]+(?:\s+[A-Za-z0-9:;,.()]+)*$/;
             const nameConfig = {
                 errorId: 'name-error',
                 regex: textRegex,
@@ -520,10 +528,12 @@
             };
             const descriptionConfig = {
                 errorId: 'description-error',
-                regex: descriptionRegex,
                 minLength: 10,
                 requiredMessage: 'Non-empty description is required.',
-                invalidMessage: 'Only : ; , . ( ) are allowed as special characters. Use at least 10 characters.'
+                invalidMessage: 'Use at least 10 characters.',
+                customValidate: (value) => /[A-Za-z]/.test(value)
+                    ? ''
+                    : 'Description must include letters and cannot be only spaces, numbers, or special characters.'
             };
             const categoryConfig = {
                 errorId: 'category-error',

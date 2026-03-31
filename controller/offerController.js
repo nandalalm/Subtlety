@@ -57,7 +57,7 @@ async function getEditOfferPage(req, res, next) {
       backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -70,7 +70,7 @@ async function searchOfferTargets(req, res, next) {
     });
     res.status(HTTP_STATUS.OK).json({ success: true, targets });
   } catch (error) {
-    if (error.statusCode === 400) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
       return res.status(error.statusCode).json({ success: false, message: error.message });
     }
     next(error);
@@ -92,7 +92,7 @@ async function addOffer(req, res, next) {
     });
     res.status(HTTP_STATUS.CREATED).json({ success: true, message: MESSAGES.OFFER.ADDED });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({ success: false, message: error.message });
     }
     next(error);
@@ -108,7 +108,7 @@ async function editOffer(req, res, next) {
     });
     res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.OFFER.UPDATED, offer: updated });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({ success: false, message: error.message });
     }
     next(error);
@@ -125,7 +125,7 @@ async function toggleOfferStatus(req, res, next) {
       offer: updatedOffer
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -136,7 +136,7 @@ async function getOfferView(req, res, next) {
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
     res.render("admin/offerView", { offer, backQuery });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -194,7 +194,7 @@ async function getEditCouponPage(req, res, next) {
       backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -214,7 +214,7 @@ async function addCoupon(req, res, next) {
     });
     res.status(HTTP_STATUS.CREATED).json({ success: true, message: MESSAGES.COUPON.ADDED });
   } catch (error) {
-    if (error.statusCode === 400) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message });
     }
     next(error);
@@ -230,7 +230,7 @@ async function editCoupon(req, res, next) {
     });
     res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.COUPON.UPDATED, coupon: updated });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({ success: false, message: error.message });
     }
     next(error);
@@ -247,7 +247,7 @@ async function toggleCouponStatus(req, res, next) {
       coupon: updatedCoupon
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -258,7 +258,7 @@ async function getCouponView(req, res, next) {
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
     res.render("admin/couponView", { coupon, backQuery });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }

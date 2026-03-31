@@ -1,8 +1,7 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import userRepository from "../repositories/userRepository.js";
-import adminRepository from "../repositories/adminRepository.js";
-import Admin from "../model/admin.js"; // Needed for static findOne if repo not sufficient
+import Admin from "../model/admin.js";
 import walletRepository from "../repositories/walletRepository.js";
 import transactionRepository from "../repositories/transactionRepository.js";
 import { sendOtpEmail, getOtpEmailTemplate, getPasswordResetEmailTemplate } from "../utils/otpHelper.js";
@@ -82,6 +81,7 @@ const authService = {
     }
 
     const otp = String(crypto.randomInt(100000, 999999));
+
     const otpTimestamp = Date.now();
 
     await sendOtpEmail(email, otp, MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SUBJECT, getPasswordResetEmailTemplate);
@@ -113,7 +113,7 @@ const authService = {
     if (admin && (await bcrypt.compare(password, admin.password))) {
       return admin;
     }
-    throw { statusCode: 401, message: MESSAGES.AUTH.INVALID_CREDENTIALS };
+    throw { statusCode: HTTP_STATUS.UNAUTHORIZED, message: MESSAGES.AUTH.INVALID_CREDENTIALS };
   },
 
   login: async (email, password) => {
@@ -143,7 +143,7 @@ async function handleReferral(referrerId, newUserId) {
     }
 
     const amount = 600;
-    const newBalance = +(Math.round((wallet.balance + amount) + "e+2") + "e-2");
+    const newBalance = Math.floor((wallet.balance || 0) + amount);
     
     await walletRepository.updateByQuery({ userId: referrerId }, { balance: newBalance });
 

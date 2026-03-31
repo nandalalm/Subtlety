@@ -19,6 +19,45 @@
       box-shadow: none !important;
       outline: none !important;
     }
+
+    .password-shell .input-group {
+      position: relative;
+      align-items: stretch;
+    }
+
+    .password-shell .form-control {
+      padding-right: 3rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .password-shell .input-group-append {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+
+    .password-toggle-btn {
+      height: 34px;
+      width: 34px;
+      border: 0;
+      background: transparent;
+      color: #6b7280;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+    }
+
+    .password-toggle-btn:hover {
+      color: #111827;
+    }
   </style>
 </head>
 
@@ -106,32 +145,32 @@
         </div>
         <div class="modal-body">
           <form id="change-password-form">
-            <div class="form-group">
+            <div class="form-group password-shell">
               <label for="current-password">Current Password</label>
               <div class="input-group">
                 <input type="password" id="current-password" class="form-control" placeholder="Enter current password">
                 <div class="input-group-append">
-                  <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+                  <button class="password-toggle-btn toggle-password" type="button"><i class="fa fa-eye"></i></button>
                 </div>
               </div>
               <small id="current-password-error" class="form-text text-danger" style="display: none;"></small>
             </div>
-            <div class="form-group">
+            <div class="form-group password-shell">
               <label for="new-password">New Password</label>
               <div class="input-group">
                 <input type="password" id="new-password" class="form-control" placeholder="Enter new password">
                 <div class="input-group-append">
-                  <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+                  <button class="password-toggle-btn toggle-password" type="button"><i class="fa fa-eye"></i></button>
                 </div>
               </div>
               <small id="new-password-error" class="form-text text-danger" style="display: none;"></small>
             </div>
-            <div class="form-group">
+            <div class="form-group password-shell">
               <label for="confirm-password">Confirm Password</label>
               <div class="input-group">
                 <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password">
                 <div class="input-group-append">
-                  <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+                  <button class="password-toggle-btn toggle-password" type="button"><i class="fa fa-eye"></i></button>
                 </div>
               </div>
               <small id="confirm-password-error" class="form-text text-danger" style="display: none;"></small>

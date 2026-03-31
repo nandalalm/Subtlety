@@ -121,19 +121,35 @@
           <h2 class="text-left mb-0">SHOP BY CATEGORIES</h2>
         </div>
       </div>
-      <div id="category-scroll-container" class="category-scroll-container mt-4">
-        <% categories.forEach(category => { %>
-        <% if(category.isListed){%>
-        <div class="category-item">
-          <a class="card-links" href="/user/shop?category=<%= category._id %>">
-            <div class="category-card vertical">
-              <img src="<%= category.image %>" class="category-img" alt="Category Image">
-              <h5 class="category-title"><%= category.name %></h5>
-            </div>
-          </a>
+      <div class="category-scroll-shell mt-4" id="category-scroll-shell">
+        <button
+          type="button"
+          class="category-scroll-btn category-scroll-btn-prev"
+          id="category-scroll-prev"
+          aria-label="Scroll categories left">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div id="category-scroll-container" class="category-scroll-container">
+          <% categories.forEach(category => { %>
+          <% if(category.isListed){%>
+          <div class="category-item">
+            <a class="card-links" href="/user/shop?category=<%= category._id %>">
+              <div class="category-card vertical">
+                <img src="<%= category.image %>" class="category-img" alt="Category Image">
+                <h5 class="category-title"><%= category.name %></h5>
+              </div>
+            </a>
+          </div>
+          <% } %>
+          <% }) %>
         </div>
-        <% } %>
-        <% }) %>
+        <button
+          type="button"
+          class="category-scroll-btn category-scroll-btn-next"
+          id="category-scroll-next"
+          aria-label="Scroll categories right">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
     <% } else { %>
@@ -151,7 +167,7 @@
       </div>
       <h2 class="text-left mt-3">SHOP BY LATEST ARRIVALS</h2>
     </div>
-    <div class="row g-5">
+    <div class="row g-5" id="latest-products-grid">
       <% if (latestProducts && latestProducts.length > 0) { %>
       <% latestProducts.forEach(({ product, bestOffer, averageRating }) => { %>
       <% if (product && product.isListed) { %>
@@ -180,7 +196,7 @@
     </div>
     
     <!-- Render Best Selling Products if Available -->
-    <div style="color: #3097ff #4d64f9;" class="row g-5">
+    <div style="color: #3097ff #4d64f9;" class="row g-5" id="best-selling-grid">
       <% if (bestSellingProducts && bestSellingProducts.length) { %>
         <% bestSellingProducts.forEach(({ product, bestOffer, count, averageRating }) => { %>
           <% if (product && product.isListed) { %>
@@ -278,9 +294,45 @@
   <script src="/js/cartControls.js"></script>
 
   <script>
-    // Other home-specific scripts can stay here if any
+    document.addEventListener('DOMContentLoaded', function() {
+      const scrollShell = document.getElementById('category-scroll-shell');
+      const scrollContainer = document.getElementById('category-scroll-container');
+      const prevButton = document.getElementById('category-scroll-prev');
+      const nextButton = document.getElementById('category-scroll-next');
 
-    // Other home-specific scripts can stay here if any
+      if (!scrollShell || !scrollContainer || !prevButton || !nextButton) return;
+
+      const getScrollStep = () => {
+        const firstItem = scrollContainer.querySelector('.category-item');
+        if (!firstItem) return Math.max(scrollContainer.clientWidth * 0.75, 220);
+        const itemWidth = firstItem.getBoundingClientRect().width;
+        const gap = parseFloat(window.getComputedStyle(scrollContainer).columnGap || window.getComputedStyle(scrollContainer).gap || 0);
+        return Math.max(itemWidth + gap, 220);
+      };
+
+      const syncScrollControls = () => {
+        const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+        const isScrollable = maxScrollLeft > 8;
+
+        scrollShell.classList.toggle('is-scrollable', isScrollable);
+        prevButton.disabled = !isScrollable || scrollContainer.scrollLeft <= 8;
+        nextButton.disabled = !isScrollable || scrollContainer.scrollLeft >= maxScrollLeft - 8;
+      };
+
+      prevButton.addEventListener('click', function() {
+        scrollContainer.scrollBy({ left: -getScrollStep(), behavior: 'smooth' });
+      });
+
+      nextButton.addEventListener('click', function() {
+        scrollContainer.scrollBy({ left: getScrollStep(), behavior: 'smooth' });
+      });
+
+      scrollContainer.addEventListener('scroll', syncScrollControls, { passive: true });
+      window.addEventListener('resize', syncScrollControls);
+
+      syncScrollControls();
+      setTimeout(syncScrollControls, 250);
+    });
   </script>
 
 </body>

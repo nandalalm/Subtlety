@@ -7,16 +7,18 @@ body {
     align-items: center;
     min-height: 100vh; /* Ensure body takes full viewport height */
     margin: 0;
+    padding: 32px 16px;
 }
 
 .register-container {
-    max-width: 400px;
+    max-width: 380px;
     width: 100%;
-    padding: 20px;
+    padding: 0;
     padding-bottom: 0;
-    background-color: #f9f9f9; /* Light gray background for the container */
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Slightly darker shadow for contrast */
+    background-color: transparent;
+    box-shadow: none;
     box-sizing: border-box; /* Include padding and border in element’s total width and height */
+    margin: auto 0;
 }
 
 .register-container h1 {
@@ -152,4 +154,16 @@ label{
 }
 .hello:hover{
     color:white;
+}
+
+@media(max-width: 480px) {
+    body {
+        padding: 20px 12px;
+    }
+}
+
+@media(max-height: 900px) {
+    body {
+        align-items: flex-start;
+    }
 }

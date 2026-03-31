@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const togglePassword = document.getElementById("togglePassword");
+  const togglePasswordIcon = togglePassword.querySelector("i");
   const emailFeedback = document.getElementById("emailFeedback");
   const passwordFeedback = document.getElementById("passwordFeedback");
 
@@ -98,8 +99,8 @@ document.addEventListener("DOMContentLoaded", function () {
   togglePassword.addEventListener("click", function () {
     const isPassword = passwordInput.type === "password";
     passwordInput.type = isPassword ? "text" : "password";
-    togglePassword.classList.toggle("fa-eye", !isPassword);
-    togglePassword.classList.toggle("fa-eye-slash", isPassword);
+    togglePasswordIcon.classList.toggle("fa-eye", !isPassword);
+    togglePasswordIcon.classList.toggle("fa-eye-slash", isPassword);
   });
 
   if (emailFeedback && emailFeedback.textContent.trim() && emailFeedback.textContent.trim() !== "Please enter a valid email address.") {

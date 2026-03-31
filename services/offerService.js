@@ -3,6 +3,7 @@ import couponRepository from "../repositories/couponRepository.js";
 import productRepository from "../repositories/productRepository.js";
 import categoryRepository from "../repositories/categoryRepository.js";
 import MESSAGES from "../Constants/messages.js";
+import HTTP_STATUS from "../Constants/httpStatus.js";
 
 const OFFER_FOR = {
   PRODUCT: "Product",
@@ -19,7 +20,7 @@ const TARGET_SEARCH_LIMIT = 12;
 function parsePositiveNumber(value) {
   if (value === undefined || value === null || value === "") return null;
   const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return Number.isFinite(parsed) ? Math.floor(parsed) : null;
 }
 
 function ensureFutureOrToday(dateValue) {
@@ -34,10 +35,20 @@ function normalizeCouponCode(code) {
   return String(code || "").trim().toUpperCase();
 }
 
+function normalizeCouponPayload(couponData) {
+  return {
+    ...couponData,
+    discountAmount: Math.floor(Number(couponData.discountAmount) || 0),
+    maxDiscount: Math.floor(Number(couponData.maxDiscount) || 0),
+    minOrderValue: Math.floor(Number(couponData.minOrderValue) || 0),
+    usageLimit: Math.floor(Number(couponData.usageLimit) || 0),
+  };
+}
+
 function validateCouponCodeOrThrow(code) {
   const normalizedCode = normalizeCouponCode(code);
   if (!/^[A-Z0-9]{4,}$/.test(normalizedCode)) {
-    throw { statusCode: 400, message: MESSAGES.COUPON.INVALID_CODE };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.INVALID_CODE };
   }
   return normalizedCode;
 }
@@ -48,30 +59,30 @@ async function validateOfferPayload(offerData, excludeOfferId = null) {
   const minProductPrice = parsePositiveNumber(offerData.minProductPrice);
 
   if (!offerFor || !targetId || !offerType || value === null || !expiresAt) {
-    throw { statusCode: 400, message: MESSAGES.OFFER.REQUIRED_FIELDS };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.REQUIRED_FIELDS };
   }
 
   if (!ensureFutureOrToday(expiresAt)) {
-    throw { statusCode: 400, message: MESSAGES.OFFER.INVALID_EXPIRY };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.INVALID_EXPIRY };
   }
 
   if (value <= 0) {
-    throw { statusCode: 400, message: MESSAGES.OFFER.INVALID_VALUE };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.INVALID_VALUE };
   }
 
   if (offerType === OFFER_TYPES.PERCENTAGE && (value < 1 || value > 80)) {
-    throw { statusCode: 400, message: MESSAGES.OFFER.INVALID_PERCENTAGE };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.INVALID_PERCENTAGE };
   }
 
   if (offerFor === OFFER_FOR.PRODUCT) {
     const product = await productRepository.findById(targetId);
     if (!product) {
-      throw { statusCode: 404, message: MESSAGES.OFFER.PRODUCT_NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.PRODUCT_NOT_FOUND };
     }
 
     if (offerType === OFFER_TYPES.FLAT && value >= Number(product.price)) {
       throw {
-        statusCode: 400,
+        statusCode: HTTP_STATUS.BAD_REQUEST,
         message: MESSAGES.OFFER.PRODUCT_FLAT_TOO_HIGH(product.name, product.price),
       };
     }
@@ -84,11 +95,11 @@ async function validateOfferPayload(offerData, excludeOfferId = null) {
     ]);
 
     if (!category) {
-      throw { statusCode: 404, message: MESSAGES.OFFER.CATEGORY_NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.CATEGORY_NOT_FOUND };
     }
 
     if (!categoryProducts.length) {
-      throw { statusCode: 400, message: MESSAGES.OFFER.CATEGORY_HAS_NO_PRODUCTS };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.CATEGORY_HAS_NO_PRODUCTS };
     }
 
     const highestPricedProduct = categoryProducts.reduce((highest, product) => (
@@ -97,12 +108,12 @@ async function validateOfferPayload(offerData, excludeOfferId = null) {
 
     if (offerType === OFFER_TYPES.FLAT) {
       if (minProductPrice === null || minProductPrice <= 0) {
-        throw { statusCode: 400, message: "Minimum product price must be greater than 0." };
+        throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.INVALID_MIN_PRODUCT_PRICE };
       }
 
       if (minProductPrice >= Number(highestPricedProduct.price)) {
         throw {
-          statusCode: 400,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: MESSAGES.OFFER.CATEGORY_MIN_PRICE_TOO_HIGH(
             category.name,
             highestPricedProduct.name,
@@ -113,7 +124,7 @@ async function validateOfferPayload(offerData, excludeOfferId = null) {
 
       if (value >= minProductPrice) {
         throw {
-          statusCode: 400,
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: MESSAGES.OFFER.CATEGORY_FLAT_TOO_HIGH(minProductPrice),
         };
       }
@@ -128,8 +139,8 @@ async function validateOfferPayload(offerData, excludeOfferId = null) {
 
   if (existing) {
     throw {
-      statusCode: 400,
-      message: "An offer already exists for this " + offerFor.toLowerCase(),
+      statusCode: HTTP_STATUS.BAD_REQUEST,
+      message: MESSAGES.OFFER.ALREADY_EXISTS_FOR_TARGET(offerFor),
     };
   }
 
@@ -164,7 +175,7 @@ const offerService = {
       }));
     }
 
-    throw { statusCode: 400, message: "Invalid offer target type." };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.INVALID_TARGET_TYPE };
   },
 
   getAdminOffers: async (queryParams) => {
@@ -226,7 +237,7 @@ const offerService = {
   updateOffer: async (id, updateData) => {
     const offer = await offerRepository.findById(id);
     if (!offer) {
-      throw { statusCode: 404, message: MESSAGES.OFFER.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.NOT_FOUND };
     }
     const validatedData = await validateOfferPayload(
       {
@@ -245,7 +256,7 @@ const offerService = {
   toggleOfferStatus: async (id) => {
     const offer = await offerRepository.findById(id);
     if (!offer) {
-      throw { statusCode: 404, message: MESSAGES.OFFER.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.NOT_FOUND };
     }
     offer.isActive = !offer.isActive;
     return await offer.save();
@@ -254,7 +265,7 @@ const offerService = {
   getAdminOfferDetail: async (id) => {
     const offer = await offerRepository.findByIdAndPopulate(id, "targetId");
     if (!offer) {
-      throw { statusCode: 404, message: MESSAGES.OFFER.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.NOT_FOUND };
     }
     return offer;
   },
@@ -298,30 +309,32 @@ const offerService = {
 
   addCoupon: async (couponData) => {
     const normalizedCode = validateCouponCodeOrThrow(couponData.code);
+    const normalizedCouponData = normalizeCouponPayload(couponData);
     const existing = await couponRepository.findOne({ code: normalizedCode });
     if (existing) {
-      throw { statusCode: 400, message: MESSAGES.COUPON.ALREADY_EXISTS };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.ALREADY_EXISTS };
     }
-    return await couponRepository.save({ ...couponData, code: normalizedCode });
+    return await couponRepository.save({ ...normalizedCouponData, code: normalizedCode });
   },
 
   updateCoupon: async (id, updateData) => {
     const coupon = await couponRepository.findById(id);
     if (!coupon) {
-      throw { statusCode: 404, message: MESSAGES.COUPON.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.COUPON.NOT_FOUND };
     }
     const normalizedCode = validateCouponCodeOrThrow(updateData.code);
+    const normalizedCouponData = normalizeCouponPayload(updateData);
     const existing = await couponRepository.findOne({ code: normalizedCode, _id: { $ne: id } });
     if (existing) {
-      throw { statusCode: 400, message: MESSAGES.COUPON.ALREADY_EXISTS };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.ALREADY_EXISTS };
     }
-    return await couponRepository.updateById(id, { ...updateData, code: normalizedCode });
+    return await couponRepository.updateById(id, { ...normalizedCouponData, code: normalizedCode });
   },
 
   toggleCouponStatus: async (id) => {
     const coupon = await couponRepository.findById(id);
     if (!coupon) {
-      throw { statusCode: 404, message: MESSAGES.COUPON.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.COUPON.NOT_FOUND };
     }
     coupon.isActive = !coupon.isActive;
     return await coupon.save();
@@ -330,7 +343,7 @@ const offerService = {
   getAdminCouponDetail: async (id) => {
     const coupon = await couponRepository.findById(id);
     if (!coupon) {
-      throw { statusCode: 404, message: MESSAGES.COUPON.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.COUPON.NOT_FOUND };
     }
     return coupon;
   }

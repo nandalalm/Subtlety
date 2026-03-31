@@ -25,9 +25,14 @@ async function addToCart(req, res, next) {
     const totals = await cartService.getCartTotals(user);
     return res.status(HTTP_STATUS.OK).json({ message: MESSAGES.CART.ITEM_ADDED, newQuantity: quantity, ...totals });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({
-        status: error.status || (error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' : (error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' : 'error')),
+        status: error.status || (
+          error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' :
+          error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' :
+          error.message === MESSAGES.CART.CATEGORY_UNLISTED ? 'category-unlisted' :
+          'error'
+        ),
         message: error.message
       });
     }
@@ -45,7 +50,7 @@ async function removeFromCart(req, res, next) {
       ...data
     });
   } catch (error) {
-    if (error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
     }
     next(error);
@@ -62,9 +67,14 @@ async function updateQuantity(req, res, next) {
       ...data
     });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({
-        status: error.status || 'error',
+        status: error.status || (
+          error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' :
+          error.message === MESSAGES.CART.CATEGORY_UNLISTED ? 'category-unlisted' :
+          error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' :
+          'error'
+        ),
         message: error.message
       });
     }

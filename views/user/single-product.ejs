@@ -96,7 +96,7 @@
   <%- include('../partials/User/navBar') %>
   <section class="single-product-section">
     <div class="container mt-5">
-      <% if (!product.isListed) { %>
+      <% if (!product.isListed || !product.category || product.category.isListed === false) { %>
       <div class="alert alert-warning" role="alert">
         The product you are looking for is currently unavailable.
       </div>
@@ -292,7 +292,7 @@
         </div>
         <h2 class="text-left mt-3 ml-3 pb-3">SHOP BY RELATED PRODUCTS</h2>
       </div>
-      <div class="row g-5" id="related-product-grid">
+      <div class="row g-5" id="related-product-grid" data-product-id="<%= product._id %>" data-category-id="<%= product.category._id %>">
         <% if (relatedProductsWithOffers && relatedProductsWithOffers.length > 0) { %>
         <% relatedProductsWithOffers.forEach(({ product, bestOffer, averageRating }) => { %>
           <%- include('../partials/User/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>

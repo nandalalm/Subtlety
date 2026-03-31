@@ -167,7 +167,7 @@
             <div id="section-wallet" class="wallet-content-section">
                 <div class="balance-card">
                     <h5 class="text-muted text-uppercase small mb-2">Available Balance</h5>
-                    <h2 class="mb-0 font-weight-bold" style="color: #333; font-size: 2.5rem;">₹<%= wallet.balance.toFixed(2) %></h2>
+                    <h2 class="mb-0 font-weight-bold" style="color: #333; font-size: 2.5rem;">₹<%= Math.floor(wallet.balance || 0) %></h2>
                 </div>
 
                 <div class="referral-section <%= user.referralCreditsClaimed ? 'claimed' : '' %>" style="min-height: 230px;">

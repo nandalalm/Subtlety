@@ -4,9 +4,9 @@ import Cart from "../model/cart.js";
 import Offer from "../model/offer.js";
 import Review from "../model/review.js";
 
-// Helper to round to 2 decimal places
+// Prices and discounts are stored/displayed as floored integers across the app.
 export const roundToTwo = (num) => {
-  return +(Math.round(num + "e+2") + "e-2");
+  return Math.floor(Number(num) || 0);
 };
 
 // Helper to generate unique Order ID

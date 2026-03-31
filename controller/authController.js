@@ -2,11 +2,11 @@ import authService from "../services/authService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-// User Auth Functions
 function getLogin(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
+  req.session.passwordResetUser = null;
   const errorMessage = req.session.errorMessage || null;
   req.session.errorMessage = null;
   res.render("user/login", { 
@@ -217,7 +217,7 @@ async function loginadmin(req, res, next) {
     req.session.admin = admin;
     res.redirect("/admin/dashboard");
   } catch (error) {
-    if (error.statusCode === 401) {
+    if (error.statusCode === HTTP_STATUS.UNAUTHORIZED) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).send(error.message);
     }
     next(error);

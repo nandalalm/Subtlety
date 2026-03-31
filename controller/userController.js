@@ -127,10 +127,47 @@ async function loadMoreProducts(req, res, next) {
   }
 }
 
+async function getSectionReplacement(req, res, next) {
+  try {
+    const user = req.session.user || null;
+    const cartItemMap = await getCartItemMap(user ? user._id : null);
+    const { section, productId, categoryId, exclude = "" } = req.query;
+    const excludeProductIds = exclude
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+
+    const data = await userService.getSectionReplacement({
+      section,
+      productId,
+      categoryId,
+      excludeProductIds
+    });
+
+    if (!data.products.length) {
+      return res.status(HTTP_STATUS.OK).json({ success: true, html: "", hasMore: false });
+    }
+
+    const replacement = data.products[0];
+    return res.render("partials/User/productCard", {
+      product: replacement.product,
+      bestOffer: replacement.bestOffer,
+      averageRating: replacement.averageRating,
+      cartItemMap
+    }, (error, html) => {
+      if (error) return next(error);
+      res.status(HTTP_STATUS.OK).json({ success: true, html, hasMore: data.hasMore });
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   getHome,
   getSingleProduct,
   loadMoreRelatedProducts,
   getShopPage,
-  loadMoreProducts
+  loadMoreProducts,
+  getSectionReplacement
 };

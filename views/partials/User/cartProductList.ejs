@@ -9,16 +9,19 @@
           <p class="font-weight-bold"><%= cartItem.productId.name %></p>
           <p>
             <% if (cartItem.productId.bestOffer) { %>
-              <span class="text-muted" style="text-decoration: line-through; font-size: 0.85rem;">₹ <%= Math.floor(cartItem.productId.price) %></span>
-              <span class="font-weight-bold ml-1" style="color: #008000;">₹ <%= Math.floor(cartItem.productId.bestOffer.discountedPrice) %></span>
+              <span class="text-muted cart-original-price" style="text-decoration: line-through; font-size: 0.85rem;">₹ <%= Math.floor(cartItem.productId.price) %></span>
+              <span class="font-weight-bold ml-1 cart-current-price" style="color: #008000;">₹ <%= Math.floor(cartItem.productId.bestOffer.discountedPrice) %></span>
             <% } else { %>
-              <span class="font-weight-bold">₹ <%= Math.floor(cartItem.productId.price) %></span>
+              <span class="font-weight-bold cart-current-price">₹ <%= Math.floor(cartItem.productId.price) %></span>
             <% } %>
           </p>
+          <small class="cart-issue-message text-danger d-block mt-1"></small>
         </div>
         <div class="status-container">
           <% if (!cartItem.productId.isListed) { %>
           <span class="status-badge badge-unavailable unavailable-text">Unavailable</span>
+          <% } else if (!cartItem.productId.category || cartItem.productId.category.isListed === false) { %>
+          <span class="status-badge badge-unavailable category-unlisted-text">Category Unavailable</span>
           <% } else if (cartItem.productId.stock === 0) { %>
           <span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>
           <% } else if (cartItem.productId.stock < cartItem.quantity) { %>

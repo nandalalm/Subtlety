@@ -170,7 +170,13 @@ const orderRepository = {
               $cond: {
                 if: { $and: [{ $eq: ["$orderStatus", "Pending"] }, { $eq: ["$paymentStatus", "Successful"] }] },
                 then: 2,
-                else: { $cond: { if: { $eq: ["$orderStatus", "Shipped"] }, then: 3, else: 4 } }
+                else: {
+                  $cond: {
+                    if: { $and: [{ $eq: ["$orderStatus", "Shipped"] }, { $eq: ["$paymentStatus", "Successful"] }] },
+                    then: 3,
+                    else: 4
+                  }
+                }
               }
             }
           }

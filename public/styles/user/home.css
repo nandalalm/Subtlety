@@ -250,6 +250,32 @@ body {
 }
 
 /* Category Slider */
+.category-scroll-shell {
+  position: relative;
+}
+
+.category-scroll-shell.is-scrollable::before,
+.category-scroll-shell.is-scrollable::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 54px;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.category-scroll-shell.is-scrollable::before {
+  left: 0;
+  background: linear-gradient(90deg, #fff 18%, rgba(255, 255, 255, 0));
+}
+
+.category-scroll-shell.is-scrollable::after {
+  right: 0;
+  background: linear-gradient(270deg, #fff 18%, rgba(255, 255, 255, 0));
+}
+
 .category-scroll-container {
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -262,6 +288,53 @@ body {
   padding-bottom: 25px; /* Increased padding-bottom */
   margin-top: -10px; /* Offset the padding to maintain vertical alignment */
   width: 100%;
+}
+
+.category-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border: 1px solid #e5dff5;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #4b2b76;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.12);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.category-scroll-shell.is-scrollable .category-scroll-btn {
+  display: inline-flex;
+}
+
+.category-scroll-btn:hover:not(:disabled) {
+  background: #9135ED;
+  color: #fff;
+  transform: translateY(-50%) scale(1.03);
+}
+
+.category-scroll-btn:focus,
+.category-scroll-btn:active {
+  outline: none;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.12);
+}
+
+.category-scroll-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.category-scroll-btn-prev {
+  left: -18px;
+}
+
+.category-scroll-btn-next {
+  right: -18px;
 }
 
 .category-scroll-container::-webkit-scrollbar {
@@ -278,6 +351,14 @@ body {
   .category-scroll-container .category-item {
     flex: 0 0 30%; /* Hint at scrolling on tablet */
   }
+
+  .category-scroll-btn-prev {
+    left: -10px;
+  }
+
+  .category-scroll-btn-next {
+    right: -10px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -286,6 +367,24 @@ body {
   }
   .category-scroll-container {
     gap: 12px;
+  }
+
+  .category-scroll-shell.is-scrollable::before,
+  .category-scroll-shell.is-scrollable::after {
+    width: 32px;
+  }
+
+  .category-scroll-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .category-scroll-btn-prev {
+    left: -6px;
+  }
+
+  .category-scroll-btn-next {
+    right: -6px;
   }
 }
 

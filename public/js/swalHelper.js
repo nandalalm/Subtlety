@@ -1,4 +1,5 @@
 const SwalCustom = {
+    _activeProcessingToken: 0,
     // Shared configurations for premium look
     premiumOptions: {
         confirmButtonColor: '#9135ED',
@@ -55,6 +56,7 @@ const SwalCustom = {
     },
 
     processing: (title = 'Processing...', text = 'Please wait...') => {
+        const token = ++SwalCustom._activeProcessingToken;
         return Swal.fire({
             ...SwalCustom.premiumOptions,
             title: title,
@@ -64,7 +66,7 @@ const SwalCustom = {
             didOpen: () => {
                 Swal.showLoading();
             }
-        });
+        }).then(() => token);
     },
 
     withDelayedProcessing: async (task, options = {}) => {
@@ -75,19 +77,30 @@ const SwalCustom = {
         } = options;
 
         let loaderShown = false;
+        let loaderToken = null;
         const timer = setTimeout(() => {
             loaderShown = true;
-            SwalCustom.processing(title, text);
+            loaderToken = ++SwalCustom._activeProcessingToken;
+            Swal.fire({
+                ...SwalCustom.premiumOptions,
+                title: title,
+                text: text,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
         }, delay);
 
         try {
             const result = await task();
             clearTimeout(timer);
-            if (loaderShown) SwalCustom.close();
+            if (loaderShown && loaderToken === SwalCustom._activeProcessingToken) SwalCustom.close();
             return result;
         } catch (error) {
             clearTimeout(timer);
-            if (loaderShown) SwalCustom.close();
+            if (loaderShown && loaderToken === SwalCustom._activeProcessingToken) SwalCustom.close();
             throw error;
         }
     },

@@ -1,282 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/images/mini-logo-bg-removed.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Order Details - SUBTLETY</title>
-  <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
-  <!-- Google Fonts: Poppins -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <style>
-    body {
-      height: 100% !important;
-      margin: 0;
-      padding: 0;
-      font-family: "Poppins", sans-serif;
-      background-color: #f4f4f4 !important;
-    }
-
-    body>section>div>div:nth-child(1)>a {
-      color: black;
-    }
-
-    body>section>div>div:nth-child(1)>a:hover {
-      color: #9135ed;
-    }
-
-    .orderDetails {
-      padding-top: 100px !important;
-      padding-bottom: 100px !important;
-      height: 100% !important;
-      flex-grow: 1 !important;
-    }
-
-    .container {
-      width: 90% !important;
-    }
-
-    .order-summary,
-    .shipping-address {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      height: auto; /* Allow height to grow */
-      min-height: 100%;
-      overflow-wrap: break-word; /* Fix for long strings */
-      word-break: break-word;
-    }
-
-    .product-details {
-      margin-top: 20px;
-      background-color: white;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .product-image {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
-    .cancel-order-btn,
-    .return-order-btn {
-      margin-top: 20px;
-      background-color: #d3dae2 !important;
-      color: #495057 !important;
-      border-color: #6c757d;
-    }
-
-    .cancel-order-btn:hover:hover {
-      background-color: #ff9e9e !important;
-      color: #a52727 !important;
-      border-color: #ff9e9e;
-    }
-
-    .return-order-btn:hover {
-      background-color: #86cef7 !important;
-      color: #0e527a !important;
-      border-color: #86cef7;
-    }
-
-    .failed {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    .status-box {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 500;
-      font-size: 0.8rem;
-    }
-
-    .status-pending {
-      background-color: #ffeeba;
-      color: #856404;
-    }
-
-    .status-shipped {
-      background-color: #b8daff;
-      color: #004085;
-    }
-
-    .status-delivered {
-      background-color: #c3e6cb;
-      color: #155724;
-    }
-
-    .status-cancelled {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-
-    .status-completed {
-      background-color: #d4edda;
-      color: #155724;
-    }
-
-    .status-returned {
-      background-color: #8b4513;
-      color: #ffffff;
-    }
-
-    .failed {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    .status-failed {
-      background-color: #ff9e9e;
-      color: #a52727;
-    }
-
-    .status-successful {
-      background-color: #d4edda;
-      color: #155724;
-    }
-
-    .return-status-pending {
-      background-color: #ffeeba;
-      color: #856404;
-    }
-
-    .return-status-approved {
-      background-color: #c3e6cb;
-      color: #155724;
-    }
-
-    .return-status-rejected {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-
-    .return-info-box {
-      margin-top: 10px;
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      width: 100%;
-    }
-    .return-info-box.pending {
-      background-color: #fff9db;
-      border: 1px solid #ffe066;
-    }
-    .return-info-box.processed {
-      background-color: #f1f3f5;
-      border: 1px solid #dee2e6;
-    }
-    .return-message {
-      margin: 0;
-      font-weight: 500;
-    }
+    body { height: 100% !important; margin: 0; padding: 0; font-family: "Poppins", sans-serif; background-color: #f4f4f4 !important; }
+    body>section>div>div:nth-child(1)>a { color: black; }
+    body>section>div>div:nth-child(1)>a:hover { color: #9135ed; }
+    .orderDetails { padding-top: 100px !important; padding-bottom: 100px !important; height: 100% !important; flex-grow: 1 !important; }
+    .container { width: 90% !important; }
+    .order-topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin: 1.75rem 0 1.5rem; }
+    .order-subhead { display: inline-flex; align-items: center; gap: .5rem; margin-top: .65rem; padding: .5rem .9rem; border-radius: 999px; border: 1px solid #ece7f7; background: #fbf9ff; color: #5f4b88; font-size: .84rem; font-weight: 500; }
+    .order-top-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; justify-content: flex-end; }
+    .detail-card { background: linear-gradient(180deg, #fff 0%, #fbfbfd 100%); padding: 1.4rem; border-radius: 20px; border: 1px solid #ececf2; box-shadow: 0 18px 44px rgba(15,23,42,.06); min-height: 100%; overflow-wrap: break-word; word-break: break-word; position: relative; overflow: hidden; }
+    .detail-card::before { content: ""; position: absolute; inset: 0 auto auto 0; width: 140px; height: 140px; background: radial-gradient(circle, rgba(145,53,237,.08), transparent 72%); pointer-events: none; }
+    .detail-card>* { position: relative; z-index: 1; }
+    .detail-card-header { display: flex; align-items: flex-start; gap: .9rem; margin-bottom: 1.2rem; }
+    .detail-card-icon { width: 48px; height: 48px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; background: #f4efff; color: #7b3fe4; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(123,63,228,.08); }
+    .detail-card-header h4 { margin-bottom: .25rem; font-size: 1.08rem; font-weight: 600; color: #111827; }
+    .detail-card-header p { margin-bottom: 0; color: #6b7280; font-size: .9rem; }
+    .detail-grid { display: grid; gap: .9rem; }
+    .detail-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: .85rem; border-bottom: 1px solid #f1f3f5; }
+    .detail-row:last-child { padding-bottom: 0; border-bottom: 0; }
+    .detail-row-label { color: #6b7280; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+    .detail-row-value { color: #111827; font-weight: 600; text-align: right; }
+    .detail-row-value.subtle { font-weight: 500; color: #374151; }
+    .detail-status-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: .2rem; }
+    .status-stack { display: flex; flex-direction: column; gap: .45rem; min-width: 160px; }
+    .product-details { margin-top: 20px; background-color: white; padding: 20px; border-radius: 20px; border: 1px solid #ececec; box-shadow: 0 18px 44px rgba(15,23,42,.06); }
+    .product-image { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; }
+    .action-btn { border-radius: 999px !important; border: 1px solid transparent !important; box-shadow: none !important; outline: none !important; transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease; }
+    .action-btn:hover { transform: translateY(-1px); }
+    .action-btn:focus, .action-btn:active, .action-btn.focus, .action-btn:not(:disabled):not(.disabled):active { box-shadow: none !important; outline: none !important; }
+    .action-btn-primary { background-color: #9135ed !important; color: #fff !important; }
+    .action-btn-primary:hover { background-color: #7d2fd0 !important; color: #fff !important; }
+    .action-btn-muted { background-color: #eef1f4 !important; color: #374151 !important; border-color: #dbe1e8 !important; }
+    .action-btn-muted:hover { background-color: #f8d7da !important; color: #8b1e2d !important; border-color: #f1bcc4 !important; }
+    .action-btn-light { background-color: #f7f8fa !important; color: #374151 !important; border-color: #e5e7eb !important; }
+    .action-btn-light:hover { background-color: #eceff3 !important; color: #111827 !important; border-color: #d9dde3 !important; }
+    .action-btn-violet { background-color: #9135ed !important; color: #fff !important; }
+    .action-btn-violet:hover { background-color: #7b2cc8 !important; color: #fff !important; }
+    .failed { opacity: .5; pointer-events: none; }
+    .status-box { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: 500; font-size: .8rem; }
+    .status-pending { background-color: #ffeeba; color: #856404; }
+    .status-shipped { background-color: #b8daff; color: #004085; }
+    .status-delivered { background-color: #c3e6cb; color: #155724; }
+    .status-cancelled { background-color: #f8d7da; color: #721c24; }
+    .status-completed { background-color: #d4edda; color: #155724; }
+    .status-returned { background-color: #8b4513; color: #fff; }
+    .status-failed { background-color: #ff9e9e; color: #a52727; }
+    .status-successful { background-color: #d4edda; color: #155724; }
+    .return-info-box { margin-top: 10px; padding: 10px 15px; border-radius: 8px; font-size: .85rem; width: 100%; }
+    .return-info-box.pending { background-color: #fff9db; border: 1px solid #ffe066; }
+    .return-info-box.processed { background-color: #f1f3f5; border: 1px solid #dee2e6; }
+    .return-message { margin: 0; font-weight: 500; }
     .return-message-pending { color: #856404; }
     .return-message-approved { color: #155724; }
     .return-message-rejected { color: #721c24; }
-
-    .validation-message {
-      font-size: 0.9em;
-      margin-top: 5px;
-    }
-
-    .is-invalid {
-      border-color: #dc3545;
-    }
-
-    .is-valid {
-      border-color: #28a745;
-    }
-
-    .invalid-feedback {
-      color: #dc3545;
-    }
-
-    .valid-feedback {
-      color: #28a745;
-    }
-    .rate-review-btn {
-      background-color: #9135ed !important;
-      color: white !important;
-      border: none;
-    }
-    .rate-review-btn:hover {
-      background-color: #7b2cc8 !important;
-    }
-    .btn-action-fixed {
-      width: 200px;
-    }
-    .rating-stars i.text-warning {
-      color: #ffc107 !important;
-    }
-
-    .btn-action-fixed span.full-text {
-      display: inline;
-    }
-    .btn-action-fixed span.short-text {
-      display: none;
-    }
-
+    .btn-action-fixed { width: 200px; }
+    .btn-action-fixed span.full-text { display: inline; }
+    .btn-action-fixed span.short-text { display: none; }
+    .modal-clean-input, .modal-clean-input.form-control { border-radius: 14px; border: 1px solid #d9dee7; background: #fff; box-shadow: none !important; transition: border-color .18s ease, background-color .18s ease; background-image: none !important; }
+    .modal-clean-input:focus, .modal-clean-input.form-control:focus { border-color: #cfd6de; box-shadow: none !important; outline: none !important; background-image: none !important; }
+    .modal-clean-input.is-invalid, .modal-clean-input.form-control.is-invalid { border-color: #dc3545; box-shadow: none !important; background-image: none !important; padding-right: .75rem !important; }
+    .validation-message { min-height: 1.2rem; margin-top: .45rem; font-size: .83rem; color: #dc3545; font-weight: 500; }
+    .review-rating-label { font-size: .92rem; font-weight: 500; color: #374151; }
+    .rating-stars i.text-warning { color: #ffc107 !important; }
     @media (max-width: 576px) {
-      .orderDetails {
-        padding-top: 60px !important;
-        padding-bottom: 60px !important;
-      }
-      .orderDetails h2 {
-        font-size: 1.3rem;
-      }
-      .orderDetails .btn-primary {
-        padding: 5px 12px;
-        font-size: 0.75rem;
-      }
-      .product-image {
-        width: 70px;
-        height: 70px;
-      }
-      .btn-action-fixed {
-        width: 100%;
-        max-width: 110px;
-        font-size: 0.6rem;
-        padding: 3px 6px;
-      }
-      .btn-action-fixed span.full-text {
-        display: none;
-      }
-      .btn-action-fixed span.short-text {
-        display: inline;
-      }
-      .product-details h6 {
-        font-size: 0.85rem;
-      }
-      .product-details p.text-muted {
-        font-size: 0.7rem;
-        line-height: 1.3;
-      }
-      .status-box {
-        font-size: 0.7rem;
-        padding: 2px 8px;
-      }
-      .return-info-box {
-        padding: 8px 10px;
-        font-size: 0.75rem;
-      }
-      .return-info-box .badge {
-        font-size: 0.65rem;
-      }
+      .orderDetails { padding-top: 60px !important; padding-bottom: 60px !important; }
+      .orderDetails h2 { font-size: 1.3rem; }
+      .product-image { width: 70px; height: 70px; }
+      .order-topbar { margin-top: 1.25rem; }
+      .order-top-actions { width: 100%; justify-content: flex-start; }
+      .detail-card { padding: 1.1rem; }
+      .detail-row { flex-direction: column; gap: .35rem; }
+      .detail-row-value { text-align: left; }
+      .btn-action-fixed { width: 100%; max-width: 110px; font-size: .6rem; padding: 3px 6px; }
+      .btn-action-fixed span.full-text { display: none; }
+      .btn-action-fixed span.short-text { display: inline; }
+      .product-details h6 { font-size: .85rem; }
+      .product-details p.text-muted { font-size: .7rem; line-height: 1.3; }
+      .status-box { font-size: .7rem; padding: 2px 8px; }
+      .return-info-box { padding: 8px 10px; font-size: .75rem; }
+      .return-info-box .badge { font-size: .65rem; }
     }
   </style>
 </head>
-
 <body>
   <%- include('../partials/User/navBar') %>
-
   <section class="orderDetails">
     <div class="container">
       <div class="mt-4 mt-lg-0">
@@ -284,686 +100,412 @@
         <a href="/orders" class="text-decoration-none">My Orders</a> /
         <span style="color: #9135ed" class="text-decoration-none">Order Details</span>
       </div>
-      <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
-        <h2 class="mb-0">Order Details</h2>
-        <% if (order.orderStatus==='Completed' && order.items.some(item=>
-            item.status === 'Delivered')) { %>
-        <a href="/orders/invoice/<%= order._id %>" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i>
-          Download Invoice</a>
-        <% } %>
-        <% if (order.paymentStatus==='Failed' ) { %>
-        <button class="btn btn-primary" id="retryPaymentBtn" data-order-id="<%= order._id %>" data-payment-method="<%= order.paymentMethod %>" data-payment-status="<%= order.paymentStatus %>" data-amount="<%= order.totalAmount %>">
-          Retry Payment
-        </button>
-        <% } %>
-      </div>
-      <div class="row">
-        <!-- Left: Order Summary -->
-        <div class="col-md-6">
-          <div class="order-summary">
-            <h4>Order Summary</h4>
-            <p><strong>Order ID:</strong>
-              <%= order.orderId %>
-            </p>
-            <p>
-              <strong>Order Date:</strong>
-              <%= new Date(order.orderDate).toLocaleDateString() %>
-            </p>
-            <p><strong>Payment Method:</strong>
-              <%= order.paymentMethod %>
-            </p>
-            <p>
-              <strong>Total Price:</strong> ₹<%= order.totalAmount.toFixed(2) %>
-            </p>
-            <div class="d-flex">
-              <p class="order-status">
-                <strong>Order Status:</strong>
-                <span class="status-box status-<%= order.orderStatus.toLowerCase() %>">
-                  <%= order.orderStatus %>
-                </span>
-              </p>
-              <p class="payment-status pl-3">
-                <strong>Payment Status:</strong>
-                <span class="status-box status-<%= order.paymentStatus.toLowerCase() %>">
-                  <%= order.paymentStatus %>
-                </span>
-              </p>
-            </div>
+      <div id="orderDetailsContent">
+        <div class="order-topbar">
+          <div>
+            <h2 class="mb-0">Order Details</h2>
+            <div class="order-subhead"><i class="fas fa-receipt"></i><span><%= order.orderId %></span></div>
           </div>
-        </div>
-
-        <!-- Right: Shipping Address -->
-        <div class="col-md-6">
-          <div class="shipping-address">
-            <h4>Shipping Address</h4>
-            <p>
-              <strong>Name:</strong>
-              <%= order.shippingAddress.fullname %>
-            </p>
-            <p>
-              <strong>Address:</strong>
-              <%= order.shippingAddress.address.split(',').slice(0, 4) %><br />
-              <%= order.shippingAddress.address.split(',').slice(4).join(', ')
-                %>
-            </p>
-            <p>
-              <strong>Pincode:</strong> <%= order.shippingAddress.pincode %>
-            </p>
-            <p><strong>Phone:</strong> <%= order.shippingAddress.phone %></p>
-          </div>
-        </div>
-      </div>      <div class="product-details">
-        <% order.items.forEach(item => { 
-            const returnRequest = order.returnRequests.find(req => req.productId.toString() === item.productId._id.toString());
-            const rStatus = returnRequest ? returnRequest.status : null;
-            const isRejected = rStatus === 'Rejected';
-            const isPending = item.isPending;
-            const isApproved = item.isApproved;
-            const isReturnWindowClosed = item.isReturnWindowClosed;
-            const isCouponApplied = order.couponDiscount > 0;
-            const canRate = !item.isRated && item.status === 'Delivered' && (!returnRequest || isRejected);
-        %>
-        <div class="row mb-3 pb-3 border-bottom <%= item.status === 'Cancelled' ? 'cancelled' : '' %>">
-          <div class="col-md-2 col-4">
-            <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
-            <img src="<%= item.productId.images[0] %>" alt="<%= item.productId.name %>" class="product-image" />
-            <% } else { %>
-            <div class="product-image d-flex align-items-center justify-content-center bg-light text-muted">No image</div>
+          <div class="order-top-actions">
+            <% if (order.orderStatus === 'Completed' && order.items.some(item => item.status === 'Delivered')) { %>
+              <button type="button" id="downloadInvoiceBtn" class="btn action-btn action-btn-primary" data-url="/orders/<%= order._id %>/invoice" data-order-code="<%= order.orderId %>"><i class="fa-solid fa-file-pdf mr-2"></i>Download Invoice</button>
+            <% } %>
+            <% if (order.paymentStatus === 'Failed') { %>
+              <button class="btn action-btn action-btn-primary" id="retryPaymentBtn" data-order-id="<%= order._id %>" data-payment-method="<%= order.paymentMethod %>" data-payment-status="<%= order.paymentStatus %>" data-amount="<%= order.totalAmount %>">Retry Payment</button>
             <% } %>
           </div>
-          <div class="col-md-7 col-8">
-            <h6 class="mb-1" style="font-weight: 600;"><%= item.productId.name %></h6>
-            <p class="text-muted small mb-2"><%= item.productId.category.name %> | <%= item.productId.description.substring(0, 100) %>...</p>
-            <div class="d-flex flex-wrap align-items-center">
-              <span class="mr-3"><strong>₹<%= item.price.toFixed(2) %></strong> <span class="text-muted small">x <%= item.quantity %></span></span>
-              <span class="status-box status-<%= item.status.toLowerCase() %>"><%= item.status %></span>
-            </div>
-
-            <% if (returnRequest) { %>
-            <div class="return-info-box <%= isPending ? 'pending' : 'processed' %>">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="font-weight-bold" style="font-size: 0.75rem; color: #666;">RETURN STATUS</span>
-                <span class="badge badge-<%= isPending ? 'warning' : (isApproved ? 'success' : 'secondary') %>"><%= rStatus.toUpperCase() %></span>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-4 mb-md-0">
+            <div class="detail-card">
+              <div class="detail-card-header"><span class="detail-card-icon"><i class="fas fa-chart-line"></i></span><div><h4>Order Summary</h4><p>Track the latest payment and fulfillment snapshot for this order.</p></div></div>
+              <div class="detail-grid">
+                <div class="detail-row"><div class="detail-row-label">Order ID</div><div class="detail-row-value"><%= order.orderId %></div></div>
+                <div class="detail-row"><div class="detail-row-label">Order Date</div><div class="detail-row-value subtle"><%= new Date(order.orderDate).toLocaleDateString() %></div></div>
+                <div class="detail-row"><div class="detail-row-label">Payment Method</div><div class="detail-row-value subtle"><%= order.paymentMethod %></div></div>
+                <div class="detail-row"><div class="detail-row-label">Total Price</div><div class="detail-row-value">Rs. <%= Math.floor(order.totalAmount || 0) %></div></div>
+                <div class="detail-status-row">
+                  <div class="status-stack"><span class="detail-row-label">Order Status</span><span class="status-box status-<%= order.orderStatus.toLowerCase() %>"><%= order.orderStatus %></span></div>
+                  <div class="status-stack"><span class="detail-row-label">Payment Status</span><span class="status-box status-<%= order.paymentStatus.toLowerCase() %>"><%= order.paymentStatus %></span></div>
+                </div>
               </div>
-              <p class="return-message <%= isPending ? 'return-message-pending' : (isApproved ? 'return-message-approved' : 'return-message-rejected') %>">
-                <% if (isPending) { %>
-                  <i class="fas fa-clock mr-1"></i> Your request is being processed
-                <% } else if (isApproved) { %>
-                   <i class="fas fa-check-circle mr-1"></i> Your request has been approved
-                <% } else if (isRejected) { %>
-                   <i class="fas fa-times-circle mr-1"></i> Sorry, your request has been rejected (Not a valid reason for return, Contact us for further Queries)
-                <% } %>
-              </p>
             </div>
-            <% } %>
           </div>
-          <div class="col-md-3 mt-3 mt-md-0 d-flex flex-column justify-content-center align-items-md-end">
-            <h5 class="mb-3">₹<%= (item.price * item.quantity).toFixed(2) %></h5>
-            
-            <% if (item.status !== 'Cancelled' && item.status !== 'Shipped' && item.status !== 'Delivered' && item.status !== 'Returned' && order.paymentStatus !== 'Failed') { %>
-            <button class="btn btn-sm cancel-order-btn rounded-pill px-4 btn-action-fixed" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>">
-              Cancel Product
-            </button>
-            <% } else if (item.status === 'Delivered') { %>
-              <% if (!returnRequest && !isReturnWindowClosed && !isCouponApplied) { %>
-                <button class="btn btn-sm btn-outline-info rounded-pill px-4 btn-action-fixed" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-toggle="modal" data-target="#returnReasonModal">
-                  <span class="full-text">Return Product</span>
-                  <span class="short-text">Return</span>
-                </button>
-              <% } %>
-
-              <% if (isCouponApplied && item.status === 'Delivered' && !returnRequest) { %>
-                <span class="text-muted small font-italic">Returns not available (Coupon applied)</span>
-              <% } %>
-
-              <% if (canRate) { %>
-                <button class="btn btn-sm rate-review-btn mt-2 rounded-pill px-4 btn-action-fixed" 
-                        id="rateBtn-<%= item.productId._id %>"
-                        data-order-id="<%= order._id %>" 
-                        data-product-id="<%= item.productId._id %>"
-                        data-product-name="<%= item.productId.name %>"
-                        data-toggle="modal" 
-                        data-target="#rateReviewModal">
-                  <span class="full-text"><i class="fas fa-star mr-1"></i> Rate & Review</span>
-                  <span class="short-text"><i class="fas fa-star mr-1"></i> Rate</span>
-                </button>
-              <% } else if (item.isRated) { %>
-                <span class="mt-2 text-success small font-weight-bold">
-                  <i class="fas fa-check-circle mr-1"></i> Already Reviewed
-                </span>
-              <% } %>
-            <% } %>
+          <div class="col-md-6">
+            <div class="detail-card">
+              <div class="detail-card-header"><span class="detail-card-icon"><i class="fas fa-location-dot"></i></span><div><h4>Shipping Address</h4><p>Delivery details saved for this order.</p></div></div>
+              <div class="detail-grid">
+                <div class="detail-row"><div class="detail-row-label">Recipient</div><div class="detail-row-value subtle"><%= order.shippingAddress.fullname %></div></div>
+                <div class="detail-row"><div class="detail-row-label">Address</div><div class="detail-row-value subtle"><%= order.shippingAddress.address.split(',').slice(0, 4).join(', ') %><br /><%= order.shippingAddress.address.split(',').slice(4).join(', ') %></div></div>
+                <div class="detail-row"><div class="detail-row-label">Pincode</div><div class="detail-row-value subtle"><%= order.shippingAddress.pincode %></div></div>
+                <div class="detail-row"><div class="detail-row-label">Phone</div><div class="detail-row-value subtle"><%= order.shippingAddress.phone %></div></div>
+              </div>
+            </div>
           </div>
         </div>
-        <% }) %>
+        <div class="product-details">
+          <% const returnRequests = order.returnRequests || []; %>
+          <% order.items.forEach(item => { %>
+            <% const returnRequest = returnRequests.find(req => req.productId.toString() === item.productId._id.toString()); %>
+            <% const rStatus = returnRequest ? returnRequest.status : null; %>
+            <% const isRejected = rStatus === 'Rejected'; %>
+            <% const isPending = item.isPending; %>
+            <% const isApproved = item.isApproved; %>
+            <% const isReturnWindowClosed = item.isReturnWindowClosed; %>
+            <% const isCouponApplied = order.couponDiscount > 0; %>
+            <% const canRate = !item.isRated && item.status === 'Delivered' && (!returnRequest || isRejected); %>
+            <div class="row mb-3 pb-3 border-bottom <%= item.status === 'Cancelled' ? 'cancelled' : '' %>">
+              <div class="col-md-2 col-4">
+                <% if (item.productId && item.productId.images && item.productId.images.length > 0) { %>
+                  <img src="<%= item.productId.images[0] %>" alt="<%= item.productId.name %>" class="product-image" />
+                <% } else { %>
+                  <div class="product-image d-flex align-items-center justify-content-center bg-light text-muted">No image</div>
+                <% } %>
+              </div>
+              <div class="col-md-7 col-8">
+                <h6 class="mb-1" style="font-weight: 600;"><%= item.productId.name %></h6>
+                <p class="text-muted small mb-2"><%= item.productId.category.name %> | <%= item.productId.description.substring(0, 100) %>...</p>
+                <div class="d-flex flex-wrap align-items-center">
+                  <span class="mr-3"><strong>Rs. <%= Math.floor(item.price || 0) %></strong> <span class="text-muted small">x <%= item.quantity %></span></span>
+                  <span class="status-box status-<%= item.status.toLowerCase() %>"><%= item.status %></span>
+                </div>
+                <% if (returnRequest) { %>
+                  <div class="return-info-box <%= isPending ? 'pending' : 'processed' %>">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="font-weight-bold" style="font-size: .75rem; color: #666;">RETURN STATUS</span>
+                      <span class="badge badge-<%= isPending ? 'warning' : (isApproved ? 'success' : 'secondary') %>"><%= rStatus.toUpperCase() %></span>
+                    </div>
+                    <p class="return-message <%= isPending ? 'return-message-pending' : (isApproved ? 'return-message-approved' : 'return-message-rejected') %>">
+                      <% if (isPending) { %><i class="fas fa-clock mr-1"></i> Your request is being processed<% } else if (isApproved) { %><i class="fas fa-check-circle mr-1"></i> Your request has been approved<% } else if (isRejected) { %><i class="fas fa-times-circle mr-1"></i> Sorry, your request has been rejected (Not a valid reason for return, Contact us for further Queries)<% } %>
+                    </p>
+                  </div>
+                <% } %>
+              </div>
+              <div class="col-md-3 mt-3 mt-md-0 d-flex flex-column justify-content-center align-items-md-end">
+                <h5 class="mb-3">Rs. <%= Math.floor((item.price || 0) * item.quantity) %></h5>
+                <% if (item.status !== 'Cancelled' && item.status !== 'Shipped' && item.status !== 'Delivered' && item.status !== 'Returned' && order.paymentStatus !== 'Failed') { %>
+                  <button class="btn btn-sm action-btn action-btn-muted btn-action-fixed js-cancel-product" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>">Cancel Product</button>
+                <% } else if (item.status === 'Delivered') { %>
+                  <% if (!returnRequest && !isReturnWindowClosed && !isCouponApplied) { %>
+                    <button class="btn btn-sm action-btn action-btn-light btn-action-fixed js-open-return-modal" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-toggle="modal" data-target="#returnReasonModal"><span class="full-text">Return Product</span><span class="short-text">Return</span></button>
+                  <% } %>
+                  <% if (isCouponApplied && item.status === 'Delivered' && !returnRequest) { %><span class="text-muted small font-italic">Returns not available (Coupon applied)</span><% } %>
+                  <% if (canRate) { %>
+                    <button class="btn btn-sm action-btn action-btn-violet mt-2 btn-action-fixed js-open-review-modal" data-order-id="<%= order._id %>" data-product-id="<%= item.productId._id %>" data-product-name="<%= item.productId.name %>" data-toggle="modal" data-target="#rateReviewModal"><span class="full-text"><i class="fas fa-star mr-1"></i> Write Review</span><span class="short-text"><i class="fas fa-star mr-1"></i> Review</span></button>
+                  <% } else if (item.isRated) { %>
+                    <span class="mt-2 text-success small font-weight-bold"><i class="fas fa-check-circle mr-1"></i> Already Reviewed</span>
+                  <% } %>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
       </div>
     </div>
   </section>
-
-  <!-- Return Reason Modal -->
   <div class="modal fade mt-5 pt-5" id="returnReasonModal" tabindex="-1" aria-labelledby="returnReasonModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="returnReasonModalLabel">
-            Return Reason
-          </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <textarea id="returnReason" class="form-control" rows="3" placeholder="Please enter your reason for return..."></textarea>
-          <div class="validation-message"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">
-            Close
-          </button>
-          <button type="button" id="submitReturn" class="btn btn-primary" disabled>
-            Return Product
-          </button>
-        </div>
-      </div>
-    </div>
+    <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="returnReasonModalLabel">Return Reason</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><textarea id="returnReason" class="form-control modal-clean-input" rows="3" placeholder="Please enter your reason for return..."></textarea><div class="validation-message" id="returnReasonError"></div></div><div class="modal-footer"><button type="button" class="btn action-btn action-btn-light" data-dismiss="modal">Close</button><button type="button" id="submitReturn" class="btn action-btn action-btn-primary" disabled>Return Product</button></div></div></div>
   </div>
-
-  <!-- Rate & Review Modal -->
   <div class="modal fade mt-5 pt-5" id="rateReviewModal" tabindex="-1" aria-labelledby="rateReviewModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="rateReviewModalLabel">Rate & Review - <span id="reviewProductName"></span></h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <form id="rateReviewForm">
-          <div class="modal-body">
-            <input type="hidden" id="reviewProductId" name="productId">
-            <input type="hidden" id="reviewOrderId" name="orderId">
-            <div class="form-group text-center">
-              <label class="d-block">Your Rating (Required)</label>
-              <div class="rating-stars" style="font-size: 2rem; color: #ddd; cursor: pointer;">
-                <i class="far fa-star star-btn" data-value="1"></i>
-                <i class="far fa-star star-btn" data-value="2"></i>
-                <i class="far fa-star star-btn" data-value="3"></i>
-                <i class="far fa-star star-btn" data-value="4"></i>
-                <i class="far fa-star star-btn" data-value="5"></i>
-              </div>
-              <input type="hidden" id="selectedRating" name="rating" value="0">
-            </div>
-            <div class="form-group">
-              <label>Comment (Optional)</label>
-              <textarea class="form-control" name="comment" rows="3" placeholder="Tell us what you like or dislike..."></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary" id="submitReviewBtn" disabled>Submit Review</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="rateReviewModalLabel">Write Review - <span id="reviewProductName"></span></h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><form id="rateReviewForm"><div class="modal-body"><input type="hidden" id="reviewProductId" name="productId"><input type="hidden" id="reviewOrderId" name="orderId"><div class="form-group text-center"><label class="d-block review-rating-label">Your Rating (Required)</label><div class="rating-stars" style="font-size: 2rem; color: #ddd; cursor: pointer;"><i class="far fa-star star-btn" data-value="1"></i><i class="far fa-star star-btn" data-value="2"></i><i class="far fa-star star-btn" data-value="3"></i><i class="far fa-star star-btn" data-value="4"></i><i class="far fa-star star-btn" data-value="5"></i></div><input type="hidden" id="selectedRating" name="rating" value="0"><div class="validation-message text-center" id="reviewRatingError"></div></div><div class="form-group"><label>Comment (Optional)</label><textarea class="form-control modal-clean-input" id="reviewComment" name="comment" rows="3" maxlength="500" placeholder="Tell us what you like or dislike..."></textarea><div class="validation-message" id="reviewCommentError"></div></div></div><div class="modal-footer"><button type="button" class="btn action-btn action-btn-light" data-dismiss="modal">Close</button><button type="submit" class="btn action-btn action-btn-primary" id="submitReviewBtn" disabled>Submit Review</button></div></form></div></div>
   </div>
-
   <%- include('../partials/User/footer') %>
-
-  <!-- Bootstrap JS and dependencies -->
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
   <script>
-    const delayedFetch = (url, options, loaderOptions) =>
-      SwalCustom.withDelayedProcessing(() => authAwareFetch(url, options), loaderOptions);
+    const delayedFetch = (url, options, loaderOptions) => SwalCustom.withDelayedProcessing(() => authAwareFetch(url, options), loaderOptions);
+    let activeReturnContext = null;
+    async function closeModal(modalSelector) {
+      const modalElement = document.querySelector(modalSelector);
+      if (!modalElement) return;
 
-    // Handle cancellation of the product
-    document.querySelectorAll(".cancel-order-btn").forEach((button) => {
-      button.addEventListener("click", function(e) {
-        e.preventDefault();
-        const orderId = this.getAttribute("data-order-id");
-        const productId = this.getAttribute("data-product-id");
+      let waitForHide = Promise.resolve();
 
-        SwalCustom.confirm(
-          "Are you sure?",
-          "Once cancelled, you will not be able to recover this product!",
-          "Yes, cancel it!",
-          "Cancel"
-        ).then((result) => {
-          if (result.isConfirmed) {
-            authAwareFetch(`/orders/cancel/${orderId}/${productId}`, {
-                method: "POST",
-              })
-              .then((response) => {
-                if (!response) return null;
-                return response.json();
-              })
-              .then((data) => {
-                if (!data) return;
-                if (data.success) {
-                  SwalCustom.success(
-                    "Cancelled!",
-                    "The product has been cancelled."
-                  ).then(() => {
-                    location.reload();
-                  });
-                } else {
-                  SwalCustom.error(
-                    "Error!",
-                    data.message ||
-                    "There was a problem cancelling the product."
-                  );
-                }
-              })
-              .catch((error) => {
-                console.error("Error:", error);
-                SwalCustom.error(
-                  "Error!",
-                  "There was a problem cancelling the product."
-                );
-              });
-          }
+      if (window.jQuery?.fn?.modal) {
+        waitForHide = new Promise((resolve) => {
+          let resolved = false;
+          const finish = () => {
+            if (resolved) return;
+            resolved = true;
+            resolve();
+          };
+
+          window.jQuery(modalElement).one('hidden.bs.modal', finish);
+          window.jQuery(modalElement).modal('hide');
+          window.setTimeout(finish, 250);
         });
-      });
-    });
+      } else if (window.bootstrap?.Modal) {
+        const bootstrapModal = window.bootstrap.Modal.getInstance(modalElement) || new window.bootstrap.Modal(modalElement);
+        bootstrapModal.hide();
+        waitForHide = new Promise((resolve) => window.setTimeout(resolve, 250));
+      }
 
-    // Handle the return reason submission
-    const submitReturnBtn = document.getElementById("submitReturn");
-    if (submitReturnBtn) {
-      submitReturnBtn.addEventListener("click", function() {
-        const returnButton = document.querySelector(
-          `button[data-target="#returnReasonModal"]`
-        );
+      await waitForHide;
 
-        if (!returnButton) {
-          console.error("Return button not found.");
-          return;
-        }
+      modalElement.classList.remove('show');
+      modalElement.style.display = 'none';
+      modalElement.setAttribute('aria-hidden', 'true');
+      modalElement.removeAttribute('aria-modal');
 
-        const orderId = returnButton.getAttribute("data-order-id");
-        const productId = returnButton.getAttribute("data-product-id");
-        const returnReason = document.getElementById("returnReason")?.value;
-
-        if (!returnReason) {
-          SwalCustom.error("Error!", "Please provide a reason for return.");
-          return;
-        }
-
-        authAwareFetch(`/orders/return/${orderId}/${productId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              reason: returnReason,
-            }),
-          })
-          .then((response) => {
-            if (!response) return null;
-            if (!response) return null;
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            if (!data) return;
-            if (data.success) {
-              SwalCustom.success(
-                "Success!",
-                "Your return request has been submitted."
-              ).then(() => {
-                location.reload(); // Refresh the page
-              });
-            } else {
-              SwalCustom.error(
-                "Error!",
-                data.message ||
-                "There was a problem submitting your return request."
-              );
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            SwalCustom.error(
-              "Error!",
-              "There was a problem submitting your return request."
-            );
-          });
-      });
+      document.querySelectorAll('.modal-backdrop').forEach((backdrop) => backdrop.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('padding-right');
     }
-
-    // Real-time validation for return reason
-    const returnReasonInput = document.getElementById("returnReason");
-    if (returnReasonInput) {
-      returnReasonInput.addEventListener("input", function() {
-        const returnReason = this.value.trim();
-        const validationMessage = document.querySelector(
-          ".validation-message"
-        );
-        const submitButton = document.getElementById("submitReturn");
-
-        // Regular expression to check for special characters except comma
-        const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|.<>?,]/;
-
-        if (returnReason.length === 0) {
-          this.classList.remove("is-valid", "is-invalid");
-          if (validationMessage) validationMessage.textContent = "";
-          if (validationMessage) validationMessage.classList.remove(
-            "valid-feedback",
-            "invalid-feedback"
-          );
-          if (submitButton) submitButton.disabled = true;
-        } else if (returnReason.length < 20) {
-          this.classList.remove("is-valid");
-          this.classList.add("is-invalid");
-          if (validationMessage) validationMessage.textContent =
-            "Reason must be at least 20 characters long.";
-          if (validationMessage) validationMessage.classList.remove("valid-feedback");
-          if (validationMessage) validationMessage.classList.add("invalid-feedback");
-          if (submitButton) submitButton.disabled = true;
-        } else if (specialChars.test(returnReason)) {
-          this.classList.remove("is-valid");
-          this.classList.add("is-invalid");
-          if (validationMessage) validationMessage.textContent =
-            "Special characters are not allowed.";
-          if (validationMessage) validationMessage.classList.remove("valid-feedback");
-          if (validationMessage) validationMessage.classList.add("invalid-feedback");
-          if (submitButton) submitButton.disabled = true;
-        } else if (
-          returnReason.startsWith(" ") ||
-          returnReason.endsWith(" ")
-        ) {
-          this.classList.remove("is-valid");
-          this.classList.add("is-invalid");
-          if (validationMessage) validationMessage.textContent =
-            "Reason cannot start or end with spaces.";
-          if (validationMessage) validationMessage.classList.remove("valid-feedback");
-          if (validationMessage) validationMessage.classList.add("invalid-feedback");
-          if (submitButton) submitButton.disabled = true;
-        } else if (/\d/.test(returnReason)) {
-          this.classList.remove("is-valid");
-          this.classList.add("is-invalid");
-          if (validationMessage) validationMessage.textContent =
-            "Numbers are not allowed in the reason.";
-          if (validationMessage) validationMessage.classList.remove("valid-feedback");
-          if (validationMessage) validationMessage.classList.add("invalid-feedback");
-          if (submitButton) submitButton.disabled = true;
-        } else {
-          this.classList.remove("is-invalid");
-          this.classList.add("is-valid");
-          if (validationMessage) validationMessage.textContent = "Looks Good.";
-          if (validationMessage) validationMessage.classList.remove("invalid-feedback");
-          if (validationMessage) validationMessage.classList.add("valid-feedback");
-          if (submitButton) submitButton.disabled = false;
-        }
-      });
+    function resetReturnModal() {
+      const field = document.getElementById('returnReason');
+      const error = document.getElementById('returnReasonError');
+      const submitBtn = document.getElementById('submitReturn');
+      if (field) { field.value = ''; field.classList.remove('is-invalid'); }
+      if (error) error.textContent = '';
+      if (submitBtn) submitBtn.disabled = true;
+      activeReturnContext = null;
     }
-  </script>
-  <script>
-    // Handle retrying payment
-    const retryPaymentBtn = document.getElementById("retryPaymentBtn");
-    if (retryPaymentBtn) {
-      retryPaymentBtn.addEventListener("click", async function(e) {
-        e.preventDefault();
-        const orderId = this.getAttribute("data-order-id");
-        const paymentMethod = this.getAttribute("data-payment-method"); // assuming payment method is passed as a data attribute
-        const paymentStatus = this.getAttribute("data-payment-status"); // assuming payment status is passed as a data attribute
-        const amount = this.getAttribute("data-amount"); // assuming the amount to be deducted is passed as a data attribute
-
-        // Display the confirmation dialog for retrying payment
-        SwalCustom.confirm(
-          "Are you sure?",
-          "You are about to retry payment for this order!",
-          "Yes, retry payment!",
-          "Cancel"
-        ).then(async (result) => {
-          if (result.isConfirmed) {
-            // Check if payment method is Wallet
-            if (paymentStatus === "Failed" && paymentMethod === "Wallet") {
-              // Handle wallet deduction logic by calling your controller
-              try {
-                const walletResponse = await delayedFetch(
-                  `/wallet/deduct`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      orderId,
-                      amount,
-                    }),
-                  },
-                  {
-                    title: "Processing wallet payment...",
-                    text: "Please wait while we retry the payment using your wallet."
-                  }
-                );
-
-                if (!walletResponse) return;
-                if (walletResponse.ok) {
-                  const walletData = await walletResponse.json();
-
-                  // Check if the wallet payment was successful based on the 'message' field
-                  if (walletData.message === "Wallet payment successful") {
-                    // Show success SweetAlert if wallet deduction is successful
-                    SwalCustom.success(
-                      "Success!",
-                      `Payment successfully deducted from wallet. Remaining balance: ₹${walletData.remainingBalance}`
-                    ).then(() => {
-                      // After the success SweetAlert closes, reload the page
-                      location.reload();
-                    });
-                  } else {
-                    // If wallet deduction failed, show an error message
-                    SwalCustom.error(
-                      "Wallet Deduction Failed",
-                      walletData.message || "There was an issue deducting from your wallet."
-                    );
-                  }
-                } else {
-                  const errorData = await walletResponse.json();
-                  SwalCustom.error(
-                    "Oops...",
-                    errorData.message || "Error processing wallet deduction."
-                  );
-                }
-              } catch (error) {
-                SwalCustom.error(
-                  "Oops...",
-                  "An unexpected error occurred while retrying payment via wallet."
-                );
-              }
-            } else if (paymentMethod === "Razorpay") {
-              // Existing Razorpay payment retry logic
-              try {
-                // Create Razorpay order
-                const razorpayResponse = await delayedFetch(
-                  "/orders/razorpay/create",
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      orderId,
-                    }),
-                  },
-                  {
-                    title: "Preparing payment...",
-                    text: "Please wait while we connect to Razorpay."
-                  }
-                );
-
-                if (!razorpayResponse) return;
-                if (razorpayResponse.ok) {
-                  const razorpayData = await razorpayResponse.json();
-                  const options = {
-                    key: "rzp_test_KZK1gW6B1A7B5s",
-                    amount: razorpayData.amount,
-                    currency: "INR",
-                    name: "Subtlety",
-                    description: "Order Payment",
-                    order_id: razorpayData.id,
-                    handler: async function(response) {
-                      try {
-                        // Confirm payment
-                        const paymentConfirmationResponse = await delayedFetch(
-                          "/orders/razorpay/confirm",
-                          {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                              orderId,
-                              paymentResponse: response,
-                            }),
-                          },
-                          {
-                            title: "Confirming payment...",
-                            text: "Please wait while we verify your Razorpay payment."
-                          }
-                        );
-
-                        if (!paymentConfirmationResponse) return;
-                        if (paymentConfirmationResponse.ok) {
-                          const data = await paymentConfirmationResponse.json();
-                          SwalCustom.success("Success!", data.message).then(() => {
-                            window.location.href = `/orders/success?orderId=${orderId}`;
-                          });
-                        } else {
-                          const errorData = await paymentConfirmationResponse.json();
-                          SwalCustom.error("Oops...", `Error confirming payment: ${errorData.message}`);
-                        }
-                      } catch (error) {
-                        SwalCustom.error(
-                          "Oops...",
-                          "An unexpected error occurred while confirming the payment."
-                        );
-                      }
-                    },
-                  };
-
-                  const razorpay = new Razorpay(options);
-                  razorpay.on("payment.failed", async (res) => {
-                    await SwalCustom.error(
-                      "Payment Failed",
-                      "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank."
-                    );
-                    window.location.href = "/user/home"; // Redirect after alert
-                  });
-
-                  // Open the Razorpay payment gateway
-                  razorpay.open();
-                } else {
-                  const errorData = await razorpayResponse.json();
-                  SwalCustom.error("Oops...", `Error creating Razorpay order: ${errorData.message}`);
-                }
-              } catch (error) {
-                SwalCustom.error(
-                  "Oops...",
-                  "An unexpected error occurred."
-                );
-              }
-            }
+    function validateReturnReason() {
+      const field = document.getElementById('returnReason');
+      const error = document.getElementById('returnReasonError');
+      const submitBtn = document.getElementById('submitReturn');
+      if (!field || !error || !submitBtn) return false;
+      const trimmedValue = field.value.trim();
+      const isInvalid = field.value.length > 0 && trimmedValue.length === 0;
+      const canSubmit = trimmedValue.length > 0;
+      field.classList.toggle('is-invalid', isInvalid);
+      error.textContent = isInvalid ? 'Reason cannot contain only spaces.' : '';
+      submitBtn.disabled = !canSubmit || isInvalid;
+      return canSubmit && !isInvalid;
+    }
+    function resetReviewModal() {
+      const form = document.getElementById('rateReviewForm');
+      const commentField = document.getElementById('reviewComment');
+      const commentError = document.getElementById('reviewCommentError');
+      const ratingError = document.getElementById('reviewRatingError');
+      const ratingField = document.getElementById('selectedRating');
+      const submitBtn = document.getElementById('submitReviewBtn');
+      if (form) form.reset();
+      if (commentField) commentField.classList.remove('is-invalid');
+      if (commentError) commentError.textContent = '';
+      if (ratingError) ratingError.textContent = '';
+      if (ratingField) ratingField.value = 0;
+      if (submitBtn) submitBtn.disabled = true;
+      document.querySelectorAll('.star-btn').forEach((star) => { star.classList.remove('fas', 'text-warning'); star.classList.add('far'); });
+    }
+    function validateReviewComment() {
+      const field = document.getElementById('reviewComment');
+      const error = document.getElementById('reviewCommentError');
+      if (!field || !error) return true;
+      const rawValue = field.value;
+      const trimmedValue = rawValue.trim();
+      let message = '';
+      if (rawValue.length > 0 && trimmedValue.length === 0) message = 'Comment cannot contain only spaces.';
+      else if (trimmedValue.length > 500) message = 'Comment must be 500 characters or fewer.';
+      field.classList.toggle('is-invalid', Boolean(message));
+      error.textContent = message;
+      return !message;
+    }
+    function syncReviewSubmitState() {
+      const rating = Number(document.getElementById('selectedRating')?.value || 0);
+      const submitBtn = document.getElementById('submitReviewBtn');
+      if (!submitBtn) return;
+      submitBtn.disabled = rating < 1 || !validateReviewComment();
+    }
+    async function refreshOrderDetailsContent() {
+      const currentContent = document.getElementById('orderDetailsContent');
+      if (!currentContent) return;
+      const response = await authAwareFetch(window.location.pathname, { headers: { Accept: 'text/html' } });
+      if (!response) return;
+      const html = await response.text();
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      const nextContent = parsed.getElementById('orderDetailsContent');
+      if (!nextContent) return;
+      currentContent.innerHTML = nextContent.innerHTML;
+      bindOrderDetailsInteractions();
+    }
+    async function handleInvoiceDownload(button) {
+      const originalHtml = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner-border spinner-border-sm mr-2"></span>Downloading...';
+      try {
+        const response = await authAwareFetch(button.dataset.url, { method: 'GET', headers: { Accept: 'application/pdf' } });
+        if (!response) return;
+        if (!response.ok) {
+          const contentType = response.headers.get('content-type') || '';
+          let message = 'Unable to download the invoice right now.';
+          if (contentType.includes('application/json')) {
+            const payload = await response.json().catch(() => null);
+            if (payload?.message) message = payload.message;
           }
-        });
-      });
+          throw new Error(message);
+        }
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${button.dataset.orderCode || 'invoice'}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(blobUrl);
+      } catch (error) {
+        await SwalCustom.error('Download Failed', error.message || 'Unable to download the invoice right now.');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalHtml;
+      }
     }
-  </script>
-  <script>
-    // Rate & Review Logic
-    $(document).ready(function() {
-      $('.rate-review-btn').on('click', function() {
-        const productId = $(this).data('product-id');
-        const orderId = $(this).data('order-id');
-        const productName = $(this).data('product-name');
-        
-        $('#reviewProductId').val(productId);
-        $('#reviewOrderId').val(orderId);
-        $('#reviewProductName').text(productName);
-        
-        // Reset modal
-        $('#rateReviewForm')[0].reset();
-        $('.star-btn').removeClass('fas text-warning').addClass('far');
-        $('#selectedRating').val(0);
-        $('#submitReviewBtn').prop('disabled', true);
-      });
-
-      $('.star-btn').on('click', function() {
-        const value = $(this).data('value');
-        $('#selectedRating').val(value);
-        
-        $('.star-btn').each(function() {
-          if ($(this).data('value') <= value) {
-            $(this).removeClass('far').addClass('fas text-warning');
-          } else {
-            $(this).removeClass('fas text-warning').addClass('far');
-          }
-        });
-        
-        $('#submitReviewBtn').prop('disabled', false);
-      });
-
-      $('#rateReviewForm').on('submit', async function(e) {
-        e.preventDefault();
-        const productId = $('#reviewProductId').val();
-        const formData = {
-          productId,
-          orderId: $('#reviewOrderId').val(),
-          rating: $('#selectedRating').val(),
-          comment: $('textarea[name="comment"]').val()
-        };
-
+    async function handleRetryPayment(button) {
+      const orderId = button.getAttribute('data-order-id');
+      const paymentMethod = button.getAttribute('data-payment-method');
+      const paymentStatus = button.getAttribute('data-payment-status');
+      const amount = button.getAttribute('data-amount');
+      const result = await SwalCustom.confirm('Are you sure?', 'You are about to retry payment for this order!', 'Yes, retry payment!', 'Cancel');
+      if (!result.isConfirmed) return;
+      if (paymentStatus === 'Failed' && paymentMethod === 'Wallet') {
         try {
-          const response = await authAwareFetch('/reviews/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-          });
-          if (!response) return;
-          const data = await response.json();
-          
-          if (data.success) {
-            SwalCustom.success('Thank you!', data.message).then(() => {
-              // Robust Modal Closing
-              const modal = $('#rateReviewModal');
-              // 1. Try standard hide
-              modal.modal('hide');
-              
-              // 2. Programmatically click the close button if it's still visible
-              const closeBtn = modal.find('.close');
-              if (closeBtn.length) closeBtn.click();
-              
-              // 3. Manual cleanup as ultimate fallback
-              setTimeout(() => {
-                if ($('.modal-backdrop').length) {
-                  $('.modal-backdrop').remove();
-                  $('body').removeClass('modal-open').css('padding-right', '');
-                }
-              }, 300);
-              
-              // Swap the Rate & Review button with a Reviewed badge – no reload needed
-              const btn = document.getElementById(`rateBtn-${productId}`);
-              if (btn) {
-                const badge = document.createElement('span');
-                badge.className = 'mt-2 text-success small font-weight-bold';
-                badge.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Already Reviewed';
-                btn.replaceWith(badge);
-              }
-            });
-          } else {
-            SwalCustom.error('Error', data.message);
+          const walletResponse = await delayedFetch('/wallet/deduct', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId, amount }) }, { title: 'Processing retry payment...', text: 'Please wait while we retry the payment using your wallet.' });
+          if (!walletResponse) return;
+          const walletData = await walletResponse.json();
+          if (walletResponse.ok && walletData.message === 'Wallet payment successful') {
+            await SwalCustom.success('Success!', `Payment successfully deducted from wallet. Remaining balance: Rs. ${walletData.remainingBalance}`);
+            window.location.reload();
+            return;
           }
+          await SwalCustom.error('Wallet Deduction Failed', walletData.message || 'There was an issue deducting from your wallet.');
         } catch (error) {
-          console.error(error);
-          SwalCustom.error('Error', 'Something went wrong');
+          await SwalCustom.error('Oops...', 'An unexpected error occurred while retrying payment via wallet.');
         }
+        return;
+      }
+      if (paymentMethod === 'Razorpay') {
+        try {
+          const razorpayResponse = await delayedFetch('/orders/razorpay/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId }) }, { title: 'Preparing retry payment...', text: 'Please wait while we reconnect to Razorpay.' });
+          if (!razorpayResponse) return;
+          const razorpayData = await razorpayResponse.json();
+          if (!razorpayResponse.ok) { await SwalCustom.error('Oops...', razorpayData.message || 'Error creating Razorpay order.'); return; }
+          const options = {
+            key: 'rzp_test_KZK1gW6B1A7B5s', amount: razorpayData.amount, currency: 'INR', name: 'Subtlety', description: 'Order Payment', order_id: razorpayData.id,
+            handler: async function(response) {
+              try {
+                const confirmationResponse = await delayedFetch('/orders/razorpay/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId, paymentResponse: response }) }, { title: 'Confirming retry payment...', text: 'Please wait while we verify your retried Razorpay payment.' });
+                if (!confirmationResponse) return;
+                const confirmationData = await confirmationResponse.json();
+                if (confirmationResponse.ok) { await SwalCustom.success('Success!', confirmationData.message); window.location.href = `/orders/success?orderId=${orderId}`; return; }
+                await SwalCustom.error('Oops...', `Error confirming payment: ${confirmationData.message}`);
+              } catch (error) {
+                await SwalCustom.error('Oops...', 'An unexpected error occurred while confirming the payment.');
+              }
+            }
+          };
+          const razorpay = new Razorpay(options);
+          razorpay.on('payment.failed', async () => { await SwalCustom.error('Payment Failed', "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank."); window.location.href = '/user/home'; });
+          razorpay.open();
+        } catch (error) {
+          await SwalCustom.error('Oops...', 'An unexpected error occurred.');
+        }
+      }
+    }
+    function bindOrderDetailsInteractions() {
+      document.querySelectorAll('.js-cancel-product').forEach((button) => {
+        button.addEventListener('click', async function(e) {
+          e.preventDefault();
+          const orderId = this.getAttribute('data-order-id');
+          const productId = this.getAttribute('data-product-id');
+          const result = await SwalCustom.confirm('Are you sure?', 'Once cancelled, you will not be able to recover this product!', 'Yes, cancel it!', 'Keep Product');
+          if (!result.isConfirmed) return;
+          try {
+            const response = await delayedFetch(`/orders/${orderId}/cancel/${productId}`, { method: 'POST' }, { title: 'Cancelling product...', text: 'Please wait while we update your order.' });
+            if (!response) return;
+            const data = await response.json();
+            if (!response.ok || !data.success) { await SwalCustom.error('Error!', data.message || 'There was a problem cancelling the product.'); return; }
+            await refreshOrderDetailsContent();
+            await SwalCustom.success('Cancelled!', data.message);
+          } catch (error) {
+            await SwalCustom.error('Error!', 'There was a problem cancelling the product.');
+          }
+        });
       });
+      document.querySelectorAll('.js-open-return-modal').forEach((button) => {
+        button.addEventListener('click', function() {
+          resetReturnModal();
+          activeReturnContext = { orderId: this.getAttribute('data-order-id'), productId: this.getAttribute('data-product-id') };
+        });
+      });
+      document.querySelectorAll('.js-open-review-modal').forEach((button) => {
+        button.addEventListener('click', function() {
+          resetReviewModal();
+          document.getElementById('reviewProductId').value = this.getAttribute('data-product-id');
+          document.getElementById('reviewOrderId').value = this.getAttribute('data-order-id');
+          document.getElementById('reviewProductName').textContent = this.getAttribute('data-product-name');
+        });
+      });
+      const invoiceBtn = document.getElementById('downloadInvoiceBtn');
+      if (invoiceBtn) invoiceBtn.addEventListener('click', function() { handleInvoiceDownload(this); });
+      const retryPaymentBtn = document.getElementById('retryPaymentBtn');
+      if (retryPaymentBtn) retryPaymentBtn.addEventListener('click', function(e) { e.preventDefault(); handleRetryPayment(this); });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      bindOrderDetailsInteractions();
+      const returnReasonInput = document.getElementById('returnReason');
+      if (returnReasonInput) returnReasonInput.addEventListener('input', validateReturnReason);
+      const submitReturnBtn = document.getElementById('submitReturn');
+      if (submitReturnBtn) {
+        submitReturnBtn.addEventListener('click', async function() {
+          if (!activeReturnContext || !validateReturnReason()) return;
+          try {
+            const response = await delayedFetch(`/orders/${activeReturnContext.orderId}/return/${activeReturnContext.productId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: document.getElementById('returnReason').value }) }, { title: 'Submitting return request...', text: 'Please wait while we send your request.' });
+            if (!response) return;
+            const data = await response.json();
+            if (!response.ok || !data.success) { await SwalCustom.error('Error!', data.message || 'There was a problem submitting your return request.'); return; }
+            await closeModal('#returnReasonModal');
+            resetReturnModal();
+            await refreshOrderDetailsContent();
+            await SwalCustom.success('Success!', data.message);
+          } catch (error) {
+            await SwalCustom.error('Error!', 'There was a problem submitting your return request.');
+          }
+        });
+      }
+      $('#returnReasonModal').on('hidden.bs.modal', function() { resetReturnModal(); });
+      document.querySelectorAll('.star-btn').forEach((star) => {
+        star.addEventListener('click', function() {
+          const value = Number(this.getAttribute('data-value'));
+          document.getElementById('selectedRating').value = value;
+          document.querySelectorAll('.star-btn').forEach((item) => {
+            const itemValue = Number(item.getAttribute('data-value'));
+            if (itemValue <= value) { item.classList.remove('far'); item.classList.add('fas', 'text-warning'); }
+            else { item.classList.remove('fas', 'text-warning'); item.classList.add('far'); }
+          });
+          document.getElementById('reviewRatingError').textContent = '';
+          syncReviewSubmitState();
+        });
+      });
+      const reviewComment = document.getElementById('reviewComment');
+      if (reviewComment) reviewComment.addEventListener('input', syncReviewSubmitState);
+      const reviewForm = document.getElementById('rateReviewForm');
+      if (reviewForm) {
+        reviewForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          syncReviewSubmitState();
+          const rating = Number(document.getElementById('selectedRating').value || 0);
+          const ratingError = document.getElementById('reviewRatingError');
+          if (rating < 1) { if (ratingError) ratingError.textContent = 'Please select a rating before submitting your review.'; return; }
+          if (document.getElementById('submitReviewBtn').disabled) return;
+          const formData = { productId: document.getElementById('reviewProductId').value, orderId: document.getElementById('reviewOrderId').value, rating: document.getElementById('selectedRating').value, comment: document.getElementById('reviewComment').value };
+          try {
+            const response = await delayedFetch('/reviews/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }, { title: 'Submitting review...', text: 'Please wait while we save your review.' });
+            if (!response) return;
+            const data = await response.json();
+            if (!response.ok || !data.success) { await SwalCustom.error('Error', data.message || 'Something went wrong'); return; }
+            await closeModal('#rateReviewModal');
+            resetReviewModal();
+            await refreshOrderDetailsContent();
+            await SwalCustom.success('Thank you!', data.message);
+          } catch (error) {
+            await SwalCustom.error('Error', 'Something went wrong');
+          }
+        });
+      }
+      $('#rateReviewModal').on('hidden.bs.modal', function() { resetReviewModal(); });
     });
   </script>
 </body>
-
 </html>
+

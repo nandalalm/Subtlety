@@ -106,7 +106,7 @@
               <div class="offer-field">
                 <div class="info-label">Value</div>
                 <div class="info-value">
-                  <%= offer.offerType === 'flat' ? `Rs. ${Number(offer.value).toFixed(2)}` : `${offer.value}%` %>
+                  <%= offer.offerType === 'flat' ? `Rs. ${Math.floor(Number(offer.value) || 0)}` : `${offer.value}%` %>
                 </div>
               </div>
               <div class="offer-field">
@@ -116,7 +116,7 @@
               <% if (offer.offerType === 'flat' && offer.minProductPrice) { %>
                 <div class="offer-field">
                   <div class="info-label">Minimum Product Price</div>
-                  <div class="info-value"><%= `Rs. ${Number(offer.minProductPrice).toFixed(2)}` %></div>
+                  <div class="info-value"><%= `Rs. ${Math.floor(Number(offer.minProductPrice) || 0)}` %></div>
                 </div>
               <% } %>
             </div>
@@ -128,3 +128,4 @@
   <%- include('../partials/Admin/adminScripts') %>
 </body>
 </html>
+

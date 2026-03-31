@@ -209,7 +209,13 @@
       border: 1px solid #dcedc8;
     }
 
-    .unavailable-text, .out-of-stock-text, .low-stock-text {
+    .badge-price-changed {
+      background-color: #eef2ff;
+      color: #4338ca;
+      border: 1px solid #c7d2fe;
+    }
+
+    .unavailable-text, .out-of-stock-text, .low-stock-text, .category-unlisted-text {
       margin-bottom: 0 !important;
     }
 
@@ -504,13 +510,95 @@
 
 
 
+    function updateCartSummaryUI(cartState) {
+      if (!cartState) return;
+      const subtotalEl = document.getElementById('subtotal');
+      if (subtotalEl) subtotalEl.innerText = Math.floor(cartState.subtotal || 0);
+
+      const discountVal = Math.floor(cartState.offerDiscount || 0);
+      const discountText = document.getElementById('discountText');
+      if (discountText) discountText.innerText = discountVal > 0 ? `- ₹ ${discountVal}` : '0';
+
+      const wrapper = document.getElementById('deliveryFeeWrapper');
+      const message = document.getElementById('deliveryFeeMessage');
+      if (wrapper && message) {
+        if ((cartState.deliveryCharge ?? cartState.deliveryFee ?? 0) === 0) {
+          wrapper.innerHTML = `<span class="text-muted" style="text-decoration: line-through;">₹ 80</span> <span class="text-success font-weight-bold ml-1">Free</span>`;
+          message.innerText = "Congrats! You've unlocked FREE delivery";
+          message.className = "text-success mt-1";
+        } else {
+          const fee = Math.floor(cartState.deliveryCharge ?? cartState.deliveryFee ?? 0);
+          wrapper.innerHTML = `₹ <span id="deliveryFee">${fee}</span>`;
+          message.innerText = "Free delivery on orders above ₹600";
+          message.className = "text-muted mt-1";
+        }
+      }
+
+      const totalEl = document.getElementById('total');
+      if (totalEl) totalEl.innerText = Math.floor(cartState.totalAmount ?? cartState.total ?? 0);
+    }
+
+    function updateProductStatusUI(errors, cartState) {
+      if (cartState && Array.isArray(cartState.productsWithPrices)) {
+        cartState.productsWithPrices.forEach((item) => {
+          const productCard = document.querySelector(`.product-card[data-product-id="${item.productId._id}"]`);
+          if (!productCard) return;
+
+          const currentPrice = productCard.querySelector('.cart-current-price');
+          const originalPrice = productCard.querySelector('.cart-original-price');
+          const quantityInput = productCard.querySelector('.quantity-input');
+
+          if (currentPrice) {
+            currentPrice.textContent = `₹ ${Math.floor(item.discountedPrice ?? item.productId.currentDiscountedPrice ?? item.productId.price)}`;
+          }
+
+          if (originalPrice) {
+            originalPrice.textContent = `₹ ${Math.floor(item.productId.price)}`;
+          }
+
+          if (quantityInput) {
+            quantityInput.setAttribute('max', item.productId.stock);
+          }
+        });
+        updateCartSummaryUI(cartState);
+      }
+
+      if (!errors || !Array.isArray(errors)) return;
+
+      errors.forEach(err => {
+        const productCard = document.querySelector(`.product-card[data-product-id="${err.productId}"]`);
+        if (!productCard) return;
+
+        const statusContainer = productCard.querySelector('.status-container');
+        const issueMessage = productCard.querySelector('.cart-issue-message');
+        if (issueMessage) issueMessage.textContent = err.message || '';
+
+        if (statusContainer) {
+          let badgeHTML = '';
+          if (err.status === 'unavailable') {
+            badgeHTML = `<span class="status-badge badge-unavailable unavailable-text">Unavailable</span>`;
+          } else if (err.status === 'category-unlisted') {
+            badgeHTML = `<span class="status-badge badge-unavailable category-unlisted-text">Category Unavailable</span>`;
+          } else if (err.status === 'out-of-stock') {
+            badgeHTML = `<span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>`;
+          } else if (err.status === 'low-stock') {
+            badgeHTML = `<span class="status-badge badge-low-stock low-stock-text">Only ${err.availableStock} left</span>`;
+          } else if (err.status === 'price-changed') {
+            badgeHTML = `<span class="status-badge badge-price-changed">Price Updated</span>`;
+          }
+          statusContainer.innerHTML = badgeHTML;
+        }
+      });
+    }
+
     function checkoutHandler(event) {
       event.preventDefault();
       let unlistedProducts = document.querySelectorAll('.product-card .unavailable-text');
+      let categoryUnlistedProducts = document.querySelectorAll('.product-card .category-unlisted-text');
       let outOfStockProducts = document.querySelectorAll('.product-card .out-of-stock-text');
       let lowStockProducts = document.querySelectorAll('.product-card .low-stock-text');
 
-      if (unlistedProducts.length > 0 || outOfStockProducts.length > 0 || lowStockProducts.length > 0) {
+      if (unlistedProducts.length > 0 || categoryUnlistedProducts.length > 0 || outOfStockProducts.length > 0 || lowStockProducts.length > 0) {
         SwalCustom.error(
           'Items Unavailable',
           'Some products in your cart are no longer available or out of stock. Please remove these items to proceed.'
@@ -531,9 +619,7 @@
                   'Order Issue',
                   data.message || 'Some products in your cart have status changes.'
                 ).then(() => {
-                  if (data.errors) {
-                    updateProductStatusUI(data.errors);
-                  }
+                  updateProductStatusUI(data.errors, data.cartState);
                 });
                 return null;
               });
@@ -550,29 +636,6 @@
           });
       }
     }
-
-    function updateProductStatusUI(errors) {
-      if (!errors || !Array.isArray(errors)) return;
-
-      errors.forEach(err => {
-        const productCard = document.querySelector(`.product-card[data-product-id="${err.productId}"]`);
-        if (productCard) {
-          const statusContainer = productCard.querySelector('.status-container');
-          if (statusContainer) {
-            let badgeHTML = '';
-            if (err.status === 'unavailable') {
-              badgeHTML = `<span class="status-badge badge-unavailable unavailable-text">Unavailable</span>`;
-            } else if (err.status === 'out-of-stock') {
-              badgeHTML = `<span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>`;
-            } else if (err.status === 'low-stock') {
-              badgeHTML = `<span class="status-badge badge-low-stock low-stock-text">Only ${err.availableStock} units left</span>`;
-            }
-            statusContainer.innerHTML = badgeHTML;
-          }
-        }
-      });
-    }
-
 
     const MAX_ALLOWED_QUANTITY = 10;
 

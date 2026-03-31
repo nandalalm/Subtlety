@@ -1,12 +1,11 @@
 import productService from "../services/productService.js";
-import categoryService from "../services/categoryService.js"; // Needed for category list
+import categoryService from "../services/categoryService.js";
 import path from "path";
 import multer from "multer";
 import { productStorage } from "../config/cloudinary.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-// Initialize multer for products using Cloudinary storage
 const productUpload = multer({
   storage: productStorage,
   fileFilter: (req, file, cb) => {
@@ -41,7 +40,7 @@ async function addProduct(req, res, next) {
 
     return res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.PRODUCT.ADDED });
   } catch (error) {
-    if (error.statusCode === 400) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message });
     }
     next(error);
@@ -107,7 +106,7 @@ async function getEditProduct(req, res, next) {
       sort: req.query.sort || 'latest' 
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -118,7 +117,7 @@ async function getProductView(req, res, next) {
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
     res.render("admin/productView", { product, backQuery });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -157,7 +156,7 @@ async function editProduct(req, res, next) {
 
     return res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.PRODUCT.UPDATED });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({ success: false, message: error.message });
     }
     next(error);
@@ -174,7 +173,7 @@ async function toggleProductStatus(req, res, next) {
       product: product
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
     next(error);
   }
 }

@@ -36,7 +36,7 @@
                         </span>
                     </td>
                     <td class="font-weight-bold">
-                        <%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %>
+                        <%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.floor(Math.abs(transaction.amount || 0)) %>
                     </td>
                     <td>
                         <%= new Date(transaction.date).toLocaleDateString() %>
@@ -56,7 +56,7 @@
                 <div class="card-body p-0">
                     <p><strong>Ref Code:</strong> <span class="small text-muted"><%= transaction.transactionId %></span></p>
                     <p><strong>Message:</strong> <%= transaction.description %></p>
-                    <p><strong>Amount:</strong> <span class="font-weight-bold <%= transaction.type === 'credit' ? 'text-success' : 'text-danger' %>"><%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.abs(transaction.amount).toFixed(2) %></span></p>
+                    <p><strong>Amount:</strong> <span class="font-weight-bold <%= transaction.type === 'credit' ? 'text-success' : 'text-danger' %>"><%= transaction.type === 'credit' ? '+' : '-' %> ₹<%= Math.floor(Math.abs(transaction.amount || 0)) %></span></p>
                     <p class="text-muted small"><strong>Date:</strong> <%= new Date(transaction.date).toLocaleDateString() %></p>
                 </div>
             </div>
@@ -71,3 +71,4 @@
         <% } %>
     <% } %>
 </div>
+

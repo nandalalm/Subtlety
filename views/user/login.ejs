@@ -14,27 +14,58 @@
   <link rel="stylesheet" href="/styles/user/login.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
-    .password-wrapper {
+    .auth-card {
+      border-radius: 16px;
+      border: 1px solid #e8e8e8;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      background: #fff;
+    }
+
+    .auth-title {
+      letter-spacing: 0.14em;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .password-field-shell {
       position: relative;
     }
 
-    .password-input-shell {
-      position: relative;
+    .password-field-shell .form-control {
+      padding-right: 3rem;
     }
 
-    .password-input-shell .form-control {
-      padding-right: 2.75rem;
-    }
-
-    #togglePassword {
+    .password-toggle-btn {
       position: absolute;
       top: 50%;
-      right: 0.9rem;
+      right: 0.8rem;
       transform: translateY(-50%);
-      cursor: pointer;
-      color: #6c757d;
-      line-height: 1;
+      width: 34px;
+      height: 34px;
+      border: 0;
+      background: transparent;
+      color: #6b7280;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       z-index: 2;
+      transition: color 0.2s ease;
+      padding: 0;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .password-toggle-btn:hover {
+      color: #111827;
+    }
+
+    .password-toggle-btn:focus,
+    .password-toggle-btn:active {
+      outline: none;
+      box-shadow: none;
+      background: transparent !important;
+      border-color: transparent !important;
     }
 
     .otp-inputs {
@@ -63,13 +94,13 @@
 
     /* Input focus styles */
     .form-control:focus {
-      border-color: #80bdff;
-      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      border-color: #111;
+      box-shadow: none;
     }
 
     /* Custom styles for valid/invalid inputs */
     .form-control.is-valid {
-      border-color: #28a745;
+      border-color: #111;
     }
 
     .form-control.is-invalid {
@@ -96,7 +127,8 @@
 
 <body>
   <div class="login-container">
-    <h2 style="color: #9135ED;" class="text-center">SUBTLETY</h2>
+    <div class="auth-card p-4 p-sm-4">
+    <h2 style="color: #111;" class="text-center auth-title">SUBTLETY</h2>
 
     <form id="loginForm" action="/auth/login" method="post">
       <div class="form-group">
@@ -106,9 +138,11 @@
       </div>
       <div class="form-group password-wrapper">
         <label for="password"><small>Password</small></label>
-        <div class="password-input-shell">
+        <div class="password-field-shell">
           <input type="password" class="form-control " id="password" name="password" placeholder="Enter password" required>
-          <i class="fa-regular fa-eye" id="togglePassword"></i>
+          <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle password visibility">
+            <i class="fa-regular fa-eye"></i>
+          </button>
         </div>
         <div class="invalid-feedback" id="passwordFeedback"><small>Password must be at least 6 characters long.</small></div>
       </div>
@@ -130,12 +164,15 @@
     <div class="mt-3 text-center">
       <a href="/auth/forgot-password" style="text-decoration: none; color: #9135ED;" class="mb-1"><small>Forgot Password?</small></a>
     </div>
+    </div>
 
     <script src="/js/login.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+      sessionStorage.removeItem('forgotPasswordOtpState');
+
       // Demo login functionality
       document.getElementById('demoLoginButton').onclick = function() {
         // Fill the email and password fields with demo credentials

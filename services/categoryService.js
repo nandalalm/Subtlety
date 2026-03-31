@@ -1,5 +1,6 @@
 import categoryRepository from "../repositories/categoryRepository.js";
 import MESSAGES from "../Constants/messages.js";
+import HTTP_STATUS from "../Constants/httpStatus.js";
 
 const categoryService = {
   getCategories: async (queryParams) => {
@@ -31,7 +32,7 @@ const categoryService = {
   addCategory: async (categoryData) => {
     const existing = await categoryRepository.findOne({ name: { $regex: `^${categoryData.name.trim()}$`, $options: "i" } });
     if (existing) {
-      throw { statusCode: 400, message: MESSAGES.CATEGORY.ALREADY_EXISTS };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.ALREADY_EXISTS };
     }
     return await categoryRepository.save(categoryData);
   },
@@ -39,7 +40,7 @@ const categoryService = {
   updateCategory: async (id, updateData) => {
     const category = await categoryRepository.findById(id);
     if (!category) {
-      throw { statusCode: 404, message: MESSAGES.CATEGORY.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CATEGORY.NOT_FOUND };
     }
 
     if (updateData.name) {
@@ -48,7 +49,7 @@ const categoryService = {
         _id: { $ne: id }
       });
       if (existing) {
-        throw { statusCode: 400, message: MESSAGES.CATEGORY.NAME_EXISTS };
+        throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.NAME_EXISTS };
       }
     }
 
@@ -58,7 +59,7 @@ const categoryService = {
   getCategoryById: async (id) => {
     const category = await categoryRepository.findById(id);
     if (!category) {
-      throw { statusCode: 404, message: MESSAGES.CATEGORY.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CATEGORY.NOT_FOUND };
     }
     return category;
   },
@@ -66,7 +67,7 @@ const categoryService = {
   toggleStatus: async (id) => {
     const category = await categoryRepository.findById(id);
     if (!category) {
-      throw { statusCode: 404, message: MESSAGES.CATEGORY.NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CATEGORY.NOT_FOUND };
     }
     category.isListed = !category.isListed;
     return await category.save();

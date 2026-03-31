@@ -6,6 +6,19 @@ import MESSAGES from "../Constants/messages.js";
 const reviewService = {
   postReview: async (userId, reviewData) => {
     const { productId, orderId, rating, comment } = reviewData;
+    const normalizedComment = typeof comment === "string" ? comment.trim() : "";
+
+    if (!rating || Number(rating) < 1 || Number(rating) > 5) {
+      const error = new Error(MESSAGES.REVIEW.RATING_REQUIRED);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
+
+    if (typeof comment === "string" && comment.length > 0 && normalizedComment.length === 0) {
+      const error = new Error(MESSAGES.REVIEW.INVALID_COMMENT);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
 
     // Check if the product was delivered in this order
     const order = await orderRepository.findOne({
@@ -44,7 +57,7 @@ const reviewService = {
       userId: userId,
       orderId,
       rating: Number(rating),
-      comment
+      comment: normalizedComment || undefined
     };
 
     try {

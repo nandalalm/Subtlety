@@ -32,9 +32,9 @@
                         <td class="text-muted font-weight-bold"><%= (currPg - 1) * pgLimit + (index + 1) %></td>
                         <td><span class="order-id-badge"><%= order.orderId %></span></td>
                         <td><%= order.shippingAddress ? order.shippingAddress.fullname : 'N/A' %></td>
-                        <td>₹<%= (order.offerDiscount || 0).toFixed(2) %></td>
-                        <td>₹<%= (order.couponDiscount || 0).toFixed(2) %></td>
-                        <td>₹<%= order.totalAmount.toFixed(2) %></td>
+                        <td>₹<%= Math.floor(order.offerDiscount || 0) %></td>
+                        <td>₹<%= Math.floor(order.couponDiscount || 0) %></td>
+                        <td>₹<%= Math.floor(order.totalAmount || 0) %></td>
                         <td><%= new Date(order.orderDate).toLocaleDateString('en-GB') %></td>
                         <td>
                             <span class="badge badge-pill <%= order.orderStatus === 'Completed' ? 'badge-mild-success' : order.orderStatus === 'Cancelled' ? 'badge-mild-danger' : 'badge-mild-warning' %> px-2 py-1">
@@ -60,7 +60,7 @@
                 <div class="card-body p-0">
                     <p><strong>Order ID:</strong> <%= order.orderId %></p>
                     <p><strong>Customer:</strong> <%= order.shippingAddress ? order.shippingAddress.fullname : 'N/A' %></p>
-                    <p><strong>Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
+                    <p><strong>Amount:</strong> ₹<%= Math.floor(order.totalAmount || 0) %></p>
                     <p><strong>Date:</strong> <%= new Date(order.orderDate).toLocaleDateString('en-GB') %></p>
                 </div>
             </div>
@@ -73,3 +73,4 @@
         </div>
     <% } %>
 </div>
+

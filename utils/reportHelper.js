@@ -45,16 +45,16 @@ export function generateInvoicePdf(res, order) {
     const isDelivered = item.status && item.status.trim().toLowerCase() === "delivered";
     doc.fontSize(12).text(`${item.productId.name}`, 73, y, { width: 110 });
     doc.fontSize(12).text(`${item.status || "N/A"}`, 215, y);
-    doc.fontSize(12).text(`${item.price.toFixed(2)}`, 320, y);
+    doc.fontSize(12).text(`${Math.floor(item.price || 0)}`, 320, y);
     doc.fontSize(12).text(`x ${item.quantity}`, 390, y);
-    doc.fontSize(12).text(`${isDelivered ? totalPrice.toFixed(2) : "0.00"}`, 470, y);
+    doc.fontSize(12).text(`${isDelivered ? Math.floor(totalPrice) : "0"}`, 470, y);
     if (isDelivered) totalPaid += totalPrice;
     y += 20;
   });
 
   doc.moveDown(3);
   doc.font("Helvetica-Bold");
-  doc.fontSize(14).text(`Total Amount Paid: ${totalPaid.toFixed(2)}`, 73);
+  doc.fontSize(14).text(`Total Amount Paid: ${Math.floor(totalPaid)}`, 73);
   doc.font("Helvetica");
   doc.end();
 }
@@ -76,8 +76,8 @@ export function generateSalesReportPdf(res, orders) {
   doc.rect(50, 100, 700, 40).fill("#f8f9fa");
   doc.fillColor("#333").fontSize(12);
   doc.text(`Total Sales: ${totalSalesCount}`, 70, 115);
-  doc.text(`Total Amount: Rs. ${totalOrderAmount.toFixed(2)}`, 300, 115);
-  doc.text(`Total Discount: Rs. ${totalDiscount.toFixed(2)}`, 550, 115);
+  doc.text(`Total Amount: Rs. ${Math.floor(totalOrderAmount)}`, 300, 115);
+  doc.text(`Total Discount: Rs. ${Math.floor(totalDiscount)}`, 550, 115);
   doc.moveDown(3);
 
   const tableTop = 160;
@@ -116,9 +116,9 @@ export function generateSalesReportPdf(res, orders) {
     doc.text(`${index + 1}`, 50, y);
     doc.text(`${order.orderId}`, 75, y, { width: 110 });
     doc.text(`${order.shippingAddress.fullname}`, 190, y, { width: 150 });
-    doc.text(`Rs. ${(order.offerDiscount || 0).toFixed(2)}`, 350, y, { width: 75 });
-    doc.text(`Rs. ${(order.couponDiscount || 0).toFixed(2)}`, 430, y, { width: 75 });
-    doc.text(`Rs. ${(order.totalAmount || 0).toFixed(2)}`, 510, y, { width: 85 });
+    doc.text(`Rs. ${Math.floor(order.offerDiscount || 0)}`, 350, y, { width: 75 });
+    doc.text(`Rs. ${Math.floor(order.couponDiscount || 0)}`, 430, y, { width: 75 });
+    doc.text(`Rs. ${Math.floor(order.totalAmount || 0)}`, 510, y, { width: 85 });
     doc.text(`${new Date(order.orderDate).toLocaleDateString("en-GB")}`, 600, y, { width: 75 });
     doc.text(`${order.orderStatus}`, 680, y, { width: 110 });
     y += 20;

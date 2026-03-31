@@ -6,6 +6,7 @@ import addressRepository from "../repositories/addressRepository.js";
 import walletRepository from "../repositories/walletRepository.js";
 import { roundToTwo, generateTransactionId } from "../utils/helper.js";
 import MESSAGES from "../Constants/messages.js";
+import HTTP_STATUS from "../Constants/httpStatus.js";
 import bcrypt from "bcryptjs";
 
 const profileService = {
@@ -16,26 +17,26 @@ const profileService = {
   updatePassword: async (userId, currentPassword, newPassword) => {
     const user = await userRepository.findById(userId);
     if (!user) {
-      throw { statusCode: 404, message: MESSAGES.PROFILE.USER_NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.USER_NOT_FOUND };
     }
 
     if (!user.password) {
-      throw { statusCode: 400, message: MESSAGES.PROFILE.PASSWORD_NOT_AVAILABLE };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PROFILE.PASSWORD_NOT_AVAILABLE };
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      throw { statusCode: 400, message: MESSAGES.PROFILE.PASSWORD_INCORRECT };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PROFILE.PASSWORD_INCORRECT };
     }
 
     // Check if new password is same as current 
     const isNewSameAsOld = await bcrypt.compare(newPassword, user.password);
     if (isNewSameAsOld) {
-        throw { statusCode: 400, message: MESSAGES.PROFILE.SAME_PASSWORD };
+        throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PROFILE.SAME_PASSWORD };
     }
 
     if (newPassword.length < 6) {
-      throw { statusCode: 400, message: MESSAGES.PROFILE.PASSWORD_TOO_SHORT };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PROFILE.PASSWORD_TOO_SHORT };
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -60,7 +61,7 @@ const profileService = {
   getAddressById: async (addressId) => {
     const address = await addressRepository.findById(addressId);
     if (!address) {
-      throw { statusCode: 404, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
     }
     return address;
   },
@@ -68,7 +69,7 @@ const profileService = {
   updateAddress: async (addressId, updateData) => {
     const updated = await addressRepository.findByIdAndUpdate(addressId, updateData);
     if (!updated) {
-      throw { statusCode: 404, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
     }
     return updated;
   },
@@ -76,7 +77,7 @@ const profileService = {
   deleteAddress: async (addressId) => {
     const deleted = await addressRepository.findByIdAndDelete(addressId);
     if (!deleted) {
-      throw { statusCode: 404, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
     }
     return deleted;
   },
@@ -129,12 +130,12 @@ const profileService = {
       orderRepository.findById(orderId)
     ]);
 
-    if (!user) throw { statusCode: 404, message: MESSAGES.PROFILE.USER_NOT_FOUND };
-    if (!wallet) throw { statusCode: 404, message: MESSAGES.WALLET.NOT_FOUND };
-    if (!order) throw { statusCode: 404, message: MESSAGES.WALLET.ORDER_NOT_FOUND };
+    if (!user) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.USER_NOT_FOUND };
+    if (!wallet) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.WALLET.NOT_FOUND };
+    if (!order) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.WALLET.ORDER_NOT_FOUND };
 
     if (wallet.balance < amount) {
-      throw { statusCode: 400, message: MESSAGES.WALLET.INSUFFICIENT_BALANCE };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.WALLET.INSUFFICIENT_BALANCE };
     }
 
     wallet.balance = roundToTwo(wallet.balance - amount);
@@ -146,7 +147,7 @@ const profileService = {
       amount,
       type: "debit",
       orderId: order.orderId,
-      description: `Payment for Order ${order.orderId}`
+      description: MESSAGES.ORDER.PAYMENT_DESC(order.orderId)
     });
 
     await wallet.save();

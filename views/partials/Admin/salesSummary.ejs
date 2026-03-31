@@ -6,10 +6,11 @@
     </div>
     <div class="summary-card shadow-sm mb-lg-0 mb-3">
         <div class="summary-label">Total Order Amount</div>
-        <div class="summary-value">₹<%= totalOrderAmount.toFixed(2) %></div>
+        <div class="summary-value">₹<%= Math.floor(totalOrderAmount || 0) %></div>
     </div>
     <div class="summary-card shadow-sm">
         <div class="summary-label">Total Discounts Given</div>
-        <div class="summary-value">₹<%= totalDiscount.toFixed(2) %></div>
+        <div class="summary-value">₹<%= Math.floor(totalDiscount || 0) %></div>
     </div>
 </div>
+

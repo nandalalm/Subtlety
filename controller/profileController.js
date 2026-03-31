@@ -84,7 +84,7 @@ async function getEditAddressPage(req, res, next) {
       mode: "edit"
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -132,7 +132,7 @@ async function changePassword(req, res, next) {
     await profileService.updatePassword(userId, currentPassword, newPassword);
     res.status(HTTP_STATUS.OK).json({ message: MESSAGES.PROFILE.PASSWORD_CHANGED });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({ message: error.message });
     }
     next(error);
@@ -159,7 +159,7 @@ const deductWalletAmount = async (req, res, next) => {
       remainingBalance: data.balance
     });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({ message: error.message });
     }
     next(error);

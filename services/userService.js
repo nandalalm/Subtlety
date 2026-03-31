@@ -185,18 +185,93 @@ const userService = {
       products: productsWithOffers,
       hasMore: total > skip + products.length
     };
+  },
+
+  getSectionReplacement: async ({ section, excludeProductIds = [], productId = null, categoryId = null }) => {
+    const listedCategories = await categoryRepository.find({ isListed: true });
+    const listedCategoryIds = listedCategories.map((category) => category._id);
+    const excludedIds = excludeProductIds
+      .filter(Boolean)
+      .map((id) => new mongoose.Types.ObjectId(id));
+
+    if (section === "latest") {
+      const query = {
+        isListed: true,
+        category: { $in: listedCategoryIds },
+        _id: { $nin: excludedIds }
+      };
+      const products = await productRepository.find(query, { createdAt: -1 }, 0, 1);
+      return await mapSectionProducts(products, query);
+    }
+
+    if (section === "best-selling") {
+      const rankedProducts = await aggregateProductFrequency();
+      const rankedIds = rankedProducts
+        .map((item) => String(item._id))
+        .filter((id) => !excludeProductIds.includes(id));
+
+      if (!rankedIds.length) return { products: [], hasMore: false };
+
+      const products = await productRepository.find({
+        _id: { $in: rankedIds },
+        isListed: true,
+        category: { $in: listedCategoryIds }
+      });
+
+      const orderedProducts = rankedIds
+        .map((id) => products.find((product) => String(product._id) === String(id)))
+        .filter(Boolean);
+
+      return await mapSectionProducts(orderedProducts.slice(0, 1), {
+        _id: { $in: rankedIds },
+        isListed: true,
+        category: { $in: listedCategoryIds }
+      }, orderedProducts.length);
+    }
+
+    if (section === "related") {
+      const query = {
+        category: categoryId,
+        _id: { $nin: [new mongoose.Types.ObjectId(productId), ...excludedIds] },
+        isListed: true
+      };
+      const products = await productRepository.find(query, {}, 0, 1);
+      return await mapSectionProducts(products, query);
+    }
+
+    return { products: [], hasMore: false };
   }
 };
 
-async function aggregateProductFrequency() {
-  return await orderRepository.aggregate([
+async function mapSectionProducts(products, query, totalAvailable = null) {
+  if (!products.length) return { products: [], hasMore: false };
+
+  const ratingMap = await getAverageRatingsForProducts(products);
+  const bestOffers = await getBestOfferBatch(products);
+  const productsWithOffers = products.map((product, index) => ({
+    product,
+    bestOffer: bestOffers[index],
+    averageRating: ratingMap[product._id.toString()] || 0
+  }));
+
+  const totalCount = totalAvailable === null ? await productRepository.countDocuments(query) : totalAvailable;
+  return {
+    products: productsWithOffers,
+    hasMore: totalCount > products.length
+  };
+}
+
+async function aggregateProductFrequency(limit = 0) {
+  const pipeline = [
     { $match: { orderStatus: "Completed" } },
     { $unwind: "$items" },
     { $match: { "items.status": "Delivered" } },
     { $group: { _id: "$items.productId", count: { $sum: "$items.quantity" } } },
-    { $sort: { count: -1 } },
-    { $limit: 4 }
-  ]);
+    { $sort: { count: -1 } }
+  ];
+
+  if (limit > 0) pipeline.push({ $limit: limit });
+  return await orderRepository.aggregate(pipeline);
 }
 
 export default userService;

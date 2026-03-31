@@ -1,6 +1,5 @@
 import adminService from "../services/adminService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
-import MESSAGES from "../Constants/messages.js";
 
 async function getHome(req, res, next) {
   try {
@@ -51,7 +50,7 @@ async function toggleUserStatus(req, res, next) {
 
     return res.status(HTTP_STATUS.OK).json({ success: true, isBlocked, user: { isBlocked } });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(error.statusCode).json({ success: false, message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(error.statusCode).json({ success: false, message: error.message });
     next(error);
   }
 }

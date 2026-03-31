@@ -14,6 +14,23 @@
   <link rel="stylesheet" href="/styles/user/signup.css"> <!-- Point to your CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
+    .auth-card {
+      border-radius: 16px;
+      border: 1px solid #e8e8e8;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      background: #fff;
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+    }
+
+    .auth-title {
+      letter-spacing: 0.14em;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      color: #111 !important;
+    }
+
     .password-wrapper {
       position: relative;
     }
@@ -24,30 +41,66 @@
     }
 
     .password-wrapper .form-control {
-      padding-right: 2.9rem;
+      padding-right: 3rem;
+    }
+
+    .password-toggle-btn {
+      height: 34px;
+      width: 34px;
+      border: 0;
+      background: transparent;
+      color: #6b7280;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+      padding: 0;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .password-toggle-btn:hover {
+      color: #111827;
+    }
+
+    .password-toggle-btn:focus,
+    .password-toggle-btn:active {
+      outline: none;
+      box-shadow: none !important;
+      background: transparent !important;
+      border-color: transparent !important;
     }
 
     .otp-inputs {
       display: flex;
       justify-content: center;
-      margin-top: 20px;
+      gap: 8px;
+      margin-top: 16px;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     .otp-box {
-      width: 40px;
-      height: 40px;
-      border: 2px solid #9135ED;
-      margin: 0 5px;
+      width: 42px;
+      min-width: 42px;
+      height: 46px;
+      border: 1px solid #d9d9d9;
       text-align: center;
-      font-size: 24px;
-      color: #9135ED;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #111;
       outline: none;
       cursor: text;
-      border-radius: 5px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: none;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
     }
 
     .otp-box:focus {
-      border: 2px solid #4CAF50;
+      border-color: #111;
+      box-shadow: none;
     }
 
     input:focus {
@@ -75,57 +128,109 @@
       box-shadow: none !important;
     }
 
+    .otp-panel {
+      margin-top: 1.25rem;
+      padding: 0.25rem 0 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .otp-action-btn {
+      border-radius: 10px !important;
+      font-weight: 600;
+      min-height: 44px;
+      border: 0;
+    }
+
+    .otp-secondary-btn {
+      background: #111;
+      color: #fff;
+      border: 1px solid #111;
+    }
+
+    .otp-secondary-btn:hover {
+      background: #2c2c2c;
+      color: #fff;
+    }
+
     .form-control.is-valid,
     .form-control.is-invalid {
       background-image: none;
       padding-right: 0.75rem;
+    }
+
+    #verify-otp.btn-success {
+      background: #9135ED;
+      color: #fff;
+      border: 1px solid #9135ED;
+    }
+
+    #verify-otp.btn-success:hover {
+      background: #7f22d8;
+      color: #fff;
+    }
+
+    @media(max-width: 415px) {
+      .otp-inputs {
+        gap: 6px;
+      }
+
+      .otp-box {
+        width: 36px;
+        min-width: 36px;
+        height: 42px;
+      }
+    }
+
+    @media(max-height: 900px) {
+      .auth-card {
+        max-height: none;
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="register-container">
-    <h2 style="color: #9135ED;" class="text-center">SUBTLETY</h2>
+    <div class="auth-card p-4 p-sm-4">
+    <h2 class="text-center auth-title">SUBTLETY</h2>
     <form id="signupForm" method="post">
       <div class="form-group">
         <label for="firstname"><small>Firstname</small></label>
-        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter firstname" value="<%= pendingSignup?.firstname || '' %>" required>
+        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter firstname" required>
         <small id="firstname-error" class="form-text text-danger" style="display: none;"></small>
-        <small id="firstname-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <div class="form-group">
         <label for="lastname"><small>Lastname <span class="text-muted">(optional)</span></small></label>
-        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname (optional)" value="<%= pendingSignup?.lastname || '' %>">
+        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname">
         <small id="lastname-error" class="form-text text-danger" style="display: none;"></small>
-        <small id="lastname-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <div class="form-group">
         <label for="email"><small>Email</small></label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" value="<%= pendingSignup?.email || '' %>" required>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
         <small id="email-error" class="form-text text-danger" style="display: none;"></small>
-        <small id="email-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <div class="form-group password-wrapper">
         <label for="password"><small>Password</small></label>
         <div class="input-group">
           <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
           <div class="input-group-append">
-            <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+            <button class="password-toggle-btn toggle-password" type="button"><i class="fa fa-eye"></i></button>
           </div>
         </div>
         <small id="password-error" class="form-text text-danger" style="display: none;"></small>
-        <small id="password-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <div class="form-group password-wrapper">
         <label for="confirmPassword"><small>Confirm Password</small></label>
         <div class="input-group">
           <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required>
           <div class="input-group-append">
-            <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fa fa-eye"></i></button>
+            <button class="password-toggle-btn toggle-password" type="button"><i class="fa fa-eye"></i></button>
           </div>
         </div>
         <small id="confirm-password-error" class="form-text text-danger" style="display: none;"></small>
-        <small id="confirm-password-success" class="form-text text-success" style="display: none;">Looks good!</small>
       </div>
       <button type="submit" class="btn btn-primary btn-block hello mt-4">Signup</button>
     </form>
@@ -139,7 +244,7 @@
     </div>
 
     <!-- OTP Section -->
-    <div id="otp-section" style="display: none;">
+    <div id="otp-section" class="otp-panel" style="display: none;">
       <h3 class="text-center mt-4">Verify Your Email</h3>
       <div class="otp-inputs text-center">
         <input type="text" class="otp-box" id="otp-box-1" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
@@ -150,9 +255,9 @@
         <input type="text" class="otp-box" id="otp-box-6" maxlength="1" pattern="\d*" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
       </div>
       <small id="timer-message" class="text-danger text-center pt-2 pb-2" style="display: none;">OTP valid for 00:60</small>
-      <button id="verify-otp" class="btn btn-success btn-block rounded-pill mt-2">Verify OTP</button>
+      <button id="verify-otp" class="btn btn-success btn-block otp-action-btn mt-3">Verify OTP</button>
       <!-- Resend OTP Button -->
-      <button id="resend-otp" class="btn btn-secondary btn-block rounded-pill mt-2" style="display: none;">Resend OTP</button>
+      <button id="resend-otp" class="btn btn-secondary btn-block otp-action-btn otp-secondary-btn mt-2" style="display: none;">Resend OTP</button>
 
       <!-- Loading Spinner for Resend OTP -->
       <div id="resend-loading" style="display: none;" class="text-center mt-2">
@@ -164,6 +269,7 @@
     </div>
 
     <p class="text-center mt-3"><small>Already have an account? </small><a href="/auth/login"><small>Login here</small></a></p>
+    </div>
   </div>
 
   <!-- Bootstrap JS and dependencies -->
@@ -185,7 +291,8 @@
       sessionStorage.setItem(SIGNUP_OTP_STORAGE_KEY, JSON.stringify({
         email,
         otpTimestamp,
-        expiresAt: Number(otpTimestamp) + OTP_VALIDITY_MS
+        expiresAt: Number(otpTimestamp) + OTP_VALIDITY_MS,
+        stage: 'otp'
       }));
     }
 
@@ -203,9 +310,118 @@
       sessionStorage.removeItem(SIGNUP_OTP_STORAGE_KEY);
     }
 
+    function shouldResumeSignupOtpFlow() {
+      const storedState = getOtpState();
+      if (!storedState || storedState.stage !== 'otp') {
+        return false;
+      }
+
+      const navEntry = performance.getEntriesByType('navigation')[0];
+      const navType = navEntry ? navEntry.type : '';
+      return navType === 'reload' || navType === 'back_forward';
+    }
+
     function showOtpSection() {
       document.getElementById('otp-section').style.display = 'block';
       document.getElementById('signupForm').style.display = 'none';
+    }
+
+    function showSignupForm() {
+      document.getElementById('otp-section').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+    }
+
+    function setFieldMessage(inputId, errorId, message = '', isValid = false) {
+      const input = document.getElementById(inputId);
+      const errorEl = document.getElementById(errorId);
+
+      input.classList.remove('is-valid', 'is-invalid');
+      errorEl.style.display = 'none';
+
+      if (!input.value.trim()) {
+        return true;
+      }
+
+      if (message) {
+        input.classList.add('is-invalid');
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        return false;
+      }
+
+      if (isValid) {
+        input.classList.add('is-valid');
+      }
+
+      return true;
+    }
+
+    function getFirstnameMessage(value) {
+      if (!value) return '';
+      if (/\s/.test(value)) return 'No spaces allowed';
+      if (/[^a-zA-Z\s]/.test(value) && /\d/.test(value)) return 'No numbers allowed';
+      if (/[^a-zA-Z]/.test(value)) return 'No special characters allowed';
+      if (value.length < 4) return 'Min 4 chars required';
+      return '';
+    }
+
+    function getLastnameMessage(value) {
+      const trimmed = value.trim();
+      if (!trimmed) return '';
+      if (/\d/.test(trimmed)) return 'No numbers allowed';
+      if (/\s/.test(trimmed)) return 'No spaces allowed';
+      if (/[^a-zA-Z]/.test(trimmed)) return 'No special characters allowed';
+      return '';
+    }
+
+    function getPasswordMessage(value) {
+      if (!value) return '';
+      if (/\s/.test(value)) return 'No spaces allowed';
+      if (value.length < 6) return 'Min 6 chars required';
+      if (!/[A-Z]/.test(value)) return 'One uppercase char required';
+      if (!/[a-z]/.test(value)) return 'One lowercase char required';
+      if (!/\d/.test(value)) return 'One number required';
+      if (!/[!@#$%^&*]/.test(value)) return 'One special char required: ! @ # $ % ^ & *';
+      if (/[^A-Za-z\d!@#$%^&*]/.test(value)) return 'Only !@#$%^&* allowed as special chars';
+      return '';
+    }
+
+    function validateFirstname() {
+      const value = document.getElementById('firstname').value.trim();
+      const message = getFirstnameMessage(value);
+      return setFieldMessage('firstname', 'firstname-error', message, !message && !!value);
+    }
+
+    function validateLastname() {
+      const rawValue = document.getElementById('lastname').value;
+      const trimmedValue = rawValue.trim();
+      if (!trimmedValue) {
+        document.getElementById('lastname').value = '';
+      }
+      const message = getLastnameMessage(trimmedValue);
+      return setFieldMessage('lastname', 'lastname-error', message, !message && !!trimmedValue);
+    }
+
+    function validateEmail() {
+      const value = document.getElementById('email').value.trim();
+      const message = value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Invalid email format' : '';
+      return setFieldMessage('email', 'email-error', message, !message && !!value);
+    }
+
+    function validatePassword() {
+      const value = document.getElementById('password').value;
+      const message = getPasswordMessage(value);
+      return setFieldMessage('password', 'password-error', message, !message && !!value);
+    }
+
+    function validateConfirmPassword() {
+      const value = document.getElementById('confirmPassword').value;
+      const password = document.getElementById('password').value;
+      let message = '';
+      if (value && value !== password) {
+        message = 'Passwords do not match';
+      }
+      return setFieldMessage('confirmPassword', 'confirm-password-error', message, !message && !!value);
     }
 
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
@@ -223,59 +439,12 @@
       const password = passwordEl.value;
       const confirmPassword = confirmPasswordEl.value;
 
-      // --- Client-side validation ---
       let isValid = true;
-
-      // Firstname: required, min 4 alpha chars
-      if (!/^[a-zA-Z]{4,}$/.test(firstname)) {
-        document.getElementById('firstname-error').textContent = 'At least 4 characters, no spaces, numbers, or special characters';
-        document.getElementById('firstname-error').style.display = 'block';
-        document.getElementById('firstname-success').style.display = 'none';
-        firstnameEl.classList.add('is-invalid');
-        firstnameEl.classList.remove('is-valid');
-        isValid = false;
-      }
-
-      // Lastname: optional, but if filled must be alpha only
-      if (lastname !== '' && !/^[a-zA-Z]+$/.test(lastname)) {
-        document.getElementById('lastname-error').textContent = 'No spaces, numbers, or special characters';
-        document.getElementById('lastname-error').style.display = 'block';
-        document.getElementById('lastname-success').style.display = 'none';
-        lastnameEl.classList.add('is-invalid');
-        lastnameEl.classList.remove('is-valid');
-        isValid = false;
-      }
-
-      // Email: required, valid format
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        document.getElementById('email-error').textContent = 'Invalid email format';
-        document.getElementById('email-error').style.display = 'block';
-        document.getElementById('email-success').style.display = 'none';
-        emailEl.classList.add('is-invalid');
-        emailEl.classList.remove('is-valid');
-        isValid = false;
-      }
-
-      // Password: required, strong
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
-      if (!passwordRegex.test(password)) {
-        document.getElementById('password-error').textContent = 'Min 6 chars, 1 upper & 1 lowercase, 1 num, no spaces, 1 special char - !@#$%^&*';
-        document.getElementById('password-error').style.display = 'block';
-        document.getElementById('password-success').style.display = 'none';
-        passwordEl.classList.add('is-invalid');
-        passwordEl.classList.remove('is-valid');
-        isValid = false;
-      }
-
-      // Confirm Password: must match
-      if (confirmPassword !== password) {
-        document.getElementById('confirm-password-error').textContent = 'Passwords do not match';
-        document.getElementById('confirm-password-error').style.display = 'block';
-        document.getElementById('confirm-password-success').style.display = 'none';
-        confirmPasswordEl.classList.add('is-invalid');
-        confirmPasswordEl.classList.remove('is-valid');
-        isValid = false;
-      }
+      isValid = validateFirstname() && isValid;
+      isValid = validateLastname() && isValid;
+      isValid = validateEmail() && isValid;
+      isValid = validatePassword() && isValid;
+      isValid = validateConfirmPassword() && isValid;
 
       if (!isValid) return; // Stop - don't send OTP if any field is invalid
 
@@ -437,7 +606,6 @@
 
       if (response.ok) {
         const result = await response.json();
-        SwalCustom.success('OTP Resent', result.message || 'OTP has been resent to your email.');
         otpBoxes.forEach(box => box.value = ''); // Clear OTP inputs
         otpBoxes[0].focus(); // Focus on the first box
         setOtpState(email, result.otpTimestamp);
@@ -470,72 +638,14 @@
       }
     }
 
-    // Firstname validation
-    document.getElementById('firstname').addEventListener('input', function() {
-      validateInput(
-        this,
-        /^[a-zA-Z]{4,}$/,
-        'firstname-error',
-        'firstname-success',
-        'At least 4 characters, no spaces, numbers, or special characters'
-      );
-    });
-
-    // Lastname validation (optional field)
-    document.getElementById('lastname').addEventListener('input', function() {
-      if (this.value.trim() === '') {
-        document.getElementById('lastname-error').style.display = 'none';
-        document.getElementById('lastname-success').style.display = 'none';
-        this.classList.remove('is-invalid', 'is-valid');
-        return;
-      }
-      validateInput(
-        this,
-        /^[a-zA-Z]+$/,
-        'lastname-error',
-        'lastname-success',
-        'No spaces, numbers, or special characters'
-      );
-    });
-
-    // Email validation
-    document.getElementById('email').addEventListener('input', function() {
-      validateInput(
-        this,
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        'email-error',
-        'email-success',
-        'Invalid email format'
-      );
-    });
-
-    // Password validation
+    document.getElementById('firstname').addEventListener('input', validateFirstname);
+    document.getElementById('lastname').addEventListener('input', validateLastname);
+    document.getElementById('email').addEventListener('input', validateEmail);
     document.getElementById('password').addEventListener('input', function() {
-      validateInput(
-        this,
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/,
-        'password-error',
-        'password-success',
-        'Min 6 chars, 1 upper & 1 lowercase, 1 num, no spaces, 1 special char - !@#$%^&*'
-      );
+      validatePassword();
+      if (document.getElementById('confirmPassword').value) validateConfirmPassword();
     });
-
-    // Confirm Password validation
-    document.getElementById('confirmPassword').addEventListener('input', function() {
-      const password = document.getElementById('password').value;
-      if (this.value !== password) {
-        document.getElementById('confirm-password-error').textContent = 'Passwords do not match';
-        document.getElementById('confirm-password-error').style.display = 'block';
-        document.getElementById('confirm-password-success').style.display = 'none';
-        this.classList.add('is-invalid');
-        this.classList.remove('is-valid');
-      } else {
-        document.getElementById('confirm-password-error').style.display = 'none';
-        document.getElementById('confirm-password-success').style.display = 'block';
-        this.classList.remove('is-invalid');
-        this.classList.add('is-valid');
-      }
-    });
+    document.getElementById('confirmPassword').addEventListener('input', validateConfirmPassword);
 
     // Toggle password visibility
     document.querySelectorAll('.toggle-password').forEach(button => {
@@ -549,22 +659,22 @@
     });
 
     window.addEventListener('pageshow', () => {
-      const pendingSignup = <%- JSON.stringify(pendingSignup || null) %>;
-      const storedState = getOtpState();
-      const activeState = storedState || (pendingSignup ? {
-        email: pendingSignup.email,
-        otpTimestamp: pendingSignup.otpTimestamp,
-        expiresAt: Number(pendingSignup.otpTimestamp) + OTP_VALIDITY_MS
-      } : null);
-
-      if (!activeState || !activeState.email || !activeState.otpTimestamp) {
+      if (!shouldResumeSignupOtpFlow()) {
         clearOtpState();
+        showSignupForm();
+        return;
+      }
+      const storedState = getOtpState();
+
+      if (!storedState || !storedState.email || !storedState.otpTimestamp) {
+        clearOtpState();
+        showSignupForm();
         return;
       }
 
-      setOtpState(activeState.email, activeState.otpTimestamp);
+      setOtpState(storedState.email, storedState.otpTimestamp);
       showOtpSection();
-      startOtpTimer(activeState.otpTimestamp);
+      startOtpTimer(storedState.otpTimestamp);
     });
   </script>
 </body>

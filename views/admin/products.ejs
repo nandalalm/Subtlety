@@ -125,7 +125,7 @@
                                     if (btn.classList.contains('toggle-status-btn')) {
                                         btn.textContent = newIsListed ? 'Unlist' : 'Relist';
                                         btn.setAttribute('data-status', newIsListed.toString());
-                                        btn.className = `btn btn-sm rounded-pill table-action-btn ${newIsListed ? 'table-btn-unlist' : 'table-btn-relist'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
+                                        btn.className = `btn btn-sm toggle-status-btn rounded-pill table-action-btn ${newIsListed ? 'table-btn-unlist' : 'table-btn-relist'} ${btn.classList.contains('btn-block') ? 'btn-block' : 'px-3'}`;
                                     }
                                 });
 

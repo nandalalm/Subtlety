@@ -5,7 +5,6 @@ import categoryService from "../services/categoryService.js";
 import multer from "multer";
 import { categoryStorage } from "../config/cloudinary.js";
 
-// Initialize multer for categories using Cloudinary storage
 const categoryUpload = multer({
   storage: categoryStorage,
   fileFilter: (req, file, cb) => {
@@ -75,7 +74,7 @@ async function getEditCategoryPage(req, res, next) {
       backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -104,7 +103,7 @@ async function addCategory(req, res, next) {
     });
     return res.status(HTTP_STATUS.OK).json({ status: true, message: MESSAGES.CATEGORY.ADDED });
   } catch (error) {
-    if (error.statusCode === 400) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ status: false, message: error.message });
     }
     next(error);
@@ -129,7 +128,7 @@ async function editCategory(req, res, next) {
     await categoryService.updateCategory(id, updates);
     res.status(HTTP_STATUS.OK).json({ status: true, message: MESSAGES.CATEGORY.UPDATED });
   } catch (error) {
-    if (error.statusCode === 400 || error.statusCode === 404) {
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
       return res.status(error.statusCode).json({ status: false, message: error.message });
     }
     next(error);
@@ -146,7 +145,7 @@ async function toggleCategoryStatus(req, res, next) {
       category: updatedCategory
     });
   } catch (error) {
-    if (error.statusCode === 404) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
+    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }

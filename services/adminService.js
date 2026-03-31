@@ -1,8 +1,5 @@
 import userRepository from "../repositories/userRepository.js";
 import orderRepository from "../repositories/orderRepository.js";
-import productRepository from "../repositories/productRepository.js";
-import categoryRepository from "../repositories/categoryRepository.js";
-import offerRepository from "../repositories/offerRepository.js";
 import reviewRepository from "../repositories/reviewRepository.js";
 
 const adminService = {

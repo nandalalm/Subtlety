@@ -117,16 +117,34 @@
       color: #ff0000;
     }
 
+    .product-updated {
+      background-color: #eef2ff;
+      border-color: #c7d2fe;
+      color: #3730a3;
+    }
+
+    .checkout-item-issue {
+      font-size: 0.75rem;
+      margin-top: 4px;
+      display: block;
+    }
+
     .coupon-flex {
       display: flex;
       align-items: stretch;
       gap: 10px;
     }
 
-    input#couponCode {
+    .coupon-input-shell {
+      position: relative;
       flex: 1;
       min-width: 150px;
+    }
+
+    input#couponCode {
+      width: 100%;
       padding: 10px 15px;
+      padding-right: 40px;
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 0.9rem;
@@ -136,6 +154,30 @@
     input#couponCode:focus {
       border-color: #9135ED;
       outline: none;
+    }
+
+    .coupon-clear-btn {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      border: none;
+      border-radius: 999px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #f3f4f6;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .coupon-clear-btn:hover {
+      background: #e5e7eb;
+      color: #111827;
     }
 
     .apply-btn {
@@ -193,6 +235,28 @@
         background: #fee2e2;
         text-decoration: none;
         color: #dc2626;
+    }
+
+    .coupon-badge-meta {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: #15803d;
+    }
+
+    #couponMessage.text-success {
+      color: #15803d !important;
+    }
+
+    #couponMessage.text-danger {
+      color: #dc2626 !important;
+    }
+
+    #couponMessage.text-info {
+      color: #2563eb !important;
+    }
+
+    #couponMessage.text-warning {
+      color: #b45309 !important;
     }
   </style>
 </head>
@@ -265,10 +329,10 @@
               hasOutOfStockProduct = false %> <% if(cart) { %>
             <div id="cartData" data-cart="<%= JSON.stringify(cart) %>"></div>
             <% cart.products.forEach(cartItem => { %> 
-            <% if (cartItem.productId.isListed && cartItem.productId.stock > 0) { %>
+            <% if (cartItem.productId.isListed && cartItem.productId.category && cartItem.productId.category.isListed !== false && cartItem.productId.stock > 0) { %>
             <% const originalPrice = cartItem.productId.price %> 
             <% subtotal += originalPrice * cartItem.quantity %>
-            <div class="product-summary">
+            <div class="product-summary" data-product-id="<%= cartItem.productId._id %>">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
@@ -278,9 +342,10 @@
                 <% } else { %>
                   <span class="font-weight-bold">₹ <%= Math.floor(cartItem.productId.price) %></span>
                 <% } %>
+                <small class="checkout-item-issue text-danger"></small>
               </div>
               <div class="quantity-details">
-                <span>x <%= cartItem.quantity %></span>
+                <span class="checkout-quantity">x <%= cartItem.quantity %></span>
               </div>
               <div class="product-price">
                 <span>₹ <%= Math.floor(originalPrice * cartItem.quantity) %></span>
@@ -288,16 +353,25 @@
             </div>
             <% } else if (!cartItem.productId.isListed) { %> 
             <% hasUnlistedProduct = true %>
-            <div class="product-summary product-unavailable">
+            <div class="product-summary product-unavailable" data-product-id="<%= cartItem.productId._id %>">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
                 <span>Product no longer available</span>
               </div>
             </div>
+            <% } else if (!cartItem.productId.category || cartItem.productId.category.isListed === false) { %> 
+            <% hasUnlistedProduct = true %>
+            <div class="product-summary product-unavailable" data-product-id="<%= cartItem.productId._id %>">
+              <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
+              <div class="product-details">
+                <strong><%= cartItem.productId.name %></strong><br />
+                <span>Category no longer available</span>
+              </div>
+            </div>
             <% } else if (cartItem.productId.stock < 1) { %> 
             <% hasOutOfStockProduct = true %>
-            <div class="product-summary product-unavailable">
+            <div class="product-summary product-unavailable" data-product-id="<%= cartItem.productId._id %>">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
@@ -349,7 +423,12 @@
               <div class="coupon-container mt-2">
                 <!-- Coupon Input Area -->
                 <div id="couponInputContainer" class="coupon-flex">
-                  <input type="text" id="couponCode" placeholder="Enter coupon code" />
+                  <div class="coupon-input-shell">
+                    <input type="text" id="couponCode" placeholder="Enter coupon code" />
+                    <button type="button" id="clearCouponInput" class="coupon-clear-btn" aria-label="Clear coupon input">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
                   <button id="applyCouponButton" class="apply-btn">Apply</button>
                 </div>
 
@@ -358,7 +437,10 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="coupon-info">
                             <i class="fas fa-ticket-alt"></i>
-                            <span>Applied: <span id="appliedCouponDisplay" class="text-uppercase font-weight-bold"></span></span>
+                            <div>
+                              <span>Applied: <span id="appliedCouponDisplay" class="text-uppercase font-weight-bold"></span></span>
+                              <div id="couponBadgeMeta" class="coupon-badge-meta"></div>
+                            </div>
                         </div>
                         <span id="removeCouponButton" class="remove-coupon-link">
                             <i class="fas fa-times-circle mr-1"></i>Remove
@@ -574,15 +656,172 @@
       let appliedCouponCode = ""; // Ensure this is defined and used correctly
 
       const couponCodeInput = document.getElementById("couponCode");
+      const clearCouponInputButton = document.getElementById("clearCouponInput");
       const applyCouponButton = document.getElementById("applyCouponButton");
       const discountAmountDisplay = document.getElementById("discountAmount");
       const couponMessage = document.getElementById("couponMessage");
       const subtotalElement = document.getElementById("subtotal");
       const removeCouponButton = document.getElementById("removeCouponButton");
+      const appliedCouponBadge = document.getElementById("appliedCouponBadge");
+      const couponInputContainer = document.getElementById("couponInputContainer");
+      const appliedCouponDisplay = document.getElementById("appliedCouponDisplay");
+      const couponBadgeMeta = document.getElementById("couponBadgeMeta");
 
       if (!subtotalElement) {
         console.error("Subtotal element not found!");
         return;
+      }
+
+      function formatMoney(amount) {
+        return `Rs. ${Math.floor(Number(amount) || 0)}`;
+      }
+
+      function setCouponMessage(text = "", tone = "") {
+        couponMessage.textContent = text;
+        couponMessage.classList.remove("text-success", "text-danger", "text-info", "text-warning");
+        if (tone) couponMessage.classList.add(tone);
+      }
+
+      function syncCouponClearButton() {
+        if (!clearCouponInputButton) return;
+        const hasValue = couponCodeInput.value.trim().length > 0;
+        const hasMessage = couponMessage.textContent.trim().length > 0;
+        clearCouponInputButton.style.display = hasValue || hasMessage ? "inline-flex" : "none";
+      }
+
+      function getCouponMetaText(couponState) {
+        if (!couponState || !couponState.isApplied) return "";
+        if (couponState.discountType === "percentage") {
+          const maxText = couponState.maxDiscount > 0 ? ` up to ${formatMoney(couponState.maxDiscount)}` : "";
+          return `${Math.floor(couponState.discountAmount)}% off${maxText}. You save ${formatMoney(couponState.discount)} now.`;
+        }
+        if (couponState.discountType === "flat") {
+          return `${formatMoney(couponState.discountAmount)} off. You save ${formatMoney(couponState.discount)} now.`;
+        }
+        return `You save ${formatMoney(couponState.discount)} now.`;
+      }
+
+      function updatePricingSummary(totals) {
+        if (!totals) return;
+        document.getElementById('subtotal').innerText = formatMoney(totals.subtotal || 0);
+        document.getElementById('offerDiscountDisplay').innerText = (totals.offerDiscount || 0) > 0 ? `- ${formatMoney(totals.offerDiscount)}` : '0';
+        document.getElementById('couponDiscountDisplay').innerText = (totals.couponDiscount || 0) > 0 ? `- ${formatMoney(totals.couponDiscount)}` : '0';
+        document.getElementById('totalAmount').innerText = formatMoney(totals.totalAmount || 0);
+
+        const wrapper = document.getElementById('deliveryChargeDisplayWrapper');
+        const message = document.getElementById('deliveryChargeMessage');
+        if ((totals.deliveryCharge || 0) === 0) {
+          wrapper.innerHTML = `<span class="text-muted" style="text-decoration: line-through;">Rs. 80</span> <span class="text-success font-weight-bold ml-1">Free</span>`;
+          message.innerText = "Congrats! You've unlocked FREE delivery";
+          message.className = "text-success mt-1";
+        } else {
+          wrapper.innerHTML = `Rs. <span id="deliveryChargeDisplay">${Math.floor(totals.deliveryCharge)}</span>`;
+          message.innerText = "Free delivery on orders above Rs.600";
+          message.className = "text-muted mt-1";
+        }
+      }
+
+      function renderCouponState(couponState, fallbackMessage = "", fallbackTone = "text-danger") {
+        if (!couponState) {
+          if (fallbackMessage) setCouponMessage(fallbackMessage, fallbackTone);
+          syncCouponClearButton();
+          return;
+        }
+
+        updatePricingSummary(couponState.totals);
+
+        if (couponState.isApplied) {
+          appliedCouponCode = couponState.code || "";
+          couponInputContainer.style.display = 'none';
+          appliedCouponBadge.style.display = 'block';
+          appliedCouponDisplay.textContent = couponState.code || "";
+          couponBadgeMeta.textContent = getCouponMetaText(couponState);
+        } else {
+          appliedCouponCode = "";
+          couponInputContainer.style.display = 'flex';
+          appliedCouponBadge.style.display = 'none';
+          appliedCouponDisplay.textContent = "";
+          couponBadgeMeta.textContent = "";
+          couponCodeInput.value = couponState.code || couponCodeInput.value;
+        }
+
+        const tone = couponState.status === "applied" ? "text-success" : couponState.status === "changed" ? "text-warning" : "text-danger";
+        setCouponMessage(couponState.message || fallbackMessage, tone);
+        syncCouponClearButton();
+      }
+
+      function updateCheckoutIssueUI(errors, cartState) {
+        if (cartState) {
+          const cartDataEl = document.getElementById('cartData');
+          if (cartDataEl) {
+            cartDataEl.setAttribute('data-cart', JSON.stringify({ products: cartState.productsWithPrices || [] }));
+          }
+          appliedCouponCode = "";
+          couponInputContainer.style.display = 'flex';
+          appliedCouponBadge.style.display = 'none';
+          couponCodeInput.value = "";
+          appliedCouponDisplay.textContent = "";
+          couponBadgeMeta.textContent = "";
+          setCouponMessage("");
+          updatePricingSummary({
+            subtotal: cartState.subtotal || 0,
+            offerDiscount: cartState.offerDiscount || 0,
+            couponDiscount: 0,
+            deliveryCharge: cartState.deliveryCharge || 0,
+            totalAmount: cartState.totalAmount || 0
+          });
+
+          if (Array.isArray(cartState.productsWithPrices)) {
+            cartState.productsWithPrices.forEach((item) => {
+              const row = document.querySelector(`.product-summary[data-product-id="${item.productId._id}"]`);
+              if (!row) return;
+
+              const details = row.querySelector('.product-details');
+              const priceBox = row.querySelector('.product-price');
+              const quantityLabel = row.querySelector('.checkout-quantity');
+              if (quantityLabel) quantityLabel.textContent = `x ${item.quantity}`;
+
+              if (details) {
+                const spans = details.querySelectorAll('span');
+                const currentPrice = Math.floor(item.discountedPrice ?? item.productId.currentDiscountedPrice ?? item.productId.price);
+                if (item.productId.bestOffer && spans[0] && spans[1]) {
+                  spans[0].textContent = `₹ ${Math.floor(item.productId.price)}`;
+                  spans[1].textContent = `₹ ${currentPrice}`;
+                } else if (spans[0]) {
+                  spans[0].textContent = `₹ ${currentPrice}`;
+                }
+              }
+
+              if (priceBox) {
+                const currentPrice = Math.floor(item.discountedPrice ?? item.productId.currentDiscountedPrice ?? item.productId.price);
+                priceBox.innerHTML = `<span>₹ ${Math.floor(currentPrice * item.quantity)}</span>`;
+              }
+            });
+          }
+        }
+
+        document.querySelectorAll('.product-summary').forEach((row) => {
+          row.classList.remove('product-unavailable', 'product-updated');
+          const issue = row.querySelector('.checkout-item-issue');
+          if (issue) issue.textContent = '';
+        });
+
+        if (!Array.isArray(errors)) {
+          syncCouponClearButton();
+          return;
+        }
+
+        errors.forEach((error) => {
+          const row = document.querySelector(`.product-summary[data-product-id="${error.productId}"]`);
+          if (!row) return;
+
+          const issue = row.querySelector('.checkout-item-issue');
+          if (issue) issue.textContent = error.message || '';
+
+          if (error.status === 'price-changed') row.classList.add('product-updated');
+          else row.classList.add('product-unavailable');
+        });
+        syncCouponClearButton();
       }
 
       applyCouponButton.addEventListener("click", async () => {
@@ -603,42 +842,26 @@
 
           if (!response) return;
           if (response.ok && data.success) {
-            appliedCouponCode = couponCode;
-            
-            // Update UI with truncated values
-            document.getElementById('subtotal').innerText = `₹ ${Math.floor(data.subtotal)}`;
-            document.getElementById('offerDiscountDisplay').innerText = data.offerDiscount > 0 ? `- ₹ ${Math.floor(data.offerDiscount)}` : '0';
-            document.getElementById('couponDiscountDisplay').innerText = data.couponDiscount > 0 ? `- ₹ ${Math.floor(data.couponDiscount)}` : '0';
-            
-            // Update Delivery Charge UI
-            const wrapper = document.getElementById('deliveryChargeDisplayWrapper');
-            const message = document.getElementById('deliveryChargeMessage');
-            if (data.deliveryCharge === 0) {
-              wrapper.innerHTML = `<span class="text-muted" style="text-decoration: line-through;">₹ 80</span> <span class="text-success font-weight-bold ml-1">Free</span>`;
-              message.innerText = "Congrats! You've unlocked FREE delivery";
-              message.className = "text-success mt-1";
-            } else {
-              wrapper.innerHTML = `₹ <span id="deliveryChargeDisplay">${Math.floor(data.deliveryCharge)}</span>`;
-              message.innerText = "Free delivery on orders above ₹600";
-              message.className = "text-muted mt-1";
-            }
-
-            document.getElementById("totalAmount").innerText = `₹ ${Math.floor(data.totalAmount)}`;
-            
-            couponMessage.textContent = "Coupon applied successfully!";
-            couponMessage.style.color = "green";
-            
-            // Hide Input area, show Badge
-            document.getElementById('couponInputContainer').style.display = 'none';
-            document.getElementById('appliedCouponDisplay').textContent = couponCode;
-            document.getElementById('appliedCouponBadge').style.display = 'block';
+            renderCouponState(data.couponState || {
+              code: couponCode,
+              status: "applied",
+              isApplied: true,
+              discount: data.couponDiscount,
+              totals: {
+                subtotal: data.subtotal,
+                offerDiscount: data.offerDiscount,
+                couponDiscount: data.couponDiscount,
+                deliveryCharge: data.deliveryCharge,
+                totalAmount: data.totalAmount
+              }
+            }, "Coupon applied successfully!", "text-success");
           } else {
-            couponMessage.textContent = data.message;
-            couponMessage.style.color = "red";
+            updateCheckoutIssueUI(data.errors, data.cartState);
+            renderCouponState(data.couponState, data.message, "text-danger");
           }
         } catch (error) {
-          couponMessage.textContent = "Error applying coupon. Please try again.";
-          couponMessage.style.color = "red";
+          setCouponMessage("Error applying coupon. Please try again.", "text-danger");
+          syncCouponClearButton();
         }
       });
 
@@ -649,8 +872,8 @@
         document.getElementById('couponDiscountDisplay').innerText = `0`;
         
         // Recalculate based on current subtotal and delivery
-        const subtotalText = document.getElementById('subtotal').innerText.replace("₹ ", "").trim();
-        const offerDiscountText = document.getElementById('offerDiscountDisplay').innerText.replace("- ₹ ", "").trim();
+        const subtotalText = document.getElementById('subtotal').innerText.replace('Rs. ', '').trim();
+        const offerDiscountText = document.getElementById('offerDiscountDisplay').innerText.replace('- Rs. ', '').trim();
         
         const subtotal = Math.floor(parseFloat(subtotalText));
         const offerDiscount = offerDiscountText === '0' ? 0 : Math.floor(parseFloat(offerDiscountText));
@@ -660,15 +883,35 @@
         const delivery = deliveryChargeDisplay ? Math.floor(parseFloat(deliveryChargeDisplay.innerText)) : 0;
         
         const originalTotal = subtotal - offerDiscount + delivery;
-        document.getElementById("totalAmount").innerText = `₹ ${Math.floor(originalTotal)}`;
+        document.getElementById("totalAmount").innerText = formatMoney(originalTotal);
 
         // Show Input area, hide Badge
-        document.getElementById('couponInputContainer').style.display = 'flex';
-        document.getElementById('appliedCouponBadge').style.display = 'none';
+        couponInputContainer.style.display = 'flex';
+        appliedCouponBadge.style.display = 'none';
         couponCodeInput.value = "";
-        couponMessage.textContent = "Coupon removed.";
-        couponMessage.style.color = "blue";
+        appliedCouponDisplay.textContent = "";
+        couponBadgeMeta.textContent = "";
+        setCouponMessage("Coupon removed.", "text-info");
+        syncCouponClearButton();
       });
+
+      couponCodeInput.addEventListener("input", () => {
+        if (couponMessage.classList.contains("text-danger")) {
+          setCouponMessage("");
+        }
+        syncCouponClearButton();
+      });
+
+      if (clearCouponInputButton) {
+        clearCouponInputButton.addEventListener("click", () => {
+          couponCodeInput.value = "";
+          setCouponMessage("");
+          syncCouponClearButton();
+          couponCodeInput.focus();
+        });
+      }
+
+      syncCouponClearButton();
 
       async function placeOrder() {
         const fullName = document.getElementById("fullName").value;
@@ -746,7 +989,7 @@
                 window.location.href = `/orders/success?orderId=${orderId}`;
               });
             } else if (paymentMethod.value === 'Razorpay') {
-              const razorpayResponse = await delayedFetch(
+              const razorpayResponse = await authAwareFetch(
                 "/orders/razorpay/create",
                 {
                   method: "POST",
@@ -756,10 +999,6 @@
                   body: JSON.stringify({
                     orderId
                   }),
-                },
-                {
-                  title: "Preparing payment...",
-                  text: "Please wait while we connect to Razorpay."
                 }
               );
 
@@ -775,7 +1014,7 @@
                   order_id: razorpayData.id,
                   handler: async function(response) {
                     try {
-                      const paymentConfirmationResponse = await delayedFetch(
+                      const paymentConfirmationResponse = await authAwareFetch(
                         "/orders/razorpay/confirm",
                         {
                           method: "POST",
@@ -786,10 +1025,6 @@
                             orderId,
                             paymentResponse: response,
                           }),
-                        },
-                        {
-                          title: "Confirming payment...",
-                          text: "Please wait while we verify your Razorpay payment."
                         }
                       );
 
@@ -849,6 +1084,8 @@
             }
           } else {
             const errorData = await orderResponse.json();
+            updateCheckoutIssueUI(errorData.errors, errorData.cartState);
+            renderCouponState(errorData.couponState, errorData.message, "text-danger");
             SwalCustom.error("Order Failed", errorData.message || "Error creating order.");
             placeOrderButton.disabled = false;
           }
@@ -877,3 +1114,4 @@
 </body>
 
 </html>
+

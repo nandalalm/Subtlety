@@ -7,16 +7,18 @@ body {
     align-items: center;
     min-height: 100vh; /* Ensure body takes full viewport height */
     margin: 0;
+    padding: 32px 16px;
 }
 
 .login-container {
     max-width: 360px;
     width: 100%;
-    padding: 20px;
-    background-color: #f9f9f9; /* Light gray background for the container */
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Slightly darker shadow for contrast */
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
     box-sizing: border-box; /* Include padding and border in element’s total width and height */
+    margin: auto 0;
 }
 
 /* Hide default validation icons for valid inputs */
@@ -122,4 +124,16 @@ body {
 }
 p{
     margin: 0;
+}
+
+@media(max-width: 480px) {
+    body {
+        padding: 20px 12px;
+    }
+}
+
+@media(max-height: 760px) {
+    body {
+        align-items: flex-start;
+    }
 }

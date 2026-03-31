@@ -169,7 +169,7 @@
                   <div class="info-label">Product</div>
                   <div class="info-value mb-2"><%= review.productId?.name || 'Deleted Product' %></div>
                   <div class="info-label">Current Price</div>
-                  <div class="info-value mb-0"><%= review.productId?.price ? `Rs. ${Number(review.productId.price).toFixed(2)}` : 'N/A' %></div>
+                  <div class="info-value mb-0"><%= review.productId?.price ? `Rs. ${Math.floor(Number(review.productId.price) || 0)}` : 'N/A' %></div>
                 </div>
               </div>
             </div>
@@ -188,3 +188,4 @@
   <%- include('../partials/Admin/adminScripts') %>
 </body>
 </html>
+
