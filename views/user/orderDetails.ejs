@@ -176,8 +176,13 @@
                       <span class="badge badge-<%= isPending ? 'warning' : (isApproved ? 'success' : 'secondary') %>"><%= rStatus.toUpperCase() %></span>
                     </div>
                     <p class="return-message <%= isPending ? 'return-message-pending' : (isApproved ? 'return-message-approved' : 'return-message-rejected') %>">
-                      <% if (isPending) { %><i class="fas fa-clock mr-1"></i> Your request is being processed<% } else if (isApproved) { %><i class="fas fa-check-circle mr-1"></i> Your request has been approved<% } else if (isRejected) { %><i class="fas fa-times-circle mr-1"></i> Sorry, your request has been rejected (Not a valid reason for return, Contact us for further Queries)<% } %>
+                      <% if (isPending) { %><i class="fas fa-clock mr-1"></i> Your request is being processed<% } else if (isApproved) { %><i class="fas fa-check-circle mr-1"></i> Your request has been approved<% } else if (isRejected) { %><i class="fas fa-times-circle mr-1"></i> Sorry, your request has been rejected<% } %>
                     </p>
+                    <% if (isRejected && returnRequest.rejectionReason) { %>
+                      <p class="return-message return-message-rejected mt-2 mb-0">
+                        <strong>Reason:</strong> <%= returnRequest.rejectionReason %>
+                      </p>
+                    <% } %>
                   </div>
                 <% } %>
               </div>
@@ -204,7 +209,7 @@
     </div>
   </section>
   <div class="modal fade mt-5 pt-5" id="returnReasonModal" tabindex="-1" aria-labelledby="returnReasonModalLabel" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="returnReasonModalLabel">Return Reason</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><textarea id="returnReason" class="form-control modal-clean-input" rows="3" placeholder="Please enter your reason for return..."></textarea><div class="validation-message" id="returnReasonError"></div></div><div class="modal-footer"><button type="button" class="btn action-btn action-btn-light" data-dismiss="modal">Close</button><button type="button" id="submitReturn" class="btn action-btn action-btn-primary" disabled>Return Product</button></div></div></div>
+    <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="returnReasonModalLabel">Return Reason</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><textarea id="returnReason" class="form-control modal-clean-input" rows="3" maxlength="200" placeholder="Please enter your reason for return..."></textarea><div class="validation-message" id="returnReasonError"></div></div><div class="modal-footer"><button type="button" class="btn action-btn action-btn-light" data-dismiss="modal">Close</button><button type="button" id="submitReturn" class="btn action-btn action-btn-primary" disabled>Return Product</button></div></div></div>
   </div>
   <div class="modal fade mt-5 pt-5" id="rateReviewModal" tabindex="-1" aria-labelledby="rateReviewModalLabel" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="rateReviewModalLabel">Write Review - <span id="reviewProductName"></span></h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><form id="rateReviewForm"><div class="modal-body"><input type="hidden" id="reviewProductId" name="productId"><input type="hidden" id="reviewOrderId" name="orderId"><div class="form-group text-center"><label class="d-block review-rating-label">Your Rating (Required)</label><div class="rating-stars" style="font-size: 2rem; color: #ddd; cursor: pointer;"><i class="far fa-star star-btn" data-value="1"></i><i class="far fa-star star-btn" data-value="2"></i><i class="far fa-star star-btn" data-value="3"></i><i class="far fa-star star-btn" data-value="4"></i><i class="far fa-star star-btn" data-value="5"></i></div><input type="hidden" id="selectedRating" name="rating" value="0"><div class="validation-message text-center" id="reviewRatingError"></div></div><div class="form-group"><label>Comment (Optional)</label><textarea class="form-control modal-clean-input" id="reviewComment" name="comment" rows="3" maxlength="500" placeholder="Tell us what you like or dislike..."></textarea><div class="validation-message" id="reviewCommentError"></div></div></div><div class="modal-footer"><button type="button" class="btn action-btn action-btn-light" data-dismiss="modal">Close</button><button type="submit" class="btn action-btn action-btn-primary" id="submitReviewBtn" disabled>Submit Review</button></div></form></div></div>
@@ -266,10 +271,14 @@
       const submitBtn = document.getElementById('submitReturn');
       if (!field || !error || !submitBtn) return false;
       const trimmedValue = field.value.trim();
-      const isInvalid = field.value.length > 0 && trimmedValue.length === 0;
-      const canSubmit = trimmedValue.length > 0;
+      let message = '';
+      if (field.value.length > 0 && trimmedValue.length === 0) message = 'Reason cannot contain only spaces.';
+      else if (trimmedValue.length > 0 && trimmedValue.length < 5) message = 'Reason must be at least 5 characters.';
+      else if (trimmedValue.length > 200) message = 'Reason must be 200 characters or fewer.';
+      const canSubmit = trimmedValue.length >= 5 && trimmedValue.length <= 200;
+      const isInvalid = Boolean(message);
       field.classList.toggle('is-invalid', isInvalid);
-      error.textContent = isInvalid ? 'Reason cannot contain only spaces.' : '';
+      error.textContent = message;
       submitBtn.disabled = !canSubmit || isInvalid;
       return canSubmit && !isInvalid;
     }
@@ -414,11 +423,16 @@
             const response = await delayedFetch(`/orders/${orderId}/cancel/${productId}`, { method: 'POST' }, { title: 'Cancelling product...', text: 'Please wait while we update your order.' });
             if (!response) return;
             const data = await response.json();
-            if (!response.ok || !data.success) { await SwalCustom.error('Error!', data.message || 'There was a problem cancelling the product.'); return; }
+            if (!response.ok || !data.success) {
+              await SwalCustom.error('Error!', data.message || 'There was a problem cancelling the product.');
+              await refreshOrderDetailsContent();
+              return;
+            }
             await refreshOrderDetailsContent();
             await SwalCustom.success('Cancelled!', data.message);
           } catch (error) {
             await SwalCustom.error('Error!', 'There was a problem cancelling the product.');
+            await refreshOrderDetailsContent();
           }
         });
       });

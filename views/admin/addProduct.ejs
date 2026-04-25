@@ -193,7 +193,7 @@
                                             <h5 class="form-section-title">Basic Information</h5>
                                             <div class="form-group mb-4">
                                                 <label class="font-weight-600">Product Name</label>
-                                                <input type="text" name="name" class="form-control" placeholder="Enter product name" minlength="3">
+                                                <input type="text" name="name" class="form-control" placeholder="Enter product name" minlength="3" maxlength="100">
                                                 <small id="name-error" class="field-feedback"></small>
                                             </div>
                                             <div class="form-group mb-4">
@@ -231,7 +231,7 @@
                                             <h5 class="form-section-title">Description</h5>
                                             <div class="form-group mb-0">
                                                 <label class="font-weight-600">Description</label>
-                                                <textarea name="description" class="form-control" rows="8" placeholder="Enter product description" minlength="10"></textarea>
+                                                <textarea name="description" class="form-control" rows="8" placeholder="Enter product description" minlength="10" maxlength="500"></textarea>
                                                 <small id="description-error" class="field-feedback"></small>
                                             </div>
                                             </div>
@@ -440,6 +440,8 @@
                     const customMessage = config.customValidate(val);
                     if (customMessage) {
                         setFieldMessage(errorElement, 'is-error', customMessage);
+                    } else if (config.maxLength && val.length > config.maxLength) {
+                        setFieldMessage(errorElement, 'is-error', config.maxMessage);
                     } else if (config.minLength && val.length < config.minLength) {
                         setFieldMessage(errorElement, 'is-error', config.invalidMessage);
                     } else {
@@ -447,6 +449,8 @@
                     }
                 } else if (config.regex && !config.regex.test(val)) {
                     setFieldMessage(errorElement, 'is-error', config.invalidMessage);
+                } else if (config.maxLength && val.length > config.maxLength) {
+                    setFieldMessage(errorElement, 'is-error', config.maxMessage);
                 } else if (config.minLength && val.length < config.minLength) {
                     setFieldMessage(errorElement, 'is-error', config.invalidMessage);
                 } else {
@@ -523,14 +527,18 @@
                 errorId: 'name-error',
                 regex: textRegex,
                 minLength: 3,
+                maxLength: 100,
                 requiredMessage: 'Non-empty product name is required.',
-                invalidMessage: 'No special characters allowed. Use at least 3 letters or numbers.'
+                invalidMessage: 'No special characters allowed. Use at least 3 letters or numbers.',
+                maxMessage: 'Product name cannot exceed 100 characters.'
             };
             const descriptionConfig = {
                 errorId: 'description-error',
                 minLength: 10,
+                maxLength: 500,
                 requiredMessage: 'Non-empty description is required.',
                 invalidMessage: 'Use at least 10 characters.',
+                maxMessage: 'Description cannot exceed 500 characters.',
                 customValidate: (value) => /[A-Za-z]/.test(value)
                     ? ''
                     : 'Description must include letters and cannot be only spaces, numbers, or special characters.'

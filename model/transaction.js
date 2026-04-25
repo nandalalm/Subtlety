@@ -7,7 +7,7 @@ const transactionSchema = new mongoose.Schema({
   type: { type: String, enum: ["credit", "debit"], required: true },
   description: { type: String, required: true },
   date: { type: Date, default: Date.now },
-  orderId: { type: String }, // Storing unique orderId (the human-readable one) for clarity
+  orderId: { type: String },
 });
 
 const Transaction = mongoose.model("Transaction", transactionSchema);

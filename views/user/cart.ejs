@@ -58,6 +58,44 @@
       position: relative;
     }
 
+    .product-card-unavailable {
+      background: #fff3f3;
+      border-color: #f5c2c7;
+    }
+
+    .product-card-stock-issue {
+      background: #fff7ed;
+      border-color: #fed7aa;
+    }
+
+    .product-card-unavailable .product-info,
+    .product-card-stock-issue .product-info,
+    .product-card-unavailable .quantity-group,
+    .product-card-stock-issue .quantity-group {
+      opacity: 0.58;
+    }
+
+    .product-card-unavailable .quantity-group,
+    .product-card-stock-issue .quantity-group {
+      background: #f1f3f5;
+      border-color: #d7dce1;
+      pointer-events: none;
+    }
+
+    .product-card-unavailable .quantity-btn,
+    .product-card-stock-issue .quantity-btn,
+    .product-card-unavailable .quantity-display,
+    .product-card-stock-issue .quantity-display {
+      color: #8a94a1;
+      cursor: not-allowed;
+    }
+
+    .product-card-unavailable .delete-icon,
+    .product-card-stock-issue .delete-icon {
+      opacity: 1;
+      box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.08);
+    }
+
     .product-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -126,18 +164,17 @@
       color: #9135ED;
     }
 
-    .quantity-input {
-      width: 40px !important;
-      height: 32px !important;
-      border: none !important;
-      background: transparent !important;
+    .quantity-display {
+      width: 40px;
+      min-width: 40px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
       font-weight: 600;
-      -webkit-appearance: none;
-      -moz-appearance: textfield;
-      appearance: none;
-      padding: 0 !important;
-      margin: 0 !important;
+      color: #212529;
+      user-select: none;
     }
 
     .delete-icon {
@@ -204,9 +241,9 @@
     }
 
     .badge-low-stock {
-      background-color: #f1f8e9;
-      color: #2e7d32;
-      border: 1px solid #dcedc8;
+      background-color: #fff8db;
+      color: #9a6700;
+      border: 1px solid #fde68a;
     }
 
     .badge-price-changed {
@@ -215,7 +252,7 @@
       border: 1px solid #c7d2fe;
     }
 
-    .unavailable-text, .out-of-stock-text, .low-stock-text, .category-unlisted-text {
+    .unavailable-text, .out-of-stock-text, .low-stock-text {
       margin-bottom: 0 !important;
     }
 
@@ -397,21 +434,47 @@
         });
     }
 
-    let debounceTimer;
+    const debounceTimers = {};
+    const desiredQuantities = {};
+    const latestRequestIds = {};
+    const confirmedQuantities = {};
+    let quantityRequestSequence = 0;
+
+    function setDesiredQuantity(productId, quantity) {
+      desiredQuantities[productId] = parseInt(quantity);
+    }
+
+    function setConfirmedQuantity(productId, quantity) {
+      confirmedQuantities[productId] = parseInt(quantity);
+    }
 
     function debounceUpdateQuantity(productId, newQuantity, maxStock) {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
+      clearTimeout(debounceTimers[productId]);
+      debounceTimers[productId] = setTimeout(() => {
         updateQuantity(productId, newQuantity, maxStock);
       }, 250);
     }
 
     function updateQuantity(productId, newQuantity, maxStock) {
-      newQuantity = parseInt(newQuantity);
-      maxStock = parseInt(maxStock);
-      
-      if (isNaN(newQuantity) || newQuantity < 1) {
-        Toastify({
+        newQuantity = parseInt(newQuantity);
+        maxStock = parseInt(maxStock);
+        const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+        const quantityDisplay = productCard ? productCard.querySelector('.quantity-display') : null;
+        const statusBadge = productCard ? productCard.querySelector('.status-container .status-badge') : null;
+        const isUnavailable = statusBadge?.classList.contains('unavailable-text');
+        const isOutOfStock = statusBadge?.classList.contains('out-of-stock-text');
+        if (productCard && (isUnavailable || isOutOfStock)) {
+          if (quantityDisplay && Number.isFinite(confirmedQuantities[productId])) {
+            quantityDisplay.textContent = confirmedQuantities[productId];
+          }
+          return;
+        }
+        const previousQuantity = Number.isFinite(confirmedQuantities[productId])
+          ? confirmedQuantities[productId]
+          : (quantityDisplay ? parseInt(quantityDisplay.textContent) : 1);
+        
+        if (isNaN(newQuantity) || newQuantity < 1) {
+          Toastify({
           text: "Quantity cannot be less than 1",
           duration: 2000,
           close: false,
@@ -422,12 +485,15 @@
         return;
       }
 
-      const data = {
-        productId,
-        quantity: newQuantity
-      };
+        const data = {
+          productId,
+          quantity: newQuantity
+        };
 
-      authAwareFetch(`/cart/update`, {
+        const requestId = ++quantityRequestSequence;
+        latestRequestIds[productId] = requestId;
+
+        authAwareFetch(`/cart/update`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -436,30 +502,36 @@
         })
         .then(response => {
           if (!response) return null;
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.message || 'Network response was not ok');
-            });
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (!data) return;
-          // Update the input value with the backend's effective quantity (clamped)
-          const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
-          if (productCard) {
-            const input = productCard.querySelector('.quantity-input');
-            if (input) input.value = data.newQuantity;
+          return response.json().then(data => {
+            if (!response.ok) {
+              throw {
+                ...data,
+                message: data.message || 'Network response was not ok'
+              };
+            }
+            return data;
+          });
+          })
+          .then(data => {
+            if (!data) return;
+            if (latestRequestIds[productId] !== requestId) return;
+            if (desiredQuantities[productId] !== newQuantity) return;
+            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            if (productCard) {
+              const display = productCard.querySelector('.quantity-display');
+              if (display) display.textContent = data.newQuantity;
+              setDesiredQuantity(productId, data.newQuantity);
+              setConfirmedQuantity(productId, data.newQuantity);
 
-            // Remove low stock warning if quantity is now valid
-            const lowStockText = productCard.querySelector('.low-stock-text');
-            if (lowStockText) {
-              const maxStock = parseInt(input.getAttribute('max'));
-              if (data.newQuantity <= maxStock) {
-                lowStockText.remove();
+              const lowStockText = productCard.querySelector('.low-stock-text');
+              if (lowStockText) {
+                const quantityGroup = productCard.querySelector('.quantity-group');
+                const currentMaxStock = parseInt(quantityGroup?.dataset.max);
+                if (data.newQuantity <= currentMaxStock) {
+                  lowStockText.remove();
+                }
               }
             }
-          }
 
           if (data.message) {
             Toastify({
@@ -495,9 +567,26 @@
             document.getElementById('total').innerText = Math.floor(data.total);
           }
         })
-        .catch(error => {
-          Toastify({
-            text: 'Error updating quantity: ' + error.message,
+          .catch(error => {
+            if (latestRequestIds[productId] !== requestId) return;
+            if (desiredQuantities[productId] !== newQuantity) return;
+            const productCard = document.querySelector(`.product-card[data-product-id="${productId}"]`);
+            const display = productCard ? productCard.querySelector('.quantity-display') : null;
+            if (display) display.textContent = previousQuantity;
+            setDesiredQuantity(productId, previousQuantity);
+            setConfirmedQuantity(productId, previousQuantity);
+
+            if (error?.status && productCard) {
+              updateProductStatusUI([{
+                productId,
+                status: error.status,
+                message: error.message,
+                availableStock: error.availableStock
+              }], error.cartState);
+            }
+
+            Toastify({
+              text: 'Error updating quantity: ' + error.message,
             duration: 2000,
             close: false,
             gravity: "bottom",
@@ -538,30 +627,100 @@
       if (totalEl) totalEl.innerText = Math.floor(cartState.totalAmount ?? cartState.total ?? 0);
     }
 
+    function getCartPriceData(item) {
+      const originalPrice = Math.floor(item?.productId?.price ?? 0);
+      const currentPrice = Math.floor(item?.discountedPrice ?? item?.productId?.currentDiscountedPrice ?? item?.productId?.bestOffer?.discountedPrice ?? item?.productId?.price ?? 0);
+      const hasActiveOffer = currentPrice < originalPrice;
+      return { originalPrice, currentPrice, hasActiveOffer };
+    }
+
+    function renderCartPriceBlock(priceContainer, item) {
+      if (!priceContainer || !item?.productId) return;
+      const { originalPrice, currentPrice, hasActiveOffer } = getCartPriceData(item);
+
+      priceContainer.innerHTML = hasActiveOffer
+        ? `<span class="text-muted cart-original-price" style="text-decoration: line-through; font-size: 0.85rem;">₹ ${originalPrice}</span><span class="font-weight-bold ml-1 cart-current-price" style="color: #008000;">₹ ${currentPrice}</span>`
+        : `<span class="font-weight-bold cart-current-price">₹ ${currentPrice}</span>`;
+    }
+
+    function renderProductStatusBadge(statusContainer, status, availableStock) {
+      if (!statusContainer) return;
+
+      let badgeHTML = '';
+      if (status === 'unavailable' || status === 'unlisted') {
+        badgeHTML = `<span class="status-badge badge-unavailable unavailable-text">Unavailable</span>`;
+      } else if (status === 'category-unlisted') {
+        badgeHTML = `<span class="status-badge badge-unavailable unavailable-text">Unavailable</span>`;
+      } else if (status === 'out-of-stock') {
+        badgeHTML = `<span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>`;
+      } else if (status === 'low-stock') {
+        badgeHTML = `<span class="status-badge badge-low-stock low-stock-text"><i class="fas fa-exclamation-triangle mr-1"></i>Only ${availableStock} left</span>`;
+      } else if (status === 'price-changed') {
+        badgeHTML = `<span class="status-badge badge-price-changed">Price Updated</span>`;
+      }
+
+      statusContainer.innerHTML = badgeHTML;
+    }
+
+    function syncProductCardControls(productCard) {
+      if (!productCard) return;
+
+      const statusBadge = productCard.querySelector('.status-container .status-badge');
+      const isUnavailable = statusBadge?.classList.contains('unavailable-text');
+      const lockAllControls = isUnavailable;
+      const decrementButton = productCard.querySelector('.quantity-btn:first-child');
+      const incrementButton = productCard.querySelector('.quantity-btn:last-child');
+      const quantityDisplay = productCard.querySelector('.quantity-display');
+
+      if (decrementButton) {
+        decrementButton.disabled = lockAllControls;
+        decrementButton.setAttribute('aria-disabled', String(lockAllControls));
+        if (lockAllControls) decrementButton.setAttribute('tabindex', '-1');
+        else decrementButton.removeAttribute('tabindex');
+      }
+
+      if (incrementButton) {
+        incrementButton.disabled = lockAllControls;
+        incrementButton.setAttribute('aria-disabled', String(lockAllControls));
+        if (lockAllControls) incrementButton.setAttribute('tabindex', '-1');
+        else incrementButton.removeAttribute('tabindex');
+      }
+
+      if (quantityDisplay) {
+        quantityDisplay.setAttribute('aria-disabled', String(lockAllControls));
+      }
+    }
+
     function updateProductStatusUI(errors, cartState) {
       if (cartState && Array.isArray(cartState.productsWithPrices)) {
         cartState.productsWithPrices.forEach((item) => {
           const productCard = document.querySelector(`.product-card[data-product-id="${item.productId._id}"]`);
           if (!productCard) return;
 
-          const currentPrice = productCard.querySelector('.cart-current-price');
-          const originalPrice = productCard.querySelector('.cart-original-price');
-          const quantityInput = productCard.querySelector('.quantity-input');
+          const priceBlock = productCard.querySelector('.cart-price-block');
+          const quantityGroup = productCard.querySelector('.quantity-group');
+          const quantityDisplay = productCard.querySelector('.quantity-display');
 
-          if (currentPrice) {
-            currentPrice.textContent = `₹ ${Math.floor(item.discountedPrice ?? item.productId.currentDiscountedPrice ?? item.productId.price)}`;
+          renderCartPriceBlock(priceBlock, item);
+
+          if (quantityGroup) {
+            quantityGroup.dataset.max = item.productId.stock;
           }
 
-          if (originalPrice) {
-            originalPrice.textContent = `₹ ${Math.floor(item.productId.price)}`;
-          }
-
-          if (quantityInput) {
-            quantityInput.setAttribute('max', item.productId.stock);
+          if (quantityDisplay) {
+            quantityDisplay.textContent = item.quantity;
           }
         });
         updateCartSummaryUI(cartState);
       }
+
+      document.querySelectorAll('.product-card').forEach((productCard) => {
+        productCard.classList.remove('product-card-unavailable', 'product-card-stock-issue');
+      });
+
+      document.querySelectorAll('.product-card .status-container').forEach((statusContainer) => {
+        statusContainer.innerHTML = '';
+      });
 
       if (!errors || !Array.isArray(errors)) return;
 
@@ -570,85 +729,109 @@
         if (!productCard) return;
 
         const statusContainer = productCard.querySelector('.status-container');
-        const issueMessage = productCard.querySelector('.cart-issue-message');
-        if (issueMessage) issueMessage.textContent = err.message || '';
-
-        if (statusContainer) {
-          let badgeHTML = '';
-          if (err.status === 'unavailable') {
-            badgeHTML = `<span class="status-badge badge-unavailable unavailable-text">Unavailable</span>`;
-          } else if (err.status === 'category-unlisted') {
-            badgeHTML = `<span class="status-badge badge-unavailable category-unlisted-text">Category Unavailable</span>`;
-          } else if (err.status === 'out-of-stock') {
-            badgeHTML = `<span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>`;
-          } else if (err.status === 'low-stock') {
-            badgeHTML = `<span class="status-badge badge-low-stock low-stock-text">Only ${err.availableStock} left</span>`;
-          } else if (err.status === 'price-changed') {
-            badgeHTML = `<span class="status-badge badge-price-changed">Price Updated</span>`;
-          }
-          statusContainer.innerHTML = badgeHTML;
+        if (err.status === 'unavailable' || err.status === 'unlisted' || err.status === 'category-unlisted') {
+          productCard.classList.add('product-card-unavailable');
+        } else if (err.status === 'out-of-stock' || err.status === 'low-stock') {
+          productCard.classList.add('product-card-stock-issue');
         }
+        renderProductStatusBadge(statusContainer, err.status, err.availableStock);
       });
+
+      document.querySelectorAll('.product-card').forEach((productCard) => {
+        syncProductCardControls(productCard);
+      });
+    }
+
+    function getCheckoutAlertMessage(errorPayload = {}) {
+      const errors = Array.isArray(errorPayload.errors) ? errorPayload.errors : [];
+      const blockingStatuses = new Set(['unavailable', 'unlisted', 'category-unlisted', 'out-of-stock']);
+
+      if (errors.length > 0) {
+        const hasOnlyUnavailableOrOutOfStock = errors.every((error) => blockingStatuses.has(error.status));
+        if (hasOnlyUnavailableOrOutOfStock) {
+          return 'Some products in your cart are no longer available or out of stock. Please remove these items to proceed.';
+        }
+
+        if (errors.some((error) => error.status === 'price-changed')) {
+          return 'The price of some products in your cart has changed. Please review your cart before proceeding.';
+        }
+
+        if (errors.some((error) => error.status === 'low-stock')) {
+          return 'The available stock for some products in your cart has changed. Please review your cart before proceeding.';
+        }
+      }
+
+      return errorPayload.message || 'Please review your cart and try again.';
     }
 
     function checkoutHandler(event) {
       event.preventDefault();
-      let unlistedProducts = document.querySelectorAll('.product-card .unavailable-text');
-      let categoryUnlistedProducts = document.querySelectorAll('.product-card .category-unlisted-text');
-      let outOfStockProducts = document.querySelectorAll('.product-card .out-of-stock-text');
-      let lowStockProducts = document.querySelectorAll('.product-card .low-stock-text');
-
-      if (unlistedProducts.length > 0 || categoryUnlistedProducts.length > 0 || outOfStockProducts.length > 0 || lowStockProducts.length > 0) {
-        SwalCustom.error(
-          'Items Unavailable',
-          'Some products in your cart are no longer available or out of stock. Please remove these items to proceed.'
-        );
-      } else {
-        authAwareFetch('/orders/checkout', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          })
-          .then(response => {
-            if (!response) return null;
-            if (!response.ok) {
-              return response.json().then(data => {
-                SwalCustom.error(
-                  'Order Issue',
-                  data.message || 'Some products in your cart have status changes.'
-                ).then(() => {
-                  updateProductStatusUI(data.errors, data.cartState);
-                });
-                return null;
+      authAwareFetch('/orders/checkout', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        })
+        .then(response => {
+          if (!response) return null;
+          if (!response.ok) {
+            return response.json().then(data => {
+              SwalCustom.error(
+                'Order Issue',
+                getCheckoutAlertMessage(data)
+              ).then(() => {
+                updateProductStatusUI(data.errors, data.cartState);
               });
-            }
-            return response.json();
-          })
-          .then(data => {
-            if (data) {
-              window.location.href = '/orders/checkout';
-            }
-          })
-          .catch(error => {
-            console.error("Checkout check failed:", error);
-          });
-      }
+              return null;
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data) {
+            window.location.href = '/orders/checkout';
+          }
+        })
+        .catch(error => {
+          console.error("Checkout check failed:", error);
+        });
     }
 
     const MAX_ALLOWED_QUANTITY = 10;
 
     function increaseQuantity(button) {
-      const input = button.previousElementSibling;
-      const maxStock = parseInt(input.getAttribute('max'));
-      const currentValue = parseInt(input.value);
-      const effectiveLimit = Math.min(maxStock, MAX_ALLOWED_QUANTITY);
-
-      if (currentValue < effectiveLimit) {
-        input.value = currentValue + 1;
-        input.dispatchEvent(new Event('input'));
-      } else {
+        const quantityGroup = button.closest('.quantity-group');
+        const display = quantityGroup.querySelector('.quantity-display');
+        const productCard = button.closest('.product-card');
+        if (button.disabled || productCard.classList.contains('product-card-unavailable')) {
+          return;
+        }
+        const productId = productCard.getAttribute('data-product-id');
+        const maxStock = parseInt(quantityGroup.dataset.max);
+        const currentValue = parseInt(display.textContent);
+        if (maxStock <= 0) {
+          Toastify({
+            text: 'Product out of stock',
+            duration: 2000,
+            close: false,
+            gravity: "bottom",
+            position: 'center',
+            backgroundColor: "linear-gradient(to right, #ff9800, #ffc371)",
+          }).showToast();
+          return;
+        }
+        const effectiveLimit = Math.min(maxStock, MAX_ALLOWED_QUANTITY);
+  
+        if (currentValue < effectiveLimit) {
+          const nextValue = currentValue + 1;
+          display.textContent = nextValue;
+          if (!Number.isFinite(confirmedQuantities[productId])) {
+            setConfirmedQuantity(productId, currentValue);
+          }
+          setDesiredQuantity(productId, nextValue);
+          debounceUpdateQuantity(productId, nextValue, maxStock);
+        } else {
         const msg = currentValue >= MAX_ALLOWED_QUANTITY 
           ? `Maximum ${MAX_ALLOWED_QUANTITY} items allowed per product` 
           : `Only ${maxStock} items available in stock`;
@@ -664,16 +847,26 @@
     }
 
     function decreaseQuantity(button) {
-      const input = button.nextElementSibling;
-      const currentValue = parseInt(input.value);
-      if (currentValue > 1) {
-        input.value = currentValue - 1;
-        input.dispatchEvent(new Event('input'));
-      } else {
-        const productId = button.closest('.product-card').getAttribute('data-product-id');
-        confirmRemoveProduct(productId);
+        const quantityGroup = button.closest('.quantity-group');
+        const display = quantityGroup.querySelector('.quantity-display');
+        const productCard = button.closest('.product-card');
+        if (button.disabled || productCard.classList.contains('product-card-unavailable')) {
+          return;
+        }
+        const productId = productCard.getAttribute('data-product-id');
+        const currentValue = parseInt(display.textContent);
+        if (currentValue > 1) {
+          const nextValue = currentValue - 1;
+          display.textContent = nextValue;
+          if (!Number.isFinite(confirmedQuantities[productId])) {
+            setConfirmedQuantity(productId, currentValue);
+          }
+          setDesiredQuantity(productId, nextValue);
+          debounceUpdateQuantity(productId, nextValue, parseInt(quantityGroup.dataset.max));
+        } else {
+          confirmRemoveProduct(productId);
+        }
       }
-    }
   </script>
 
 </body>

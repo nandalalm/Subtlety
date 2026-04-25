@@ -122,7 +122,7 @@
     <% } %>
     
         <!-- Pagination moved inside for AJAX refresh support -->
-        <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+        <% if (reviewList.length > 0 && typeof totalPages !== 'undefined') { %>
         <div class="px-3 pb-3">
             <%- include('../Common/pagination') %>
         </div>

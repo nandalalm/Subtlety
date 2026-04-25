@@ -376,6 +376,8 @@
     border-top: 1px solid #f0f0f0;
     border-right: 1px solid #f0f0f0;
     border-bottom: 1px solid #f0f0f0;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .card-header-flex {
@@ -390,6 +392,46 @@
 .card-body p {
     margin-bottom: 8px;
     font-size: 0.95rem;
+}
+
+.product-card-summary {
+    display: flex;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.product-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.product-card-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.product-card-actions {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@media (max-width: 575.98px) {
+    .shared-cards-mobile {
+        padding: 12px !important;
+    }
+
+    .shared-item-card {
+        padding: 16px;
+    }
+
+    .product-card-summary {
+        gap: 12px;
+    }
+
+    .product-card-actions {
+        margin-top: 1rem;
+    }
 }
 
 /* Bell Ringing Animation (Return Alerts) */

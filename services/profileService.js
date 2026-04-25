@@ -9,6 +9,100 @@ import MESSAGES from "../Constants/messages.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import bcrypt from "bcryptjs";
 
+const INDIA_STATES = new Set([
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+]);
+
+function throwAddressValidation(message) {
+  throw { statusCode: HTTP_STATUS.BAD_REQUEST, message };
+}
+
+function normalizeAddressField(value) {
+  return String(value || "").trim();
+}
+
+function normalizeAddressData(addressData) {
+  const normalized = {
+    ...addressData,
+    username: normalizeAddressField(addressData.username),
+    phoneNo: normalizeAddressField(addressData.phoneNo),
+    address: normalizeAddressField(addressData.address),
+    country: normalizeAddressField(addressData.country),
+    state: normalizeAddressField(addressData.state),
+    district: normalizeAddressField(addressData.district),
+    pincode: normalizeAddressField(addressData.pincode),
+    houseFlatNo: normalizeAddressField(addressData.houseFlatNo),
+    addressType: normalizeAddressField(addressData.addressType).toLowerCase(),
+  };
+
+  if (!normalized.username) throwAddressValidation("Username is required.");
+  if (normalized.username.length > 50) throwAddressValidation("Username cannot exceed 50 characters.");
+  if (!/^[A-Za-z]+$/.test(normalized.username)) throwAddressValidation("Username must contain only letters with no spaces.");
+  if (normalized.username.length < 3) throwAddressValidation("Username must be at least 3 letters long.");
+
+  if (!/^\d{10}$/.test(normalized.phoneNo)) throwAddressValidation("Phone number must be exactly 10 digits.");
+
+  if (!normalized.address) throwAddressValidation("Address is required.");
+  if (normalized.address.length > 200) throwAddressValidation("Address cannot exceed 200 characters.");
+  if (normalized.address.length < 10) throwAddressValidation("Address must be at least 10 characters long.");
+  if (!/^[A-Za-z0-9,.-]+$/.test(normalized.address)) throwAddressValidation("Address contains invalid characters.");
+
+  if (normalized.country !== "India") throwAddressValidation("Country must be India.");
+
+  if (!INDIA_STATES.has(normalized.state)) throwAddressValidation("Please select a valid state in India.");
+
+  if (!normalized.district) throwAddressValidation("District is required.");
+  if (normalized.district.length > 40) throwAddressValidation("District cannot exceed 40 characters.");
+  if (!/^[A-Za-z]+$/.test(normalized.district)) throwAddressValidation("District must contain only letters with no spaces.");
+
+  if (!/^\d{6}$/.test(normalized.pincode)) throwAddressValidation("Pincode must be exactly 6 digits.");
+
+  if (!normalized.houseFlatNo) throwAddressValidation("House/Flat No is required.");
+  if (normalized.houseFlatNo.length > 20) throwAddressValidation("House/Flat No cannot exceed 20 characters.");
+  if (!/^[A-Za-z0-9\s/-]+$/.test(normalized.houseFlatNo)) throwAddressValidation("House/Flat No must be alphanumeric.");
+
+  if (!["home", "work"].includes(normalized.addressType)) {
+    throwAddressValidation("Please choose a valid address type.");
+  }
+
+  return normalized;
+}
+
 const profileService = {
   updateProfile: async (userId, updateData) => {
     return await userRepository.updateById(userId, updateData);
@@ -54,7 +148,8 @@ const profileService = {
   },
 
   addAddress: async (userId, addressData) => {
-    return await addressRepository.save({ userId, ...addressData });
+    const normalizedAddress = normalizeAddressData(addressData);
+    return await addressRepository.save({ userId, ...normalizedAddress });
   },
 
   getAddressById: async (addressId) => {
@@ -66,7 +161,8 @@ const profileService = {
   },
 
   updateAddress: async (addressId, updateData) => {
-    const updated = await addressRepository.findByIdAndUpdate(addressId, updateData);
+    const normalizedAddress = normalizeAddressData(updateData);
+    const updated = await addressRepository.findByIdAndUpdate(addressId, normalizedAddress);
     if (!updated) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
     }

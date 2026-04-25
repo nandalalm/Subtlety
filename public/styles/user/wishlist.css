@@ -66,4 +66,65 @@
 .wishlist-content-area {
   background: transparent;
   padding: 0;
-}
+}
+
+@media (max-width: 575.98px) {
+  .wishlist-add-to-cart {
+    font-size: 0.68rem !important;
+    letter-spacing: 0;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
+  }
+
+  .wishlist-meta-row {
+    gap: 4px;
+  }
+
+  .wishlist-rating .stars i {
+    font-size: 0.56rem !important;
+  }
+
+  .wishlist-rating-text {
+    font-size: 0.62rem !important;
+  }
+
+  .wishlist-price-row .old-price {
+    font-size: 0.52rem !important;
+  }
+
+  .wishlist-price-row .new-price,
+  .wishlist-price-row .current-price {
+    font-size: 0.7rem !important;
+  }
+}
+
+@media (max-width: 389.98px) {
+  .wishlist-grid-item {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .wishlist-add-to-cart {
+    font-size: 0.82rem !important;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .wishlist-rating .stars i {
+    font-size: 0.68rem !important;
+  }
+
+  .wishlist-rating-text {
+    font-size: 0.74rem !important;
+  }
+
+  .wishlist-price-row .old-price {
+    font-size: 0.62rem !important;
+  }
+
+  .wishlist-price-row .new-price,
+  .wishlist-price-row .current-price {
+    font-size: 0.84rem !important;
+  }
+}

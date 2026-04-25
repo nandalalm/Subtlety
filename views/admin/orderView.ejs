@@ -494,18 +494,34 @@
 
       if (!trimmed) return 'Reject reason is required.';
       if (trimmed.length < 5) return 'Reject reason must be at least 5 characters long.';
+      if (trimmed.length > 200) return 'Reject reason must be 200 characters or fewer.';
       if (!/[A-Za-z]/.test(trimmed)) return 'Reject reason cannot be only numbers.';
       if (!rejectReasonRegex.test(trimmed)) return 'Use only letters, numbers, and spaces.';
       return '';
     }
 
     async function submitReturnDecision(orderId, productId, action, rejectReason = '') {
-      const response = await fetch('/admin/orders/approve-return', {
+      const response = await (window.authAwareFetch ? window.authAwareFetch('/admin/orders/approve-return', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, productId, action, rejectReason })
-      });
-      const data = await response.json();
+      }) : fetch('/admin/orders/approve-return', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, productId, action, rejectReason })
+      }));
+      if (!response) {
+        throw new Error('Unable to process the return request right now.');
+      }
+
+      const rawText = await response.text();
+      let data = null;
+      try {
+        data = rawText ? JSON.parse(rawText) : {};
+      } catch (error) {
+        throw new Error(response.ok ? 'Unexpected server response.' : 'Server returned an unexpected response while processing the return request.');
+      }
+
       if (!response.ok || !data.success) {
         throw new Error(data.message || 'Unable to process the return request.');
       }
@@ -521,7 +537,7 @@
         html: `
           <div class="text-left">
             <label for="adminRejectReason" class="d-block mb-2 font-weight-medium">Reject Reason</label>
-            <textarea id="adminRejectReason" class="swal-clean-textarea" placeholder="Enter the reason for rejection"></textarea>
+            <textarea id="adminRejectReason" class="swal-clean-textarea" maxlength="200" placeholder="Enter the reason for rejection"></textarea>
             <div id="adminRejectReasonError" class="swal-validation-text"></div>
           </div>
         `,

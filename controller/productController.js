@@ -51,7 +51,7 @@ async function getProducts(req, res, next) {
   try {
     const queryParams = {
       page: parseInt(req.query.page) || 1,
-      limit: parseInt(req.query.limit) || 4,
+      limit: parseInt(req.query.limit) || 5,
       search: req.query.search || "",
       sort: req.query.sort || "latest"
     };

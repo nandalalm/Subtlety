@@ -73,9 +73,11 @@ async function updateQuantity(req, res, next) {
           error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' :
           error.message === MESSAGES.CART.CATEGORY_UNLISTED ? 'category-unlisted' :
           error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' :
+          error.message.startsWith('Only ') ? 'low-stock' :
           'error'
         ),
-        message: error.message
+        message: error.message,
+        availableStock: error.availableStock
       });
     }
     next(error);

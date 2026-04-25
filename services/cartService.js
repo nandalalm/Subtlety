@@ -140,8 +140,6 @@ const cartService = {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CART.CART_NOT_FOUND };
     }
 
-    cart.products = normalizeCartProducts(cart.products);
-
     const productIndex = cart.products.findIndex(p => String(p.productId) === String(productId));
     if (productIndex === -1) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CART.PRODUCT_NOT_IN_CART };
@@ -160,18 +158,41 @@ const cartService = {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CART.CATEGORY_UNLISTED, status: "category-unlisted" };
     }
 
+    const currentQuantity = Number(cart.products[productIndex].quantity) || 0;
     const maxQuantityPerProduct = 10;
     if (quantity > maxQuantityPerProduct) {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CART.MAX_QUANTITY_UPDATE(maxQuantityPerProduct) };
     }
-    if (quantity > product.stock) {
-      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CART.LOW_STOCK_UPDATE(product.stock) };
+    if (product.stock <= 0 && quantity >= currentQuantity) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CART.OUT_OF_STOCK, status: "out-of-stock", availableStock: 0 };
+    }
+    if (product.stock > 0 && quantity > product.stock && quantity >= currentQuantity) {
+      throw {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: MESSAGES.CART.LOW_STOCK_UPDATE(product.stock),
+        status: "low-stock",
+        availableStock: product.stock
+      };
     }
 
     cart.products[productIndex].quantity = quantity;
     const bestOffer = await getBestOffer(product);
-    cart.products[productIndex].discountedPrice = bestOffer ? bestOffer.discountedPrice : Math.floor(product.price);
-    await cart.save();
+    const discountedPrice = bestOffer ? bestOffer.discountedPrice : Math.floor(product.price);
+
+    const updatedCart = await cartRepository.updateByQuery(
+      { user: userId, "products.productId": productId },
+      {
+        $set: {
+          "products.$.quantity": quantity,
+          "products.$.discountedPrice": discountedPrice
+        }
+      }
+    );
+
+    if (!updatedCart) {
+      throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CART.PRODUCT_NOT_IN_CART };
+    }
+
     const totals = await cartService.getCartTotals(userId);
     return { newQuantity: quantity, stock: product.stock, ...totals };
   },

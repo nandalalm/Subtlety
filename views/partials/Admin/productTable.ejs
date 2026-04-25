@@ -27,10 +27,11 @@
             </thead>
             <tbody>
                 <% productList.forEach((product, index) => { %>
+                <% const truncatedName = product.name.length > 21 ? `${product.name.substring(0, 21)}...` : product.name; %>
                 <tr data-row-id="<%= product._id %>">
                     <td><%= (currPg - 1) * pgLimit + (index + 1) %></td>
                     <td>
-                        <div class="font-weight-bold text-dark"><%= product.name %></div>
+                        <div class="font-weight-bold text-dark"><%= truncatedName %></div>
                         <div class="small text-muted text-truncate" style="max-width: 200px;"><%= product.description %></div>
                     </td>
                     <td><%= product.category ? product.category.name : 'N/A' %></td>
@@ -85,6 +86,7 @@
         <!-- Mobile Cards -->
         <div class="shared-cards-mobile p-3">
             <% productList.forEach((product, index) => { %>
+            <% const truncatedName = product.name.length > 21 ? `${product.name.substring(0, 21)}...` : product.name; %>
             <div class="shared-item-card" data-card-id="<%= product._id %>">
                 <div class="card-header-flex">
                     <span class="font-weight-bold">#<%= (currPg - 1) * pgLimit + (index + 1) %></span>
@@ -93,7 +95,7 @@
                     </span>
                 </div>
                 <div class="card-body p-0">
-                    <div class="d-flex mb-3">
+                    <div class="product-card-summary mb-3">
                         <% if (product.images && product.images.length > 0) { %>
                             <img src="<%= product.images[0] %>" class="rounded mr-3 shadow-sm" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid #eee;">
                         <% } else { %>
@@ -101,8 +103,8 @@
                                 <i class="fas fa-image text-muted"></i>
                             </div>
                         <% } %>
-                        <div class="flex-grow-1">
-                            <h6 class="font-weight-bold mb-1 text-dark"><%= product.name %></h6>
+                        <div class="product-card-info">
+                            <h6 class="font-weight-bold mb-1 text-dark product-card-title"><%= truncatedName %></h6>
                             <p class="small text-muted mb-0">Cat: <%= product.category ? product.category.name : 'N/A' %></p>
                             <p class="font-weight-bold text-primary mb-0">₹<%= product.price %></p>
                         </div>
@@ -110,7 +112,7 @@
                     
                     <p><strong>Stock:</strong> <span class="<%= product.stock < 5 ? 'text-danger' : '' %>"><%= product.stock %></span></p>
                     
-                    <div class="mt-4 row">
+                    <div class="mt-4 row product-card-actions">
                         <div class="col-12 mb-2">
                             <a href="/admin/products/<%= product._id %>/view?page=<%= currPg %>&search=<%= encodeURIComponent(typeof search !== 'undefined' ? search : '') %>&sort=<%= typeof sort !== 'undefined' ? sort : 'latest' %>" 
                                class="btn btn-sm btn-block rounded-pill table-action-btn table-btn-view">

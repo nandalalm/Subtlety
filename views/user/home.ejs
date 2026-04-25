@@ -204,7 +204,7 @@
           <% } %>
         <% }) %>
       <% } else { %>
-        <% fallbackProducts.forEach(({ product, bestOffer, averageRating }) => { %>
+        <% (fallbackProducts || []).forEach(({ product, bestOffer, averageRating }) => { %>
           <% if (product && product.isListed) { %>
             <%- include('../partials/User/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
           <% } %>

@@ -20,6 +20,12 @@ const reviewService = {
       throw error;
     }
 
+    if (normalizedComment.length > 500) {
+      const error = new Error(MESSAGES.REVIEW.COMMENT_TOO_LONG);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
+
     const order = await orderRepository.findOne({
       _id: orderId,
       userId: userId,

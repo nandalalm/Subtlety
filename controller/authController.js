@@ -2,15 +2,37 @@ import authService from "../services/authService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
+function getSafeReturnTo(returnTo) {
+  const normalized = String(returnTo || "").trim();
+  if (!normalized.startsWith("/")) return null;
+  if (normalized.startsWith("//")) return null;
+
+  const isShopPage = normalized === "/user/shop" || normalized.startsWith("/user/shop?");
+  const isSingleProductPage = normalized.startsWith("/user/single-product/");
+
+  return isShopPage || isSingleProductPage ? normalized : null;
+}
+
 function getLogin(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
+
+  const safeReturnTo = getSafeReturnTo(req.query.returnTo);
+  if (safeReturnTo) {
+    req.session.returnTo = safeReturnTo;
+  }
+
+  const googleLoginUrl = req.session.returnTo
+    ? `/auth/google?returnTo=${encodeURIComponent(req.session.returnTo)}`
+    : "/auth/google";
+
   req.session.passwordResetUser = null;
   const errorMessage = req.session.errorMessage || null;
   req.session.errorMessage = null;
   res.render("user/login", { 
     errorMessage, 
+    googleLoginUrl,
     demoEmail: process.env.DEMO_USER_EMAIL || 'demoUser@gmail.com',
     demoPassword: process.env.DEMO_USER_PASSWORD || ''
   });
@@ -96,10 +118,12 @@ async function loginUser(req, res, next) {
   try {
     const user = await authService.login(email, password);
     req.session.user = user;
+    const redirectTo = getSafeReturnTo(req.session.returnTo) || "/user/home";
+    delete req.session.returnTo;
     return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: MESSAGES.AUTH.LOGIN_SUCCESS,
-      redirect: "/user/home"
+      redirect: redirectTo
     });
   } catch (error) {
     if ([HTTP_STATUS.BAD_REQUEST, HTTP_STATUS.UNAUTHORIZED, HTTP_STATUS.FORBIDDEN, HTTP_STATUS.NOT_FOUND].includes(error.statusCode)) {
@@ -113,6 +137,7 @@ async function logout(req, res) {
   if (req.session.user) {
     delete req.session.user;
   }
+  delete req.session.returnTo;
   res.redirect("/auth/login");
 }
 
@@ -230,6 +255,7 @@ async function adminLogout(req, res) {
 }
 
 export {
+  getSafeReturnTo,
   getLogin,
   getSignup,
   addUser,

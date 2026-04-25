@@ -162,11 +162,21 @@ async function getSectionReplacement(req, res, next) {
   }
 }
 
+async function getProductAvailability(req, res, next) {
+  try {
+    const data = await userService.getProductAvailability(req.params.id);
+    res.status(HTTP_STATUS.OK).json(data);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   getHome,
   getSingleProduct,
   loadMoreRelatedProducts,
   getShopPage,
   loadMoreProducts,
-  getSectionReplacement
+  getSectionReplacement,
+  getProductAvailability
 };

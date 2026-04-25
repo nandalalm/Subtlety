@@ -223,7 +223,7 @@ function buildCouponState({ code, status, message, pricingSnapshot, coupon, disc
     code,
     status,
     message,
-    isApplied: normalizedDiscount > 0 && status !== "inactive" && status !== "expired" && status !== "already-used" && status !== "usage-limit" && status !== "min-order",
+    isApplied: status === "applied",
     discount: normalizedDiscount,
     previousDiscount: previousDiscount === null ? null : Math.max(0, Math.floor(previousDiscount || 0)),
     discountType: coupon?.discountType || null,
@@ -237,19 +237,32 @@ function buildCouponState({ code, status, message, pricingSnapshot, coupon, disc
 async function getCouponValidationState(userId, couponCode, pricingSnapshot, previousDiscount = null) {
   const normalizedCode = String(couponCode || "").trim();
   const baseTotal = Math.floor(pricingSnapshot.baseTotal || 0);
+  const normalizedPreviousDiscount = Number.isFinite(Number(previousDiscount))
+    ? Math.max(0, Math.floor(Number(previousDiscount)))
+    : null;
 
   const [coupon, user] = await Promise.all([
     couponRepository.findOne({ code: normalizedCode }),
     userRepository.findById(userId)
   ]);
 
-  if (!coupon || !coupon.isActive) {
+  if (!coupon) {
+    return buildCouponState({
+      code: normalizedCode,
+      status: "not-found",
+      message: MESSAGES.COUPON.NOT_FOUND_CODE(normalizedCode),
+      pricingSnapshot,
+      previousDiscount: normalizedPreviousDiscount
+    });
+  }
+
+  if (!coupon.isActive) {
     return buildCouponState({
       code: normalizedCode,
       status: "inactive",
       message: MESSAGES.COUPON.NO_LONGER_AVAILABLE(normalizedCode),
       pricingSnapshot,
-      previousDiscount
+      previousDiscount: normalizedPreviousDiscount
     });
   }
 
@@ -260,7 +273,7 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
       message: MESSAGES.COUPON.EXPIRED,
       pricingSnapshot,
       coupon,
-      previousDiscount
+      previousDiscount: normalizedPreviousDiscount
     });
   }
 
@@ -271,7 +284,7 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
       message: MESSAGES.COUPON.ALREADY_USED,
       pricingSnapshot,
       coupon,
-      previousDiscount
+      previousDiscount: normalizedPreviousDiscount
     });
   }
 
@@ -282,7 +295,7 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
       message: MESSAGES.COUPON.USAGE_LIMIT_REACHED,
       pricingSnapshot,
       coupon,
-      previousDiscount
+      previousDiscount: normalizedPreviousDiscount
     });
   }
 
@@ -293,23 +306,24 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
       message: MESSAGES.COUPON.MIN_ORDER_TOTAL_BELOW(baseTotal, coupon.minOrderValue, normalizedCode),
       pricingSnapshot,
       coupon,
-      previousDiscount
+      previousDiscount: normalizedPreviousDiscount
     });
   }
 
   let discount = coupon.discountType === "flat" ? coupon.discountAmount : (coupon.discountAmount / 100) * baseTotal;
   discount = Math.floor(discount);
   if (coupon.maxDiscount && discount > coupon.maxDiscount) discount = Math.floor(coupon.maxDiscount);
+  discount = Math.min(discount, baseTotal);
 
-  if (previousDiscount !== null && Math.floor(previousDiscount) !== discount) {
+  if (normalizedPreviousDiscount !== null && normalizedPreviousDiscount > 0 && normalizedPreviousDiscount !== discount) {
     return buildCouponState({
       code: normalizedCode,
       status: "changed",
-      message: `Coupon "${normalizedCode}" changed. Your discount was updated from Rs. ${Math.floor(previousDiscount)} to Rs. ${discount}.`,
+      message: `The applied coupon was updated. Your discount changed from Rs. ${normalizedPreviousDiscount} to Rs. ${discount}.`,
       pricingSnapshot,
       coupon,
       discount,
-      previousDiscount
+      previousDiscount: normalizedPreviousDiscount
     });
   }
 
@@ -320,7 +334,7 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
     pricingSnapshot,
     coupon,
     discount,
-    previousDiscount
+    previousDiscount: normalizedPreviousDiscount
   });
 }
 
@@ -377,7 +391,7 @@ const orderService = {
   },
 
   placeOrder: async (userId, orderData) => {
-    const { items, totalAmount, shippingAddress, paymentMethod, couponCode } = orderData;
+    const { items, totalAmount, shippingAddress, paymentMethod, couponCode, couponDiscount: submittedCouponDiscount = 0 } = orderData;
     let couponDiscount = 0;
 
     if (paymentMethod === "CashOnDelivery" && totalAmount > 1000) {
@@ -446,9 +460,16 @@ const orderService = {
       baseTotal: Math.floor(netSubtotal + deliveryCharge)
     };
 
-    if (couponCode) {
-      const submittedCouponDiscount = Math.max(0, Math.floor(pricingSnapshot.baseTotal - totalAmount));
-      const couponState = await getCouponValidationState(userId, couponCode, pricingSnapshot, submittedCouponDiscount);
+    const normalizedCouponCode = String(couponCode || "").trim();
+    const normalizedSubmittedCouponDiscount = Math.max(0, Math.floor(Number(submittedCouponDiscount) || 0));
+
+    if (normalizedCouponCode) {
+      const couponState = await getCouponValidationState(
+        userId,
+        normalizedCouponCode,
+        pricingSnapshot,
+        normalizedSubmittedCouponDiscount
+      );
 
       if (couponState.status !== "applied") {
         throw {
@@ -469,12 +490,14 @@ const orderService = {
         message: MESSAGES.ORDER.TOTAL_CHANGED,
         cartState: validationState,
         couponState: buildCouponState({
-          code: couponCode || "",
-          status: "changed",
-          message: MESSAGES.ORDER.TOTAL_CHANGED,
+          code: normalizedCouponCode,
+          status: normalizedCouponCode ? "changed" : "invalid",
+          message: normalizedCouponCode
+            ? MESSAGES.ORDER.TOTAL_CHANGED
+            : "",
           pricingSnapshot,
           discount: couponDiscount,
-          previousDiscount: Math.max(0, Math.floor(pricingSnapshot.baseTotal - totalAmount))
+          previousDiscount: normalizedCouponCode ? normalizedSubmittedCouponDiscount : null
         })
       };
     }
@@ -499,6 +522,7 @@ const orderService = {
       paymentMethod,
       paymentStatus,
       orderStatus,
+      couponCode: normalizedCouponCode || undefined,
       couponDiscount: couponDiscount,
       offerDiscount: Math.max(0, Math.floor(totalOfferDiscount)),
       createdAt: new Date(),
@@ -521,9 +545,9 @@ const orderService = {
 
     const savedOrder = await orderRepository.save(newOrderData);
 
-    if (couponDiscount > 0 && couponCode) {
-      await userRepository.updateById(userId, { $push: { usedCoupons: couponCode } });
-      await couponRepository.updateByQuery({ code: couponCode }, { $inc: { usedCount: 1 } });
+    if (couponDiscount > 0 && normalizedCouponCode) {
+      await userRepository.updateById(userId, { $push: { usedCoupons: normalizedCouponCode } });
+      await couponRepository.updateByQuery({ code: normalizedCouponCode }, { $inc: { usedCount: 1 } });
     }
 
     if (paymentMethod === "CashOnDelivery" || paymentMethod === "Wallet") {
@@ -684,8 +708,14 @@ const orderService = {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.RETURN_ONLY_DELIVERED };
     }
 
-    if (!reason || !String(reason).trim()) {
+    const normalizedReason = String(reason || "").trim();
+
+    if (!normalizedReason) {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.RETURN_REASON_REQUIRED };
+    }
+
+    if (normalizedReason.length < 5 || normalizedReason.length > 200) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.RETURN_REASON_LENGTH };
     }
 
     const existingRequest = (order.returnRequests || []).find(r => r.productId.toString() === productId);
@@ -703,7 +733,7 @@ const orderService = {
     }
 
     if (!order.returnRequests) order.returnRequests = [];
-    order.returnRequests.push({ productId, reason: String(reason).trim(), requestedAt: new Date(), status: "Pending" });
+    order.returnRequests.push({ productId, reason: normalizedReason, requestedAt: new Date(), status: "Pending" });
     return await order.save();
   },
 
@@ -820,7 +850,15 @@ const orderService = {
         const normalizedReason = String(rejectReason || "").trim();
         const rejectReasonRegex = /^[A-Za-z0-9]+(?:\s+[A-Za-z0-9]+)*$/;
 
-        if (normalizedReason.length < 5 || !/[A-Za-z]/.test(normalizedReason) || !rejectReasonRegex.test(normalizedReason)) {
+        if (!normalizedReason) {
+          throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.RETURN_REJECT_REASON_REQUIRED };
+        }
+
+        if (normalizedReason.length < 5 || normalizedReason.length > 200) {
+          throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.RETURN_REJECT_REASON_LENGTH };
+        }
+
+        if (!/[A-Za-z]/.test(normalizedReason) || !rejectReasonRegex.test(normalizedReason)) {
           throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.RETURN_REJECT_REASON_REQUIRED };
         }
 
@@ -840,8 +878,10 @@ const orderService = {
 
   getSalesReportData: async (queryParams) => {
     const { reportType = "all", startDate, endDate, sort = "latest", page, limit = 6 } = queryParams;
-    const safePage = page ? parseInt(page) : 1;
-    const skip = (safePage - 1) * limit;
+    const normalizedLimit = Math.max(1, parseInt(limit, 10) || 6);
+    const hasPagination = page !== null && page !== undefined && page !== "";
+    const safePage = hasPagination ? Math.max(1, parseInt(page, 10) || 1) : 1;
+    const skip = hasPagination ? (safePage - 1) * normalizedLimit : 0;
 
     let dateFilter = { "items.status": "Delivered" };
     const now = new Date();
@@ -858,7 +898,7 @@ const orderService = {
     const sortQuery = sort === "oldest" ? { orderDate: 1 } : { orderDate: -1 };
 
     const [orders, statsResult] = await Promise.all([
-      orderRepository.find(dateFilter, sortQuery, skip, limit),
+      orderRepository.find(dateFilter, sortQuery, skip, hasPagination ? normalizedLimit : 0),
       orderRepository.getSalesReportStats(dateFilter)
     ]);
 
@@ -869,8 +909,8 @@ const orderService = {
       totalSalesCount: stats.totalSalesCount,
       totalOrderAmount: stats.totalOrderAmount,
       totalDiscount: stats.totalDiscount,
-      totalPages: Math.ceil(stats.totalSalesCount / limit),
-      limit
+      totalPages: hasPagination ? Math.max(1, Math.ceil(stats.totalSalesCount / normalizedLimit)) : 1,
+      limit: normalizedLimit
     };
   }
 };

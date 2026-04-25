@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
       minlength: 3,
-      maxlength: 20,
+      maxlength: 50,
       match: /^[A-Za-z]+$/,
     },
     lastname: {
@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
       required: false,
       trim: true,
       minlength: 0,
-      maxlength: 20,
+      maxlength: 50,
       match: /^$|^[A-Za-z]+$/,
     },
     email: {

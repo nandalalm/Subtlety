@@ -38,13 +38,7 @@ const productSchema = new mongoose.Schema(
     isListed: {
       type: Boolean,
       default: true, 
-    },
-    offers: [
-      {
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Offer", 
-      },
-    ],
+    }
   },
   { timestamps: true }
 );

@@ -2,6 +2,20 @@ import categoryRepository from "../repositories/categoryRepository.js";
 import MESSAGES from "../Constants/messages.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 
+function normalizeCategoryNameOrThrow(name) {
+  const normalizedName = String(name || "").trim();
+
+  if (!normalizedName) {
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Category name is required." };
+  }
+
+  if (normalizedName.length > 50) {
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Category name cannot exceed 50 characters." };
+  }
+
+  return normalizedName;
+}
+
 const categoryService = {
   getCategories: async (queryParams) => {
     const { page = 1, limit = 5, search = "", sort = "latest" } = queryParams;
@@ -30,11 +44,12 @@ const categoryService = {
   },
 
   addCategory: async (categoryData) => {
-    const existing = await categoryRepository.findOne({ name: { $regex: `^${categoryData.name.trim()}$`, $options: "i" } });
+    const normalizedName = normalizeCategoryNameOrThrow(categoryData.name);
+    const existing = await categoryRepository.findOne({ name: { $regex: `^${normalizedName}$`, $options: "i" } });
     if (existing) {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.ALREADY_EXISTS };
     }
-    return await categoryRepository.save(categoryData);
+    return await categoryRepository.save({ ...categoryData, name: normalizedName });
   },
 
   updateCategory: async (id, updateData) => {
@@ -44,13 +59,16 @@ const categoryService = {
     }
 
     if (updateData.name) {
+      const normalizedName = normalizeCategoryNameOrThrow(updateData.name);
       const existing = await categoryRepository.findOne({ 
-        name: { $regex: `^${updateData.name.trim()}$`, $options: "i" },
+        name: { $regex: `^${normalizedName}$`, $options: "i" },
         _id: { $ne: id }
       });
       if (existing) {
         throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.NAME_EXISTS };
       }
+
+      updateData.name = normalizedName;
     }
 
     return await categoryRepository.findByIdAndUpdate(id, updateData);

@@ -52,6 +52,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
       margin-bottom: 5px;
       padding: 5px 10px;
       border: 1px solid #ddd;
@@ -62,12 +63,14 @@
       width: 50px;
       margin-right: 20px;
       border-radius: 7px;
+      flex: 0 0 50px;
     }
 
     .product-details {
       text-align: left;
       flex-grow: 1;
       width: 50%;
+      min-width: 0;
     }
 
     .product-price {
@@ -113,20 +116,59 @@
     }
 
     .product-unavailable {
-      background-color: #ffeeee;
-      color: #ff0000;
+      background-color: #fff3f3;
+      border-color: #f5c2c7;
+    }
+
+    .product-out-of-stock {
+      background-color: #fff7ed;
+      border-color: #fed7aa;
     }
 
     .product-updated {
       background-color: #eef2ff;
       border-color: #c7d2fe;
-      color: #3730a3;
     }
 
-    .checkout-item-issue {
-      font-size: 0.75rem;
-      margin-top: 4px;
-      display: block;
+    .checkout-status-container {
+      display: flex;
+      justify-content: flex-end;
+      min-width: 150px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: fit-content;
+    }
+
+    .badge-unavailable {
+      background-color: #fff0f0;
+      color: #e53935;
+      border: 1px solid #ffcdd2;
+    }
+
+    .badge-out-of-stock {
+      background-color: #fff3e0;
+      color: #ef6c00;
+      border: 1px solid #ffe0b2;
+    }
+
+    .badge-low-stock {
+      background-color: #fff8db;
+      color: #9a6700;
+      border: 1px solid #fde68a;
+    }
+
+    .badge-price-changed {
+      background-color: #eef2ff;
+      color: #4338ca;
+      border: 1px solid #c7d2fe;
     }
 
     .coupon-flex {
@@ -258,6 +300,87 @@
     #couponMessage.text-warning {
       color: #b45309 !important;
     }
+
+    @media (max-width: 576px) {
+      .summary-card {
+        padding: 12px;
+      }
+
+      .product-summary {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        padding: 10px;
+      }
+
+      .product-summary img {
+        width: 44px;
+        margin-right: 0;
+        flex-basis: 44px;
+      }
+
+      .product-details {
+        width: calc(100% - 54px);
+        flex: 1 1 calc(100% - 54px);
+      }
+
+      .product-details strong {
+        display: block;
+        line-height: 1.25;
+      }
+
+      .checkout-price-block {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .quantity-details {
+        order: 3;
+        width: auto;
+        margin-left: 54px;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+
+      .product-price {
+        order: 4;
+        width: auto;
+        margin-left: auto;
+        text-align: right;
+        font-size: 0.9rem;
+      }
+
+      .checkout-status-container {
+        order: 5;
+        width: 100%;
+        min-width: 0;
+        margin-left: 54px;
+        justify-content: flex-start;
+      }
+
+      .status-badge {
+        max-width: 100%;
+        font-size: 0.65rem;
+        line-height: 1.2;
+        letter-spacing: 0.2px;
+        text-transform: none;
+        white-space: normal;
+      }
+
+      .coupon-flex {
+        flex-direction: column;
+      }
+
+      .apply-btn {
+        width: 100%;
+      }
+
+      .applied-coupon-badge .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+      }
+    }
   </style>
 </head>
 
@@ -329,35 +452,41 @@
               hasOutOfStockProduct = false %> <% if(cart) { %>
             <div id="cartData" data-cart="<%= JSON.stringify(cart) %>"></div>
             <% cart.products.forEach(cartItem => { %> 
-            <% if (cartItem.productId.isListed && cartItem.productId.category && cartItem.productId.category.isListed !== false && cartItem.productId.stock > 0) { %>
-            <% const originalPrice = cartItem.productId.price %> 
+            <% if (cartItem.productId.isListed && cartItem.productId.category && cartItem.productId.category.isListed !== false && cartItem.productId.stock > 0) { %> 
+            <% const originalPrice = Math.floor(cartItem.productId.price) %> 
+            <% const currentPrice = Math.floor(cartItem.discountedPrice ?? cartItem.productId.bestOffer?.discountedPrice ?? cartItem.productId.price) %>
+            <% const hasActiveOffer = currentPrice < originalPrice %>
             <% subtotal += originalPrice * cartItem.quantity %>
             <div class="product-summary" data-product-id="<%= cartItem.productId._id %>">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
                 <strong><%= cartItem.productId.name %></strong><br />
-                <% if (cartItem.productId.bestOffer) { %>
-                  <span class="text-muted" style="text-decoration: line-through; font-size: 0.85rem;">₹ <%= Math.floor(cartItem.productId.price) %></span>
-                  <span class="font-weight-bold ml-1" style="color: #008000;">₹ <%= Math.floor(cartItem.productId.bestOffer.discountedPrice) %></span>
+                <div class="checkout-price-block">
+                <% if (hasActiveOffer) { %>
+                  <span class="text-muted checkout-original-price" style="text-decoration: line-through; font-size: 0.85rem;">&#8377; <%= originalPrice %></span>
+                  <span class="font-weight-bold ml-1 checkout-current-price" style="color: #008000;">&#8377; <%= currentPrice %></span>
                 <% } else { %>
-                  <span class="font-weight-bold">₹ <%= Math.floor(cartItem.productId.price) %></span>
+                  <span class="font-weight-bold checkout-current-price">&#8377; <%= currentPrice %></span>
                 <% } %>
-                <small class="checkout-item-issue text-danger"></small>
+                </div>
               </div>
               <div class="quantity-details">
                 <span class="checkout-quantity">x <%= cartItem.quantity %></span>
               </div>
               <div class="product-price">
-                <span>₹ <%= Math.floor(originalPrice * cartItem.quantity) %></span>
+                <span>&#8377; <%= Math.floor(currentPrice * cartItem.quantity) %></span>
               </div>
+              <div class="checkout-status-container"></div>
             </div>
             <% } else if (!cartItem.productId.isListed) { %> 
             <% hasUnlistedProduct = true %>
             <div class="product-summary product-unavailable" data-product-id="<%= cartItem.productId._id %>">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
-                <strong><%= cartItem.productId.name %></strong><br />
-                <span>Product no longer available</span>
+                <strong><%= cartItem.productId.name %></strong>
+              </div>
+              <div class="checkout-status-container">
+                <span class="status-badge badge-unavailable">Unavailable</span>
               </div>
             </div>
             <% } else if (!cartItem.productId.category || cartItem.productId.category.isListed === false) { %> 
@@ -365,17 +494,21 @@
             <div class="product-summary product-unavailable" data-product-id="<%= cartItem.productId._id %>">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
-                <strong><%= cartItem.productId.name %></strong><br />
-                <span>Category no longer available</span>
+                <strong><%= cartItem.productId.name %></strong>
+              </div>
+              <div class="checkout-status-container">
+                <span class="status-badge badge-unavailable">Unavailable</span>
               </div>
             </div>
             <% } else if (cartItem.productId.stock < 1) { %> 
             <% hasOutOfStockProduct = true %>
-            <div class="product-summary product-unavailable" data-product-id="<%= cartItem.productId._id %>">
+            <div class="product-summary product-out-of-stock" data-product-id="<%= cartItem.productId._id %>">
               <img src="<%= cartItem.productId.images[0] %>" alt="product img" width="50" />
               <div class="product-details">
-                <strong><%= cartItem.productId.name %></strong><br />
-                <span>Product out of stock</span>
+                <strong><%= cartItem.productId.name %></strong>
+              </div>
+              <div class="checkout-status-container">
+                <span class="status-badge badge-out-of-stock">Out of Stock</span>
               </div>
             </div>
             <% } %> <% }); %> <% } %>
@@ -505,8 +638,6 @@
   <!-- SwalCustom utility is already included via navBar.ejs -->
   <script>
     const placeOrderButton = document.getElementById("placeOrderButton");
-    const delayedFetch = (url, options, loaderOptions) =>
-      SwalCustom.withDelayedProcessing(() => authAwareFetch(url, options), loaderOptions);
 
     function checkFormValidity() {
       const fullName = document.getElementById("fullName").value;
@@ -654,6 +785,8 @@
     document.addEventListener("DOMContentLoaded", () => {
       let discount = 0;
       let appliedCouponCode = ""; // Ensure this is defined and used correctly
+      let appliedCouponDiscount = 0;
+      let hasSuccessfullyAppliedCoupon = false;
 
       const couponCodeInput = document.getElementById("couponCode");
       const clearCouponInputButton = document.getElementById("clearCouponInput");
@@ -676,6 +809,13 @@
         return `Rs. ${Math.floor(Number(amount) || 0)}`;
       }
 
+      function parseMoneyValue(value) {
+        const numericParts = String(value || "").match(/-?\d+/g);
+        if (!numericParts) return 0;
+        const parsed = Number.parseInt(numericParts.join(""), 10);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+
       function setCouponMessage(text = "", tone = "") {
         couponMessage.textContent = text;
         couponMessage.classList.remove("text-success", "text-danger", "text-info", "text-warning");
@@ -685,8 +825,7 @@
       function syncCouponClearButton() {
         if (!clearCouponInputButton) return;
         const hasValue = couponCodeInput.value.trim().length > 0;
-        const hasMessage = couponMessage.textContent.trim().length > 0;
-        clearCouponInputButton.style.display = hasValue || hasMessage ? "inline-flex" : "none";
+        clearCouponInputButton.style.display = hasValue ? "inline-flex" : "none";
       }
 
       function getCouponMetaText(couponState) {
@@ -721,9 +860,40 @@
         }
       }
 
-      function renderCouponState(couponState, fallbackMessage = "", fallbackTone = "text-danger") {
+      function resetCouponStateAndPricing() {
+        appliedCouponCode = "";
+        appliedCouponDiscount = 0;
+        hasSuccessfullyAppliedCoupon = false;
+
+        const subtotal = parseMoneyValue(document.getElementById('subtotal').innerText);
+        const offerDiscount = Math.abs(parseMoneyValue(document.getElementById('offerDiscountDisplay').innerText));
+        const deliveryChargeDisplay = document.getElementById('deliveryChargeDisplay');
+        const delivery = deliveryChargeDisplay ? parseMoneyValue(deliveryChargeDisplay.innerText) : 0;
+
+        updatePricingSummary({
+          subtotal,
+          offerDiscount,
+          couponDiscount: 0,
+          deliveryCharge: delivery,
+          totalAmount: subtotal - offerDiscount + delivery
+        });
+
+        couponInputContainer.style.display = 'flex';
+        appliedCouponBadge.style.display = 'none';
+        couponCodeInput.value = "";
+        appliedCouponDisplay.textContent = "";
+        couponBadgeMeta.textContent = "";
+        setCouponMessage("");
+        syncCouponClearButton();
+      }
+
+      function renderCouponState(couponState, fallbackMessage = "", fallbackTone = "text-danger", suppressMessage = false) {
         if (!couponState) {
-          if (fallbackMessage) setCouponMessage(fallbackMessage, fallbackTone);
+          appliedCouponCode = "";
+          appliedCouponDiscount = 0;
+          hasSuccessfullyAppliedCoupon = false;
+          if (!suppressMessage && fallbackMessage) setCouponMessage(fallbackMessage, fallbackTone);
+          else if (suppressMessage) setCouponMessage("");
           syncCouponClearButton();
           return;
         }
@@ -732,12 +902,16 @@
 
         if (couponState.isApplied) {
           appliedCouponCode = couponState.code || "";
+          appliedCouponDiscount = Math.max(0, Math.floor(couponState.discount || 0));
+          hasSuccessfullyAppliedCoupon = true;
           couponInputContainer.style.display = 'none';
           appliedCouponBadge.style.display = 'block';
           appliedCouponDisplay.textContent = couponState.code || "";
           couponBadgeMeta.textContent = getCouponMetaText(couponState);
         } else {
           appliedCouponCode = "";
+          appliedCouponDiscount = 0;
+          hasSuccessfullyAppliedCoupon = false;
           couponInputContainer.style.display = 'flex';
           appliedCouponBadge.style.display = 'none';
           appliedCouponDisplay.textContent = "";
@@ -746,8 +920,93 @@
         }
 
         const tone = couponState.status === "applied" ? "text-success" : couponState.status === "changed" ? "text-warning" : "text-danger";
-        setCouponMessage(couponState.message || fallbackMessage, tone);
+        if (suppressMessage) {
+          setCouponMessage("");
+        } else {
+          setCouponMessage(couponState.message || fallbackMessage, tone);
+        }
         syncCouponClearButton();
+      }
+
+      function getCheckoutAlertMessage(errorData = {}) {
+        const errors = Array.isArray(errorData.errors) ? errorData.errors : [];
+        const blockingStatuses = new Set(['unavailable', 'unlisted', 'category-unlisted', 'out-of-stock']);
+
+        if (errorData.couponState?.message && !errors.length) {
+          return errorData.couponState.message;
+        }
+
+        if (errors.length > 0) {
+          const hasOnlyUnavailableOrOutOfStock = errors.every((error) => blockingStatuses.has(error.status));
+          if (hasOnlyUnavailableOrOutOfStock) {
+            return "Some products in your cart are no longer available or out of stock. Please remove these items to proceed.";
+          }
+
+          if (errors.some((error) => error.status === 'price-changed')) {
+            return "The price of some products in your cart has changed. Please review your order summary before proceeding.";
+          }
+
+          if (errors.some((error) => error.status === 'low-stock')) {
+            return "The available stock for some products in your cart has changed. Please review your order summary before proceeding.";
+          }
+        }
+
+        if (errorData.couponState?.message) return errorData.couponState.message;
+        return errorData.message || "Please review your order and try again.";
+      }
+
+      function handleCheckoutOrderError(errorData) {
+        updateCheckoutIssueUI(errorData.errors, errorData.cartState);
+
+        if (errorData.couponState) {
+          const shouldSuppressCouponMessage = errorData.couponState.status === "applied";
+          renderCouponState(errorData.couponState, "", "text-danger", shouldSuppressCouponMessage);
+        } else if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+          setCouponMessage("");
+          syncCouponClearButton();
+        }
+
+        SwalCustom.error(
+          "Order Failed",
+          getCheckoutAlertMessage(errorData)
+        );
+      }
+
+      function getCheckoutPriceData(item) {
+        const originalPrice = Math.floor(item?.productId?.price ?? 0);
+        const currentPrice = Math.floor(item?.discountedPrice ?? item?.productId?.currentDiscountedPrice ?? item?.productId?.bestOffer?.discountedPrice ?? item?.productId?.price ?? 0);
+        const hasActiveOffer = currentPrice < originalPrice;
+        return { originalPrice, currentPrice, hasActiveOffer };
+      }
+
+      function renderCheckoutPriceBlock(details, item) {
+        if (!details || !item?.productId) return;
+        const priceBlock = details.querySelector('.checkout-price-block');
+        if (!priceBlock) return;
+
+        const { originalPrice, currentPrice, hasActiveOffer } = getCheckoutPriceData(item);
+        priceBlock.innerHTML = hasActiveOffer
+          ? `<span class="text-muted checkout-original-price" style="text-decoration: line-through; font-size: 0.85rem;">₹ ${originalPrice}</span><span class="font-weight-bold ml-1 checkout-current-price" style="color: #008000;">₹ ${currentPrice}</span>`
+          : `<span class="font-weight-bold checkout-current-price">₹ ${currentPrice}</span>`;
+      }
+
+      function renderCheckoutStatusBadge(statusContainer, status, availableStock) {
+        if (!statusContainer) return;
+
+        let badgeHTML = '';
+        if (status === 'unavailable' || status === 'unlisted') {
+          badgeHTML = `<span class="status-badge badge-unavailable">Unavailable</span>`;
+        } else if (status === 'category-unlisted') {
+          badgeHTML = `<span class="status-badge badge-unavailable">Unavailable</span>`;
+        } else if (status === 'out-of-stock') {
+          badgeHTML = `<span class="status-badge badge-out-of-stock">Out of Stock</span>`;
+        } else if (status === 'low-stock') {
+          badgeHTML = `<span class="status-badge badge-low-stock"><i class="fas fa-exclamation-triangle mr-1"></i>Only ${availableStock} left</span>`;
+        } else if (status === 'price-changed') {
+          badgeHTML = `<span class="status-badge badge-price-changed">Price Updated</span>`;
+        }
+
+        statusContainer.innerHTML = badgeHTML;
       }
 
       function updateCheckoutIssueUI(errors, cartState) {
@@ -757,12 +1016,14 @@
             cartDataEl.setAttribute('data-cart', JSON.stringify({ products: cartState.productsWithPrices || [] }));
           }
           appliedCouponCode = "";
+          appliedCouponDiscount = 0;
+          hasSuccessfullyAppliedCoupon = false;
           couponInputContainer.style.display = 'flex';
           appliedCouponBadge.style.display = 'none';
-          couponCodeInput.value = "";
-          appliedCouponDisplay.textContent = "";
-          couponBadgeMeta.textContent = "";
-          setCouponMessage("");
+          couponCodeInput.value = '';
+          appliedCouponDisplay.textContent = '';
+          couponBadgeMeta.textContent = '';
+          setCouponMessage('');
           updatePricingSummary({
             subtotal: cartState.subtotal || 0,
             offerDiscount: cartState.offerDiscount || 0,
@@ -782,28 +1043,21 @@
               if (quantityLabel) quantityLabel.textContent = `x ${item.quantity}`;
 
               if (details) {
-                const spans = details.querySelectorAll('span');
-                const currentPrice = Math.floor(item.discountedPrice ?? item.productId.currentDiscountedPrice ?? item.productId.price);
-                if (item.productId.bestOffer && spans[0] && spans[1]) {
-                  spans[0].textContent = `₹ ${Math.floor(item.productId.price)}`;
-                  spans[1].textContent = `₹ ${currentPrice}`;
-                } else if (spans[0]) {
-                  spans[0].textContent = `₹ ${currentPrice}`;
-                }
+                renderCheckoutPriceBlock(details, item);
               }
 
               if (priceBox) {
-                const currentPrice = Math.floor(item.discountedPrice ?? item.productId.currentDiscountedPrice ?? item.productId.price);
-                priceBox.innerHTML = `<span>₹ ${Math.floor(currentPrice * item.quantity)}</span>`;
+                const { currentPrice } = getCheckoutPriceData(item);
+                priceBox.innerHTML = `<span>&#8377; ${Math.floor(currentPrice * item.quantity)}</span>`;
               }
             });
           }
         }
 
         document.querySelectorAll('.product-summary').forEach((row) => {
-          row.classList.remove('product-unavailable', 'product-updated');
-          const issue = row.querySelector('.checkout-item-issue');
-          if (issue) issue.textContent = '';
+          row.classList.remove('product-unavailable', 'product-out-of-stock', 'product-updated');
+          const statusContainer = row.querySelector('.checkout-status-container');
+          if (statusContainer) statusContainer.innerHTML = '';
         });
 
         if (!Array.isArray(errors)) {
@@ -814,11 +1068,11 @@
         errors.forEach((error) => {
           const row = document.querySelector(`.product-summary[data-product-id="${error.productId}"]`);
           if (!row) return;
-
-          const issue = row.querySelector('.checkout-item-issue');
-          if (issue) issue.textContent = error.message || '';
+          const statusContainer = row.querySelector('.checkout-status-container');
+          renderCheckoutStatusBadge(statusContainer, error.status, error.availableStock);
 
           if (error.status === 'price-changed') row.classList.add('product-updated');
+          else if (error.status === 'out-of-stock' || error.status === 'low-stock') row.classList.add('product-out-of-stock');
           else row.classList.add('product-unavailable');
         });
         syncCouponClearButton();
@@ -866,33 +1120,7 @@
       });
 
       removeCouponButton.addEventListener("click", () => {
-        appliedCouponCode = "";
-        
-        // Reset Coupon Discount in UI
-        document.getElementById('couponDiscountDisplay').innerText = `0`;
-        
-        // Recalculate based on current subtotal and delivery
-        const subtotalText = document.getElementById('subtotal').innerText.replace('Rs. ', '').trim();
-        const offerDiscountText = document.getElementById('offerDiscountDisplay').innerText.replace('- Rs. ', '').trim();
-        
-        const subtotal = Math.floor(parseFloat(subtotalText));
-        const offerDiscount = offerDiscountText === '0' ? 0 : Math.floor(parseFloat(offerDiscountText));
-        
-        // Handle potentially non-numeric text like "Free" in delivery
-        const deliveryChargeDisplay = document.getElementById('deliveryChargeDisplay');
-        const delivery = deliveryChargeDisplay ? Math.floor(parseFloat(deliveryChargeDisplay.innerText)) : 0;
-        
-        const originalTotal = subtotal - offerDiscount + delivery;
-        document.getElementById("totalAmount").innerText = formatMoney(originalTotal);
-
-        // Show Input area, hide Badge
-        couponInputContainer.style.display = 'flex';
-        appliedCouponBadge.style.display = 'none';
-        couponCodeInput.value = "";
-        appliedCouponDisplay.textContent = "";
-        couponBadgeMeta.textContent = "";
-        setCouponMessage("Coupon removed.", "text-info");
-        syncCouponClearButton();
+        resetCouponStateAndPricing();
       });
 
       couponCodeInput.addEventListener("input", () => {
@@ -904,9 +1132,7 @@
 
       if (clearCouponInputButton) {
         clearCouponInputButton.addEventListener("click", () => {
-          couponCodeInput.value = "";
-          setCouponMessage("");
-          syncCouponClearButton();
+          resetCouponStateAndPricing();
           couponCodeInput.focus();
         });
       }
@@ -935,13 +1161,6 @@
           price: item.discountedPrice || item.productId.price,
         }));
 
-        const subtotal = cart.products.reduce(
-          (acc, item) => acc + (item.discountedPrice || item.productId.price) * item.quantity,
-          0
-        );
-        const deliveryChargeElement = document.getElementById('deliveryChargeDisplay');
-        const deliveryCharge = deliveryChargeElement ? parseFloat(deliveryChargeElement.innerText) : 0;
-
         const shippingAddress = {
           fullname: fullName,
           address,
@@ -949,19 +1168,19 @@
           phone: phoneNumber,
         };
 
-        const totalAmountText = document.getElementById("totalAmount").innerText.replace("₹ ", "").trim();
-        const totalAmountAfterDiscount = Math.floor(parseFloat(totalAmountText));
+        const totalAmountAfterDiscount = parseMoneyValue(document.getElementById("totalAmount").innerText);
 
         const orderData = {
           items,
           totalAmount: totalAmountAfterDiscount,
           shippingAddress,
           paymentMethod: paymentMethod.value,
-          couponCode: appliedCouponCode,
+          couponCode: hasSuccessfullyAppliedCoupon ? appliedCouponCode : "",
+          couponDiscount: hasSuccessfullyAppliedCoupon ? appliedCouponDiscount : 0,
         };
 
         try {
-          const orderResponse = await delayedFetch(
+          const orderResponse = await authAwareFetch(
             "/orders/checkout/confirm",
             {
               method: "POST",
@@ -969,14 +1188,13 @@
                 "Content-Type": "application/json",
               },
               body: JSON.stringify(orderData),
-            },
-            {
-              title: "Placing order...",
-              text: "Please wait while we confirm your order."
             }
           );
 
-          if (!orderResponse) return;
+          if (!orderResponse) {
+            placeOrderButton.disabled = false;
+            return;
+          }
           if (orderResponse.ok) {
             const order = await orderResponse.json();
             const orderId = order.orderId;
@@ -989,6 +1207,10 @@
                 window.location.href = `/orders/success?orderId=${orderId}`;
               });
             } else if (paymentMethod.value === 'Razorpay') {
+              SwalCustom.processing(
+                "Preparing payment...",
+                "Please wait while we open Razorpay."
+              );
               const razorpayResponse = await authAwareFetch(
                 "/orders/razorpay/create",
                 {
@@ -1002,9 +1224,14 @@
                 }
               );
 
-              if (!razorpayResponse) return;
+              if (!razorpayResponse) {
+                Swal.close();
+                placeOrderButton.disabled = false;
+                return;
+              }
               if (razorpayResponse.ok) {
                 const razorpayData = await razorpayResponse.json();
+                Swal.close();
                 const options = {
                   key: "rzp_test_KZK1gW6B1A7B5s",
                   amount: razorpayData.amount,
@@ -1072,6 +1299,7 @@
                 });
                 razorpay.open();
               } else {
+                Swal.close();
                 const errorData = await razorpayResponse.json();
                 SwalCustom.error("Razorpay Error", errorData.message || "Failed to initiate payment.");
                 placeOrderButton.disabled = false;
@@ -1084,9 +1312,7 @@
             }
           } else {
             const errorData = await orderResponse.json();
-            updateCheckoutIssueUI(errorData.errors, errorData.cartState);
-            renderCouponState(errorData.couponState, errorData.message, "text-danger");
-            SwalCustom.error("Order Failed", errorData.message || "Error creating order.");
+            handleCheckoutOrderError(errorData);
             placeOrderButton.disabled = false;
           }
         } catch (error) {
@@ -1114,4 +1340,5 @@
 </body>
 
 </html>
+
 

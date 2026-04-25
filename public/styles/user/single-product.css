@@ -189,6 +189,12 @@ body {
   color: #666;
 }
 
+.product-title-wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .line {
   border-top: 1px solid #ccc;
   margin: 15px 0;

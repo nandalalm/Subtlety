@@ -47,10 +47,65 @@ function normalizeCouponPayload(couponData) {
 
 function validateCouponCodeOrThrow(code) {
   const normalizedCode = normalizeCouponCode(code);
+  if (normalizedCode.length > 20) {
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Coupon code cannot exceed 20 characters." };
+  }
   if (!/^[A-Z0-9]{4,}$/.test(normalizedCode)) {
     throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.INVALID_CODE };
   }
   return normalizedCode;
+}
+
+function validateCouponPayloadOrThrow(couponData) {
+  const discountType = String(couponData.discountType || "").trim();
+  const discountAmount = parsePositiveNumber(couponData.discountAmount);
+  const maxDiscount = parsePositiveNumber(couponData.maxDiscount);
+  const minOrderValue = parsePositiveNumber(couponData.minOrderValue);
+  const usageLimit = parsePositiveNumber(couponData.usageLimit);
+
+  if (!discountType || discountAmount === null || !couponData.expiresAt || usageLimit === null) {
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.REQUIRED_FIELDS };
+  }
+
+  if (!["flat", "percentage"].includes(discountType)) {
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Please select a valid discount type." };
+  }
+
+  if (!ensureFutureOrToday(couponData.expiresAt)) {
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.INVALID_EXPIRY };
+  }
+
+  if (usageLimit < 1) {
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Usage limit must be at least 1." };
+  }
+
+  if (discountType === "percentage") {
+    if (discountAmount < 1 || discountAmount > 80) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.INVALID_DISCOUNT };
+    }
+
+    if (maxDiscount === null) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Maximum discount is required for percentage coupons." };
+    }
+
+    if (maxDiscount < 50 || maxDiscount > 500) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Maximum discount must be between Rs. 50 and Rs. 500." };
+    }
+  }
+
+  if (discountType === "flat") {
+    if (discountAmount <= 0) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Discount amount must be greater than 0." };
+    }
+
+    if (minOrderValue === null || minOrderValue <= 0) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Minimum order value must be greater than 0." };
+    }
+
+    if (discountAmount >= minOrderValue) {
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.INVALID_FLAT_DISCOUNT };
+    }
+  }
 }
 
 async function validateOfferPayload(offerData, excludeOfferId = null) {
@@ -306,6 +361,7 @@ const offerService = {
 
   addCoupon: async (couponData) => {
     const normalizedCode = validateCouponCodeOrThrow(couponData.code);
+    validateCouponPayloadOrThrow(couponData);
     const normalizedCouponData = normalizeCouponPayload(couponData);
     const existing = await couponRepository.findOne({ code: normalizedCode });
     if (existing) {
@@ -319,13 +375,9 @@ const offerService = {
     if (!coupon) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.COUPON.NOT_FOUND };
     }
-    const normalizedCode = validateCouponCodeOrThrow(updateData.code);
+    validateCouponPayloadOrThrow(updateData);
     const normalizedCouponData = normalizeCouponPayload(updateData);
-    const existing = await couponRepository.findOne({ code: normalizedCode, _id: { $ne: id } });
-    if (existing) {
-      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.ALREADY_EXISTS };
-    }
-    return await couponRepository.updateById(id, { ...normalizedCouponData, code: normalizedCode });
+    return await couponRepository.updateById(id, { ...normalizedCouponData, code: coupon.code });
   },
 
   toggleCouponStatus: async (id) => {

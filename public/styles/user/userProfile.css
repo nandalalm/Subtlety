@@ -15,7 +15,7 @@ body {
 
 @media (max-width: 991px) {
   .profile-section {
-    padding-top: 60px;
+    padding-top: 36px;
     padding-bottom: 60px;
   }
 }
@@ -181,6 +181,15 @@ input[disabled] {
 
 /* Unified Overlay Sidebar (< 992px) */
 @media (max-width: 991px) {
+  .profile .breadcrumbs {
+    margin-top: 0 !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .profile .breadcrumbs > div:last-child {
+    display: none !important;
+  }
+
   .sidebar-toggle-btn {
     position: fixed;
     bottom: 30px;
@@ -261,13 +270,6 @@ input[disabled] {
   .sidebar-overlay.show {
     display: block;
     opacity: 1;
-  }
-
-  /* Welcome text alignment for mobile */
-  .breadcrumbs h5 {
-    text-align: right;
-    width: 100%;
-    font-size: 0.95rem;
   }
 }
 

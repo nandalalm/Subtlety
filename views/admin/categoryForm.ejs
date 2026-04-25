@@ -54,7 +54,7 @@
                     <div class="col-md-6">
                       <div class="form-group mb-4">
                         <label class="font-weight-600">Category Name</label>
-                        <input type="text" id="name" name="name" class="form-control" value="<%= category?.name || '' %>" placeholder="Enter category name">
+                        <input type="text" id="name" name="name" class="form-control" value="<%= category?.name || '' %>" placeholder="Enter category name" maxlength="50">
                         <small id="name-error" class="field-feedback"></small>
                       </div>
                       <div class="form-group mb-4">
@@ -132,6 +132,12 @@
         nameInput.classList.add('is-invalid');
         nameInput.classList.remove('is-valid');
         setFieldMessage('name-error', 'Category name is required.');
+        return false;
+      }
+      if (value.length > 50) {
+        nameInput.classList.add('is-invalid');
+        nameInput.classList.remove('is-valid');
+        setFieldMessage('name-error', 'Category name cannot exceed 50 characters.');
         return false;
       }
       if (!/^[A-Za-z]{4,}$/.test(value)) {

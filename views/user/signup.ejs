@@ -199,12 +199,12 @@
     <form id="signupForm" method="post">
       <div class="form-group">
         <label for="firstname"><small>Firstname</small></label>
-        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter firstname" required>
+        <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Enter firstname" maxlength="50" required>
         <small id="firstname-error" class="form-text text-danger" style="display: none;"></small>
       </div>
       <div class="form-group">
         <label for="lastname"><small>Lastname <span class="text-muted">(optional)</span></small></label>
-        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname">
+        <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Enter lastname" maxlength="50">
         <small id="lastname-error" class="form-text text-danger" style="display: none;"></small>
       </div>
       <div class="form-group">
@@ -361,6 +361,7 @@
       if (/\s/.test(value)) return 'No spaces allowed';
       if (/[^a-zA-Z\s]/.test(value) && /\d/.test(value)) return 'No numbers allowed';
       if (/[^a-zA-Z]/.test(value)) return 'No special characters allowed';
+      if (value.length > 50) return 'Maximum 50 characters allowed';
       if (value.length < 4) return 'Min 4 chars required';
       return '';
     }
@@ -371,6 +372,7 @@
       if (/\d/.test(trimmed)) return 'No numbers allowed';
       if (/\s/.test(trimmed)) return 'No spaces allowed';
       if (/[^a-zA-Z]/.test(trimmed)) return 'No special characters allowed';
+      if (trimmed.length > 50) return 'Maximum 50 characters allowed';
       return '';
     }
 

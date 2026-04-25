@@ -34,7 +34,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      align-items: center;
+      align-items: flex-end;
       margin-bottom: 20px;
       background-color: #f8f9fa;
       padding: 14px 16px;
@@ -47,7 +47,44 @@
       color: #6c757d;
       margin-bottom: 4px;
     }
-    .shop-filter-item { min-width: 200px; flex: 1; max-width: 280px; }
+    .shop-filter-item {
+      min-width: 200px;
+      flex: 1 1 220px;
+      max-width: 280px;
+    }
+    .shop-filter-actions {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      margin-left: auto;
+      flex: 0 0 auto;
+    }
+    .shop-clear-all-btn {
+      height: 44px;
+      min-width: 120px;
+      padding: 0 18px;
+      border: 1px solid #cfd4da;
+      background: #e9ecef;
+      color: #495057;
+      border-radius: 8px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1;
+      white-space: nowrap;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .shop-clear-all-btn:hover {
+      background: #dee2e6;
+      border-color: #c2c8cf;
+      color: #343a40;
+    }
+    .shop-clear-all-btn:focus {
+      outline: none;
+      box-shadow: none;
+    }
     
     /* Shop Search Responsiveness */
     #search {
@@ -83,6 +120,25 @@
     @media(max-width: 576px) {
         #search { width: 155px; padding: 8px; padding-right: 25px; }
         #search-btn { padding: 0 15px; }
+        .shop-filter-bar {
+          align-items: stretch;
+        }
+        .shop-filter-item {
+          min-width: 100%;
+          max-width: 100%;
+        }
+        .shop-filter-actions {
+          margin-left: 0;
+          width: 100%;
+          justify-content: stretch;
+        }
+        .shop-clear-all-btn { width: 100%; }
+    }
+
+    @media (min-width: 577px) and (max-width: 991px) {
+      .shop-filter-actions {
+        margin-left: 0;
+      }
     }
   </style>
 </head>
@@ -148,6 +204,17 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
+      </div>
+
+      <div class="shop-filter-actions">
+        <button
+          type="button"
+          id="shopClearAllBtn"
+          class="shop-clear-all-btn"
+          style="display: <%= (search && search.trim()) || (sort && sort !== 'latest') || (category && category !== 'all') ? 'inline-flex' : 'none' %>;"
+          onclick="clearAllShopFilters()">
+          Clear All
+        </button>
       </div>
 
     </div>
@@ -241,6 +308,50 @@
       const newUrl = `${url.pathname}${url.search}`;
       refreshTable(containerId, newUrl);
       window.history.pushState({}, '', newUrl);
+      updateClearAllButtonVisibility();
+    };
+
+    function updateClearAllButtonVisibility() {
+      const searchInput = document.getElementById('search');
+      const sortSelect = document.getElementById('shopSortSelect');
+      const categorySelect = document.getElementById('categorySelect');
+      const clearAllBtn = document.getElementById('shopClearAllBtn');
+
+      if (!clearAllBtn) return;
+
+      const hasSearch = searchInput && searchInput.value.trim() !== '';
+      const hasSort = sortSelect && sortSelect.value !== 'latest';
+      const hasCategory = categorySelect && categorySelect.value !== 'all';
+
+      clearAllBtn.style.display = hasSearch || hasSort || hasCategory ? 'inline-flex' : 'none';
+    }
+
+    window.clearAllShopFilters = function() {
+      const searchInput = document.getElementById('search');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      const sortSelect = document.getElementById('shopSortSelect');
+      const clearSortBtn = document.getElementById('clearShopSortBtn');
+      const categorySelect = document.getElementById('categorySelect');
+      const clearCategoryBtn = document.getElementById('clearCategoryBtn');
+      const url = new URL(window.location.href);
+
+      if (searchInput) searchInput.value = '';
+      if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+      if (sortSelect) sortSelect.value = 'latest';
+      if (clearSortBtn) clearSortBtn.style.display = 'none';
+      if (categorySelect) categorySelect.value = 'all';
+      if (clearCategoryBtn) clearCategoryBtn.style.display = 'none';
+
+      url.searchParams.delete('search');
+      url.searchParams.delete('sort');
+      url.searchParams.delete('category');
+      url.searchParams.set('page', '1');
+      url.searchParams.set('limit', currentPage * itemsPerPage);
+
+      const newUrl = `${url.pathname}${url.search}`;
+      refreshTable('product-grid', newUrl);
+      window.history.pushState({}, '', newUrl);
+      updateClearAllButtonVisibility();
     };
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -256,7 +367,10 @@
             applyAjaxFilter('product-grid', 'search', searchInput.value.trim(), 'user/shop');
           }
         });
+        searchInput.addEventListener('input', updateClearAllButtonVisibility);
       }
+
+      updateClearAllButtonVisibility();
     });
   </script>
 

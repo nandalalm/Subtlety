@@ -4,7 +4,6 @@ import session from "express-session";
 import passport from "passport";
 import cors from "cors";
 import MongoStore from "connect-mongo";
-
 import userRoute from "./routes/userRoutes.js";
 import adminRoute from "./routes/adminRoutes.js";
 import authRoute from "./routes/authRoutes.js";
@@ -19,13 +18,10 @@ import walletRoute from "./routes/walletRoutes.js";
 import reviewRoute from "./routes/reviewRoutes.js";
 import adminReviewRoute from "./routes/adminReviewRoutes.js";
 import offerRoute from "./routes/offerRoutes.js";
-
 import "dotenv/config";
 import "./passport-setup.js";
-
 import connectDB from "./config/db.js";
 import { fileURLToPath } from 'url';
-
 import logger from "./middleware/logger.js";
 import errorHandler from "./middleware/errorHandler.js";
 import HTTP_STATUS from "./Constants/httpStatus.js";

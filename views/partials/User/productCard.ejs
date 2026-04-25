@@ -1,6 +1,6 @@
-<div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %> mb-4">
+<div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 <%= product.stock === 0 ? 'out-of-stock' : '' %> mb-4" data-product-id="<%= product._id %>" data-category-id="<%= product.category?._id || product.category %>">
     <div class="product-card h-100 shadow-sm border-0" style="border-radius: 0; overflow: hidden; background: #f4f4f4; transition: transform 0.3s ease;">
-        <a href="/user/single-product/<%= product._id %>" class="card-link text-decoration-none color-inherit">
+        <a href="/user/single-product/<%= product._id %>" class="card-link text-decoration-none color-inherit" data-product-id="<%= product._id %>" data-category-id="<%= product.category?._id || product.category %>">
             <div class="card-img-half position-relative" style="aspect-ratio: 1/1; overflow: hidden; border-radius: 0;">
                 <img src="<%= product.images[0] %>" class="card-img-top w-100 h-100" style="object-fit: cover; border-radius: 0;" alt="<%= product.name %>">
                 <% if (product.stock === 0) { %>
@@ -48,7 +48,7 @@
             </div>
         </a>
         <div class="card-footer p-0 border-0 bg-transparent">
-            <div class="btn-group w-100 cart-controls-container" role="group" data-product-id="<%= product._id %>" style="border-radius: 0; height: 40px;">
+            <div class="btn-group w-100 cart-controls-container" role="group" data-product-id="<%= product._id %>" data-category-id="<%= product.category?._id || product.category %>" data-stock="<%= product.stock %>" style="border-radius: 0; height: 40px;">
                 <% if (typeof cartItemMap !== 'undefined' && cartItemMap && cartItemMap[product._id.toString()]) { %>
                     <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
                         <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">

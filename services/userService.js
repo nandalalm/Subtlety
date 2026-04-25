@@ -6,12 +6,51 @@ import reviewRepository from "../repositories/reviewRepository.js";
 import { getBestOffer, getAverageRatingsForProducts, getBestOfferBatch } from "../utils/helper.js";
 import mongoose from "mongoose";
 
+async function getListedCategoryIds() {
+  const listedCategories = await categoryRepository.find({ isListed: true });
+  return listedCategories.map((category) => category._id);
+}
+
+async function getProductAvailabilityState(productId) {
+  const product = await productRepository.findByIdAndPopulate(productId, "category");
+  if (!product || !product.isListed) {
+    return { status: "unlisted", product: null, categoryId: null };
+  }
+
+  if (!product.category || product.category.isListed === false) {
+    return {
+      status: "category-unlisted",
+      product,
+      categoryId: product.category?._id ? String(product.category._id) : null
+    };
+  }
+
+  if (product.stock <= 0) {
+    return {
+      status: "out-of-stock",
+      product,
+      categoryId: product.category?._id ? String(product.category._id) : null
+    };
+  }
+
+  return {
+    status: "available",
+    product,
+    categoryId: product.category?._id ? String(product.category._id) : null
+  };
+}
+
 const userService = {
   getHomeData: async () => {
-    const [categories, products] = await Promise.all([
+    const [categories, listedCategoryIds] = await Promise.all([
       categoryRepository.find({ isListed: true }),
-      productRepository.find({ isListed: true })
+      getListedCategoryIds()
     ]);
+
+    const products = await productRepository.find({
+      isListed: true,
+      category: { $in: listedCategoryIds }
+    });
 
     const ratingMap = await getAverageRatingsForProducts(products);
     const bestOffers = await getBestOfferBatch(products);
@@ -27,7 +66,11 @@ const userService = {
 
     if (bestSellingProducts.length > 0) {
       const bestSellingProductIds = bestSellingProducts.slice(0, 4).map(item => item._id);
-      const bestSellingDetails = await productRepository.find({ _id: { $in: bestSellingProductIds } });
+      const bestSellingDetails = await productRepository.find({
+        _id: { $in: bestSellingProductIds },
+        isListed: true,
+        category: { $in: listedCategoryIds }
+      });
       const bestSellingRatingMap = await getAverageRatingsForProducts(bestSellingDetails);
       const bestSellingOffers = await getBestOfferBatch(bestSellingDetails);
       
@@ -40,7 +83,10 @@ const userService = {
       bestSellingWithOffers.sort((a, b) => b.count - a.count);
     }
 
-    const latestProducts = await productRepository.find({ isListed: true }, { createdAt: -1 }, 0, 4);
+    const latestProducts = await productRepository.find({
+      isListed: true,
+      category: { $in: listedCategoryIds }
+    }, { createdAt: -1 }, 0, 4);
     const latestRatingMap = await getAverageRatingsForProducts(latestProducts);
     const latestOffers = await getBestOfferBatch(latestProducts);
     
@@ -51,21 +97,30 @@ const userService = {
     });
     latestWithOffers.sort((a, b) => a.product.name.localeCompare(b.product.name));
 
+    const fallbackProducts = productsWithOffers.slice(0, 4);
+
     return {
       categories,
       productsWithOffers,
       bestSellingProducts: bestSellingWithOffers.slice(0, 4),
-      latestProducts: latestWithOffers
+      latestProducts: latestWithOffers,
+      fallbackProducts
     };
   },
 
   getShopData: async (queryParams) => {
     const { page = 1, limit = 8, search = "", category = "", sort = "" } = queryParams;
     const skip = (page - 1) * limit;
+    const listedCategoryIds = await getListedCategoryIds();
 
-    let query = { isListed: true };
+    let query = {
+      isListed: true,
+      category: { $in: listedCategoryIds }
+    };
     if (category && category !== "all") {
-      query.category = category;
+      query.category = listedCategoryIds.some((listedCategoryId) => String(listedCategoryId) === String(category))
+        ? category
+        : null;
     }
     if (search) {
       query.name = { $regex: search, $options: "i" };
@@ -105,16 +160,29 @@ const userService = {
     const product = await productRepository.findByIdAndPopulate(id, "category");
     if (!product) return null;
 
-    const [categories, relatedProducts, bestOffer, activeCoupons, reviews, ratingStats] = await Promise.all([
-      categoryRepository.find({}),
-      productRepository.find({ category: product.category, _id: { $ne: product._id }, isListed: true }, {}, 0, 4),
-      getBestOffer(product),
-      couponRepository.find({ isActive: true, expiresAt: { $gte: new Date() } }),
-      reviewRepository.find({ productId: id, isListed: true, comment: { $exists: true, $ne: "" } }, { createdAt: -1 }, 0, 5),
-      reviewRepository.aggregate([
-        { $match: { productId: new mongoose.Types.ObjectId(id), isListed: true } },
-        { $group: { _id: null, averageRating: { $avg: "$rating" } } }
-      ])
+    if (!product.category || product.category.isListed === false) {
+      return {
+        product,
+        categories: await categoryRepository.find({ isListed: true }),
+        relatedProductsWithOffers: [],
+        bestOffer: null,
+        activeCoupons: [],
+        hasMoreRelated: false,
+        reviews: [],
+        totalReviews: 0,
+        totalReviewsCount: 0,
+        hasMoreReviews: false,
+        averageRating: 0
+      };
+    }
+
+    const [categories, relatedProducts] = await Promise.all([
+      categoryRepository.find({ isListed: true }),
+      productRepository.find({
+        category: product.category,
+        _id: { $ne: product._id },
+        isListed: true
+      }, {}, 0, 4)
     ]);
 
     const relatedRatingMap = await getAverageRatingsForProducts(relatedProducts);
@@ -126,7 +194,37 @@ const userService = {
       return { product: rp, bestOffer: bo, averageRating: ar };
     });
 
-    const totalRelated = await productRepository.countDocuments({ category: product.category, _id: { $ne: product._id }, isListed: true });
+    const totalRelated = await productRepository.countDocuments({
+      category: product.category,
+      _id: { $ne: product._id },
+      isListed: true
+    });
+
+    if (!product.isListed) {
+      return {
+        product,
+        categories,
+        relatedProductsWithOffers: relatedWithOffers,
+        bestOffer: null,
+        activeCoupons: [],
+        hasMoreRelated: totalRelated > relatedProducts.length,
+        reviews: [],
+        totalReviews: 0,
+        totalReviewsCount: 0,
+        hasMoreReviews: false,
+        averageRating: 0
+      };
+    }
+
+    const [bestOffer, activeCoupons, reviews, ratingStats] = await Promise.all([
+      getBestOffer(product),
+      couponRepository.find({ isActive: true, expiresAt: { $gte: new Date() } }),
+      reviewRepository.find({ productId: id, isListed: true, comment: { $exists: true, $ne: "" } }, { createdAt: -1 }, 0, 5),
+      reviewRepository.aggregate([
+        { $match: { productId: new mongoose.Types.ObjectId(id), isListed: true } },
+        { $group: { _id: null, averageRating: { $avg: "$rating" } } }
+      ])
+    ]);
     
     const validCoupons = activeCoupons.filter(c => {
       if (c.discountType === 'percentage') return true;
@@ -161,10 +259,13 @@ const userService = {
 
   getMoreRelatedProducts: async (productId, categoryId, page = 2, limit = 4) => {
     const skip = (page - 1) * limit;
+    const listedCategoryIds = await getListedCategoryIds();
     const query = {
-      category: categoryId,
       _id: { $ne: productId },
-      isListed: true
+      isListed: true,
+      category: listedCategoryIds.some((listedCategoryId) => String(listedCategoryId) === String(categoryId))
+        ? categoryId
+        : null
     };
 
     const products = await productRepository.find(query, {}, skip, limit);
@@ -228,7 +329,9 @@ const userService = {
 
     if (section === "related") {
       const query = {
-        category: categoryId,
+        category: listedCategoryIds.some((listedCategoryId) => String(listedCategoryId) === String(categoryId))
+          ? categoryId
+          : null,
         _id: { $nin: [new mongoose.Types.ObjectId(productId), ...excludedIds] },
         isListed: true
       };
@@ -237,6 +340,14 @@ const userService = {
     }
 
     return { products: [], hasMore: false };
+  },
+
+  getProductAvailability: async (productId) => {
+    const availability = await getProductAvailabilityState(productId);
+    return {
+      status: availability.status,
+      categoryId: availability.categoryId
+    };
   }
 };
 

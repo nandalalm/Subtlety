@@ -3,15 +3,7 @@ import "dotenv/config";
 import { Strategy as GoogleStrategy } from "passport-google-oauth2";
 import User from "./model/user.js"; 
 import MESSAGES from "./Constants/messages.js";
-
-function normalizeGoogleNamePart(value, fallback = "") {
-  const normalized = String(value || "")
-    .replace(/\s+/g, "")
-    .replace(/[^A-Za-z]/g, "")
-    .slice(0, 20);
-
-  return normalized || fallback;
-}
+import { normalizeGoogleNamePart } from "./utils/nameHelper.js";
 
 passport.use(
   new GoogleStrategy(

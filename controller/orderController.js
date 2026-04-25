@@ -120,7 +120,8 @@ async function confirmOrder(req, res, next) {
         totalAmount: req.body.totalAmount,
         shippingAddress: req.body.shippingAddress,
         paymentMethod: req.body.paymentMethod,
-        couponCode: req.body.couponCode
+        couponCode: req.body.couponCode,
+        couponDiscount: req.body.couponDiscount
     };
 
     const savedOrder = await orderService.placeOrder(userId, orderData);
@@ -369,7 +370,7 @@ async function getSalesReport(req, res, next) {
     };
 
     if (req.query.ajax) {
-      return res.render("partials/Admin/salesTable", viewData);
+      return res.render("partials/Admin/salesReportContent", viewData);
     }
 
     res.render("admin/salesReport", viewData);

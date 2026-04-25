@@ -44,7 +44,20 @@
             <form id="couponForm" novalidate>
               <div class="row">
                 <div class="col-md-6">
-                  <div class="form-group mb-4"><label>Coupon Code</label><input id="code" class="form-control" value="<%= coupon?.code || '' %>" placeholder="e.g. SAVE20"><small id="code-error" class="field-feedback"></small></div>
+                  <div class="form-group mb-4">
+                    <label>Coupon Code</label>
+                    <input
+                      id="code"
+                      class="form-control"
+                      value="<%= coupon?.code || '' %>"
+                      placeholder="e.g. SAVE20"
+                      maxlength="20"
+                      <%= mode === 'edit' ? 'readonly aria-readonly="true"' : '' %>>
+                    <% if (mode === 'edit') { %>
+                      <small class="text-muted d-block mt-2">Coupon code cannot be changed after creation.</small>
+                    <% } %>
+                    <small id="code-error" class="field-feedback"></small>
+                  </div>
                   <div class="form-group mb-4"><label>Discount Type</label><select id="discountType" class="form-control"><option value="">Choose the discount type</option><option value="flat" <%= coupon?.discountType==='flat'?'selected':'' %>>Flat Discount</option><option value="percentage" <%= coupon?.discountType==='percentage'?'selected':'' %>>Percentage Discount</option></select><small id="discountType-error" class="field-feedback"></small></div>
                   <div class="form-group mb-4"><label id="discountAmountLabel">Discount Amount</label><input id="discountAmount" type="number" class="form-control" value="<%= coupon?.discountAmount || '' %>" placeholder="Enter the discount value"><small id="discountAmount-error" class="field-feedback"></small></div>
                 </div>
@@ -104,7 +117,10 @@
       const showError = forceShow || shouldShowError(id);
       let message = '';
       if (id === 'code') {
-        if (!code.value.trim()) message = 'Coupon code is required.';
+        if (code.hasAttribute('readonly')) {
+          message = '';
+        } else if (!code.value.trim()) message = 'Coupon code is required.';
+        else if (code.value.trim().length > 20) message = 'Coupon code cannot exceed 20 characters.';
         else if (!/^[A-Za-z0-9]+$/.test(code.value.trim())) message = 'Use only letters and numbers, with no spaces.';
         else if (code.value.trim().length < 4) message = 'Coupon code must be at least 4 characters long.';
       }
@@ -126,8 +142,11 @@
         }
       }
       if (id === 'maxDiscount') {
-        if (discountType.value === 'percentage' && maxDiscount.value && Number(maxDiscount.value) <= 0) {
-          message = 'Maximum discount must be greater than 0.';
+        if (discountType.value === 'percentage') {
+          if (!maxDiscount.value) message = 'Maximum discount is required for percentage coupons.';
+          else if (Number(maxDiscount.value) < 50 || Number(maxDiscount.value) > 500) {
+            message = 'Maximum discount must be between Rs. 50 and Rs. 500.';
+          }
         }
       }
       if (id === 'expiresAt') {
@@ -144,6 +163,9 @@
       document.getElementById('maxDiscountWrap').style.display = discountType.value === 'percentage' ? 'block' : 'none';
       discountAmountLabel.textContent = discountType.value === 'percentage' ? 'Percentage Value' : 'Discount Amount';
       discountAmount.placeholder = discountType.value === 'percentage' ? 'e.g. 20' : 'e.g. 250';
+      maxDiscount.required = discountType.value === 'percentage';
+      maxDiscount.min = discountType.value === 'percentage' ? '50' : '';
+      maxDiscount.max = discountType.value === 'percentage' ? '500' : '';
     }
     function validateForm(forceShowAll = false) {
       syncVisibility();
@@ -167,7 +189,9 @@
       validateField(id);
       relatedFieldIds.forEach((relatedId) => validateField(relatedId));
     }
-    code.addEventListener('input', () => handleFieldInteraction('code'));
+    if (!code.hasAttribute('readonly')) {
+      code.addEventListener('input', () => handleFieldInteraction('code'));
+    }
     discountType.addEventListener('change', () => {
       handleFieldInteraction('discountType', ['discountAmount', 'minOrderValue', 'maxDiscount']);
       syncVisibility();

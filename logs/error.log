@@ -1334,3 +1334,273 @@ undefined
 2026-03-31T04:39:21.967Z | ERROR | POST /cart/add | 400
 2026-03-31T04:59:56.768Z | ERROR | POST /cart/add | 400
 2026-03-31T05:11:09.526Z | ERROR | POST /cart/add | 400
+2026-04-16T07:41:24.277Z | ERROR | GET /user/home
+ReferenceError: C:\vs code\Subtlety\views\user\home.ejs:207
+    205|         <% }) %>
+    206|       <% } else { %>
+ >> 207|         <% fallbackProducts.forEach(({ product, bestOffer, averageRating }) => { %>
+    208|           <% if (product && product.isListed) { %>
+    209|             <%- include('../partials/User/productCard', { product: product, bestOffer: bestOffer, cartItemMap: cartItemMap, averageRating: averageRating }) %>
+    210|           <% } %>
+
+fallbackProducts is not defined
+    at eval (eval at compile (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:673:12), <anonymous>:93:8)
+    at home (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:274:36)
+    at exports.renderFile [as engine] (C:\vs code\Subtlety\node_modules\ejs\lib\ejs.js:491:10)
+    at View.render (C:\vs code\Subtlety\node_modules\express\lib\view.js:135:8)
+    at tryRender (C:\vs code\Subtlety\node_modules\express\lib\application.js:657:10)
+    at Function.render (C:\vs code\Subtlety\node_modules\express\lib\application.js:609:3)
+    at ServerResponse.render (C:\vs code\Subtlety\node_modules\express\lib\response.js:1049:7)
+    at getHome (file:///C:/vs%20code/Subtlety/controller/userController.js:13:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-04-16T07:41:24.281Z | ERROR | GET /user/home | 500
+2026-04-16T07:41:24.342Z | ERROR | GET /favicon.ico | 404
+2026-04-16T07:54:08.651Z | ERROR | POST /admin/products/add
+ValidationError: Product validation failed: name: Path `name` (`TheUltimateLegendaryMysteriousUnstoppableCreativeInnovativeDynamicVisionaryProjectNameThatGoesBeyondAllLimitsAndExpectationsEverImaginedByAnyoneInThisWorld`) is longer than the maximum allowed length (100)., description: Path `description` (`This project represents a highly creative and innovative endeavor designed to push the boundaries of imagination, functionality, and user experience. It brings together modern technology, thoughtful design, and a deep understanding of user needs to create something truly unique and impactful. Built with scalability, performance, and adaptability in mind, the project aims to serve as both a practical solution and an inspiring example for others. Whether used for learning, development, or real-world applications, it demonstrates how dedication, creativity, and technical skill can combine to produce something meaningful and forward-thinking. The vision behind this project is not just to solve problems, but to inspire new ideas and possibilities in the ever-evolving world of technology.`) is longer than the maximum allowed length (500).
+    at Document.invalidate (C:\vs code\Subtlety\node_modules\mongoose\lib\document.js:3312:32)
+    at C:\vs code\Subtlety\node_modules\mongoose\lib\document.js:3073:17
+    at C:\vs code\Subtlety\node_modules\mongoose\lib\schemaType.js:1388:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+2026-04-16T07:54:08.778Z | ERROR | POST /admin/products/add | 500
+2026-04-16T07:57:42.244Z | ERROR | GET /.well-known/appspecific/com.chrome.devtools.json | 404
+2026-04-16T09:13:51.178Z | ERROR | GET /admin/dashboard | 401
+2026-04-16T09:24:23.664Z | ERROR | POST /auth/verify-otp | 410
+2026-04-16T09:24:38.652Z | ERROR | POST /auth/verify-otp | 410
+2026-04-16T09:24:51.328Z | ERROR | POST /auth/resend-otp | 410
+2026-04-16T09:25:09.804Z | ERROR | POST /auth/verify-otp | 410
+2026-04-16T13:30:47.893Z | ERROR | GET /orders/checkout | 400
+2026-04-16T13:33:08.938Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-16T13:33:14.322Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-16T13:33:36.354Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-16T13:34:12.422Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-16T13:35:31.474Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-16T13:36:51.937Z | ERROR | POST /cart/add | 400
+2026-04-16T20:16:17.194Z | ERROR | POST /cart/add | 400
+2026-04-16T20:17:10.915Z | ERROR | POST /wishlist/add | 400
+2026-04-16T20:17:45.669Z | ERROR | POST /wishlist/add | 400
+2026-04-16T20:18:23.774Z | ERROR | POST /cart/add | 400
+2026-04-25T06:26:22.116Z | ERROR | POST /admin/login | 401
+2026-04-25T06:26:26.247Z | ERROR | GET /admin/dashboard | 401
+2026-04-25T07:03:36.667Z | ERROR | POST /cart/add | 400
+2026-04-25T07:04:08.348Z | ERROR | PUT /cart/update | 400
+2026-04-25T07:04:24.316Z | ERROR | PUT /cart/update | 400
+2026-04-25T07:04:28.809Z | ERROR | PUT /cart/update | 400
+2026-04-25T07:05:23.815Z | ERROR | PUT /cart/update | 400
+2026-04-25T07:06:04.373Z | ERROR | PUT /cart/update | 400
+2026-04-25T07:50:57.821Z | ERROR | POST /cart/add | 400
+2026-04-25T07:51:13.333Z | ERROR | POST /cart/add | 400
+2026-04-25T07:51:46.383Z | ERROR | POST /cart/add | 400
+2026-04-25T08:02:21.026Z | ERROR | POST /cart/add | 400
+2026-04-25T08:06:17.418Z | ERROR | POST /cart/add | 400
+2026-04-25T08:06:22.504Z | ERROR | POST /cart/add | 400
+2026-04-25T08:10:57.510Z | ERROR | POST /cart/add | 400
+2026-04-25T08:12:20.697Z | ERROR | POST /cart/add | 400
+2026-04-25T08:13:01.449Z | ERROR | POST /cart/add | 400
+2026-04-25T08:14:51.364Z | ERROR | POST /cart/add | 400
+2026-04-25T08:17:44.184Z | ERROR | POST /cart/add | 400
+2026-04-25T08:18:34.448Z | ERROR | POST /cart/add | 400
+2026-04-25T08:19:12.964Z | ERROR | POST /cart/add | 400
+2026-04-25T08:25:09.921Z | ERROR | POST /cart/add | 400
+2026-04-25T08:30:57.640Z | ERROR | POST /cart/add | 400
+2026-04-25T08:31:22.313Z | ERROR | POST /cart/add | 400
+2026-04-25T08:32:02.148Z | ERROR | POST /cart/add | 400
+2026-04-25T08:34:32.744Z | ERROR | POST /cart/add | 400
+2026-04-25T08:39:09.458Z | ERROR | POST /cart/add | 400
+2026-04-25T08:40:32.820Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:40:54.700Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:41:17.336Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:41:39.359Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:42:12.828Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:42:43.612Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:53:40.830Z | ERROR | PUT /cart/update
+VersionError: No matching document found for id "69e0e4389bfd724613a188d7" version 96 modifiedPaths "products"
+    at generateVersionError (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:507:10)
+    at model.save (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:565:28)
+    at Object.updateQuantity (file:///C:/vs%20code/Subtlety/services/cartService.js:174:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async updateQuantity (file:///C:/vs%20code/Subtlety/controller/cartController.js:64:18)
+2026-04-25T08:53:40.893Z | ERROR | PUT /cart/update | 500
+2026-04-25T08:53:46.401Z | ERROR | PUT /cart/update
+VersionError: No matching document found for id "69e0e4389bfd724613a188d7" version 97 modifiedPaths "products"
+    at generateVersionError (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:507:10)
+    at model.save (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:565:28)
+    at Object.updateQuantity (file:///C:/vs%20code/Subtlety/services/cartService.js:174:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async updateQuantity (file:///C:/vs%20code/Subtlety/controller/cartController.js:64:18)
+2026-04-25T08:53:46.464Z | ERROR | PUT /cart/update | 500
+2026-04-25T08:54:13.873Z | ERROR | PUT /cart/update
+VersionError: No matching document found for id "69e0e4389bfd724613a188d7" version 112 modifiedPaths "products"
+    at generateVersionError (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:507:10)
+    at model.save (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:565:28)
+    at Object.updateQuantity (file:///C:/vs%20code/Subtlety/services/cartService.js:174:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async updateQuantity (file:///C:/vs%20code/Subtlety/controller/cartController.js:64:18)
+2026-04-25T08:54:13.909Z | ERROR | PUT /cart/update | 500
+2026-04-25T08:54:57.637Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:55:05.787Z | ERROR | PUT /cart/update | 400
+2026-04-25T08:56:20.389Z | ERROR | PUT /cart/update
+VersionError: No matching document found for id "69e0e4389bfd724613a188d7" version 174 modifiedPaths "products"
+    at generateVersionError (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:507:10)
+    at model.save (C:\vs code\Subtlety\node_modules\mongoose\lib\model.js:565:28)
+    at Object.updateQuantity (file:///C:/vs%20code/Subtlety/services/cartService.js:174:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async updateQuantity (file:///C:/vs%20code/Subtlety/controller/cartController.js:64:18)
+2026-04-25T08:56:20.425Z | ERROR | PUT /cart/update | 500
+2026-04-25T09:00:36.760Z | ERROR | POST /cart/add | 400
+2026-04-25T09:01:35.184Z | ERROR | PUT /cart/update | 400
+2026-04-25T09:02:04.106Z | ERROR | PUT /cart/update | 400
+2026-04-25T09:04:42.293Z | ERROR | POST /auth/login | 400
+2026-04-25T09:06:09.551Z | ERROR | PUT /cart/update | 400
+2026-04-25T09:07:05.002Z | ERROR | GET /orders/checkout | 400
+2026-04-25T09:11:29.132Z | ERROR | GET /orders/checkout | 400
+2026-04-25T09:18:12.704Z | ERROR | GET /orders/checkout | 400
+2026-04-25T09:19:06.622Z | ERROR | GET /orders/checkout | 400
+2026-04-25T09:19:48.779Z | ERROR | PUT /cart/update | 400
+2026-04-25T09:28:14.813Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:28:48.294Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:28:57.089Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:40:11.980Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:40:15.838Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:40:31.044Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:40:44.764Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:41:06.075Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:41:20.305Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T09:47:28.191Z | ERROR | GET /orders/checkout | 400
+2026-04-25T09:47:48.745Z | ERROR | PUT /cart/update | 400
+2026-04-25T09:50:22.727Z | ERROR | PUT /cart/update | 400
+2026-04-25T09:50:26.753Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:43:40.570Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T11:44:25.478Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:48:08.378Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:48:23.810Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:15.837Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:19.266Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:20.902Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:24.407Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:26.563Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:29.574Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:32.121Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:34.003Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:51:35.566Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:55:53.417Z | ERROR | PUT /cart/update | 400
+2026-04-25T11:56:31.515Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:10.216Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:14.311Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:18.056Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:20.452Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:22.942Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:31.603Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:31.762Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:32.354Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:36.179Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:38.591Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:00:45.150Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:01:02.375Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:01:04.942Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:03:48.422Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:03:59.130Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:04:10.239Z | ERROR | PUT /cart/update | 400
+2026-04-25T12:13:57.683Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:15:38.713Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:16:33.619Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:18:55.129Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:19:04.818Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:19:14.611Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:19:31.527Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:20:00.362Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:20:02.365Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:20:03.998Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:20:05.686Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:34:32.776Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:34:54.175Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:35:18.718Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:38:52.334Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:39:10.208Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:39:34.440Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:39:50.348Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:40:07.417Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:41:00.618Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:41:24.494Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:47:41.038Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:49:38.771Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:49:48.208Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:49:52.125Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:49:58.950Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:50:47.615Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:52:47.054Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:53:01.047Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T12:54:27.235Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:55:34.827Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:59:03.016Z | ERROR | GET /orders/checkout | 400
+2026-04-25T12:59:48.591Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:00:17.004Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:00:20.273Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:01:55.843Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:03:14.419Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:04:16.869Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:04:44.257Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:04:59.942Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:08:23.033Z | ERROR | POST /cart/add | 400
+2026-04-25T13:09:27.185Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:09:55.853Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:10:05.676Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:10:36.424Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:10:44.462Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:12:13.415Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:39:23.544Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:43:46.107Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:44:11.849Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:44:16.959Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:44:21.999Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:44:30.382Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:44:43.823Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:46:54.510Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:46:58.161Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:47:03.709Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:47:42.228Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:47:49.744Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T13:50:42.848Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:57:28.827Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T13:57:49.193Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:09:17.804Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:09:36.977Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:09:54.173Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:10:15.035Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:11:10.496Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:14:13.394Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:14:24.489Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:21:08.314Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:21:17.392Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:21:23.767Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:24:01.475Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:24:03.516Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:25:34.990Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:25:37.834Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:25:39.731Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:25:53.861Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:25:57.856Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:26:18.557Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:26:31.209Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:29:33.546Z | ERROR | POST /orders/69eccf3098326cc233c4b6a2/cancel/69b18a38f950aa9c9d4d205e | 400
+2026-04-25T14:31:02.206Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:31:08.457Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:31:44.378Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:32:04.554Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:32:16.770Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:32:39.140Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:33:06.029Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T14:54:23.764Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T14:55:37.172Z | ERROR | POST /orders/checkout/apply-coupon | 400
+2026-04-25T15:01:00.204Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T15:01:45.207Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T15:02:45.093Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T15:03:38.431Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T15:04:26.848Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T15:07:16.516Z | ERROR | POST /orders/checkout/confirm | 400
+2026-04-25T15:11:36.346Z | ERROR | POST /orders/69ecd8aa304518f267f35aa5/cancel/69b18d26f950aa9c9d4d2107 | 400
+2026-04-25T15:13:21.484Z | ERROR | POST /orders/69ecd9e2304518f267f35bbe/cancel/69b18e20f950aa9c9d4d2163 | 400
+2026-04-25T15:38:54.676Z | ERROR | POST /admin/orders/approve-return
+Error: read ECONNRESET
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:218:20)
+2026-04-25T15:38:54.711Z | ERROR | POST /admin/orders/approve-return | 500

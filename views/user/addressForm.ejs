@@ -15,6 +15,71 @@
     .validation-message { font-size: 0.875em; margin-top: 0.25rem; color: #dc3545; display: none; }
     .validation-message.is-error { display: block; }
     .page-card { background: #fff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
+    .searchable-select {
+      position: relative;
+    }
+    .searchable-select-input {
+      padding-right: 42px;
+      background-color: #fff;
+      cursor: text;
+    }
+    .searchable-select-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6c757d;
+      pointer-events: none;
+      transition: transform 0.2s ease;
+    }
+    .searchable-select.open .searchable-select-toggle {
+      transform: translateY(-50%) rotate(180deg);
+    }
+    .searchable-select-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      z-index: 40;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+      padding: 8px 0;
+      max-height: 240px;
+      overflow-y: auto;
+      display: none;
+    }
+    .searchable-select.open .searchable-select-menu {
+      display: block;
+    }
+    .searchable-select-option {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 10px 14px;
+      color: #212529;
+      font-size: 0.95rem;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .searchable-select-option:hover,
+    .searchable-select-option:focus,
+    .searchable-select-option.active {
+      background: rgba(145, 53, 237, 0.08);
+      color: #9135ED;
+      outline: none;
+    }
+    .searchable-select-empty {
+      padding: 10px 14px;
+      color: #6c757d;
+      font-size: 0.92rem;
+    }
+    @media (max-width: 767px) {
+      .searchable-select-menu {
+        max-height: 220px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -30,20 +95,54 @@
         <div class="col-lg-9 col-12">
           <div class="page-card p-4">
             <h2 class="section-main-title mb-4"><%= mode === 'add' ? 'Add Address' : 'Edit Address' %></h2>
-            <form id="addressForm">
+            <form id="addressForm" autocomplete="off">
               <div class="form-row">
-                <div class="form-group col-6"><label>Username</label><input id="username" class="form-control" value="<%= address?.username || '' %>"><div id="username-validation" class="validation-message"></div></div>
+                <div class="form-group col-6"><label>Username</label><input id="username" class="form-control" maxlength="50" value="<%= address?.username || '' %>"><div id="username-validation" class="validation-message"></div></div>
                 <div class="form-group col-6"><label>Phone No</label><input id="phoneNo" class="form-control" maxlength="10" value="<%= address?.phoneNo || '' %>"><div id="phoneNo-validation" class="validation-message"></div></div>
               </div>
-              <div class="form-group"><label>Address</label><input id="address" class="form-control" value="<%= address?.address || '' %>"><div id="address-validation" class="validation-message"></div></div>
+              <div class="form-group"><label>Address</label><input id="address" class="form-control" maxlength="200" value="<%= address?.address || '' %>"><div id="address-validation" class="validation-message"></div></div>
               <div class="form-row">
-                <div class="form-group col-4"><label>Country</label><input id="country" class="form-control" value="<%= address?.country || '' %>"><div id="country-validation" class="validation-message"></div></div>
-                <div class="form-group col-4"><label>State</label><input id="state" class="form-control" value="<%= address?.state || '' %>"><div id="state-validation" class="validation-message"></div></div>
-                <div class="form-group col-4"><label>District</label><input id="district" class="form-control" value="<%= address?.district || '' %>"><div id="district-validation" class="validation-message"></div></div>
+                <div class="form-group col-12 col-md-4">
+                  <label>Country</label>
+                  <div class="searchable-select" data-select-id="country">
+                    <input
+                      id="country"
+                      class="form-control searchable-select-input"
+                      type="text"
+                      autocomplete="new-password"
+                      autocorrect="off"
+                      autocapitalize="none"
+                      spellcheck="false"
+                      aria-autocomplete="list"
+                      value="<%= address?.country || 'India' %>">
+                    <span class="searchable-select-toggle"><i class="fas fa-chevron-down"></i></span>
+                    <div class="searchable-select-menu" id="country-menu"></div>
+                  </div>
+                  <div id="country-validation" class="validation-message"></div>
+                </div>
+                <div class="form-group col-12 col-md-4">
+                  <label>State</label>
+                  <div class="searchable-select" data-select-id="state">
+                    <input
+                      id="state"
+                      class="form-control searchable-select-input"
+                      type="text"
+                      autocomplete="new-password"
+                      autocorrect="off"
+                      autocapitalize="none"
+                      spellcheck="false"
+                      aria-autocomplete="list"
+                      value="<%= address?.state || '' %>">
+                    <span class="searchable-select-toggle"><i class="fas fa-chevron-down"></i></span>
+                    <div class="searchable-select-menu" id="state-menu"></div>
+                  </div>
+                  <div id="state-validation" class="validation-message"></div>
+                </div>
+                <div class="form-group col-12 col-md-4"><label>District</label><input id="district" class="form-control" maxlength="40" value="<%= address?.district || '' %>"><div id="district-validation" class="validation-message"></div></div>
               </div>
               <div class="form-row">
                 <div class="form-group col-md-4 col-sm-4 col-6"><label>Pincode</label><input id="pincode" class="form-control" maxlength="6" value="<%= address?.pincode || '' %>"><div id="pincode-validation" class="validation-message"></div></div>
-                <div class="form-group col-md-4 col-sm-4 col-6"><label>House/Flat No</label><input id="houseFlatNo" class="form-control" value="<%= address?.houseFlatNo || '' %>"><div id="houseFlatNo-validation" class="validation-message"></div></div>
+                <div class="form-group col-md-4 col-sm-4 col-6"><label>House/Flat No</label><input id="houseFlatNo" class="form-control" maxlength="20" value="<%= address?.houseFlatNo || '' %>"><div id="houseFlatNo-validation" class="validation-message"></div></div>
                 <div class="form-group col-md-4 col-sm-4 col-12"><label>Address Type</label><br>
                   <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="addressType" id="addressTypeHome" value="home" <%= address?.addressType === 'home' ? 'checked' : '' %>><label class="form-check-label" for="addressTypeHome">Home</label></div>
                   <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="addressType" id="addressTypeWork" value="work" <%= address?.addressType === 'work' ? 'checked' : '' %>><label class="form-check-label" for="addressTypeWork">Work</label></div>
@@ -62,6 +161,45 @@
   <%- include('../partials/User/footer') %>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
   <script>
+    const INDIA_STATES = [
+      'Andhra Pradesh',
+      'Arunachal Pradesh',
+      'Assam',
+      'Bihar',
+      'Chhattisgarh',
+      'Goa',
+      'Gujarat',
+      'Haryana',
+      'Himachal Pradesh',
+      'Jharkhand',
+      'Karnataka',
+      'Kerala',
+      'Madhya Pradesh',
+      'Maharashtra',
+      'Manipur',
+      'Meghalaya',
+      'Mizoram',
+      'Nagaland',
+      'Odisha',
+      'Punjab',
+      'Rajasthan',
+      'Sikkim',
+      'Tamil Nadu',
+      'Telangana',
+      'Tripura',
+      'Uttar Pradesh',
+      'Uttarakhand',
+      'West Bengal',
+      'Andaman and Nicobar Islands',
+      'Chandigarh',
+      'Dadra and Nagar Haveli and Daman and Diu',
+      'Delhi',
+      'Jammu and Kashmir',
+      'Ladakh',
+      'Lakshadweep',
+      'Puducherry'
+    ];
+
     const username = document.getElementById('username');
     const phoneNo = document.getElementById('phoneNo');
     const addressInput = document.getElementById('address');
@@ -73,6 +211,7 @@
     const fieldInputs = { username, phoneNo, address: addressInput, country, state, district, pincode, houseFlatNo };
     const touchedFields = new Set();
     let submitAttempted = false;
+    const searchableSelects = {};
 
     function setValidation(id, message='') {
       const input = document.getElementById(id);
@@ -109,27 +248,29 @@
 
       switch (id) {
         case 'username':
-          return /^[a-zA-Z]+$/.test(value) && value.length >= 3 && value.length <= 20
+          return /^[a-zA-Z]+$/.test(value) && value.length >= 3 && value.length <= 50
             ? ''
-            : 'At least 3 letters, no spaces or numbers.';
+            : '3-50 letters, no spaces.';
         case 'phoneNo':
           return /^\d{10}$/.test(value) ? '' : 'Exactly 10 digits.';
         case 'address':
-          return /^[a-zA-Z0-9,]+$/.test(value) && value.length >= 10 && value.length <= 50
+          return /^[a-zA-Z0-9,.-]+$/.test(value) && value.length >= 10 && value.length <= 200
             ? ''
-            : '10-50 chars, no spaces, only commas.';
+            : '10-200 chars. Letters, numbers, comma, dot and - only.';
         case 'country':
+          return value === 'India' ? '' : 'Please select India.';
         case 'state':
+          return INDIA_STATES.includes(value) ? '' : 'Please select a valid Indian state.';
         case 'district':
-          return /^[a-zA-Z]+$/.test(value) && value.length >= 4 && value.length <= 15
+          return /^[a-zA-Z]+$/.test(value) && value.length >= 2 && value.length <= 40
             ? ''
-            : '4-15 alphabets, no spaces.';
+            : '2-40 letters, no spaces.';
         case 'pincode':
           return /^\d{6}$/.test(value) ? '' : 'Exactly 6 digits.';
         case 'houseFlatNo':
-          return /^[a-zA-Z0-9]+$/.test(value) && value.length >= 1 && value.length <= 10
+          return /^[a-zA-Z0-9\s/-]+$/.test(value) && value.length >= 1 && value.length <= 20
             ? ''
-            : 'Alpha-numeric only.';
+            : '1-20 chars. Letters, numbers, spaces, / and - only.';
         default:
           return '';
       }
@@ -149,21 +290,148 @@
       return ok;
     }
 
+    function closeSearchableSelect(selectId) {
+      const config = searchableSelects[selectId];
+      if (!config) return;
+      config.wrapper.classList.remove('open');
+    }
+
+    function closeAllSearchableSelects(exceptId = '') {
+      Object.keys(searchableSelects).forEach((selectId) => {
+        if (selectId !== exceptId) {
+          closeSearchableSelect(selectId);
+        }
+      });
+    }
+
+    function renderSearchableOptions(selectId) {
+      const config = searchableSelects[selectId];
+      if (!config) return;
+
+      const query = config.input.value.trim().toLowerCase();
+      const filteredOptions = config.options.filter((option) => option.toLowerCase().includes(query));
+
+      config.menu.innerHTML = '';
+
+      if (!filteredOptions.length) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'searchable-select-empty';
+        emptyState.textContent = 'No results found';
+        config.menu.appendChild(emptyState);
+        return;
+      }
+
+      filteredOptions.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `searchable-select-option${option === config.input.value ? ' active' : ''}`;
+        button.textContent = option;
+        button.dataset.value = option;
+        button.addEventListener('mousedown', (event) => {
+          event.preventDefault();
+          config.input.value = option;
+          touchedFields.add(selectId);
+          validateField(selectId, submitAttempted);
+          closeSearchableSelect(selectId);
+        });
+        if (index === 0) {
+          button.dataset.firstOption = 'true';
+        }
+        config.menu.appendChild(button);
+      });
+    }
+
+    function openSearchableSelect(selectId) {
+      const config = searchableSelects[selectId];
+      if (!config) return;
+      closeAllSearchableSelects(selectId);
+      renderSearchableOptions(selectId);
+      config.wrapper.classList.add('open');
+    }
+
+    function setupSearchableSelect(selectId, options) {
+      const input = document.getElementById(selectId);
+      const wrapper = input.closest('.searchable-select');
+      const menu = document.getElementById(`${selectId}-menu`);
+
+      searchableSelects[selectId] = { input, wrapper, menu, options };
+
+      input.addEventListener('focus', () => {
+        if (selectId === 'country' && !input.value.trim()) {
+          input.value = 'India';
+        }
+        openSearchableSelect(selectId);
+      });
+
+      input.addEventListener('click', () => {
+        if (wrapper.classList.contains('open')) {
+          renderSearchableOptions(selectId);
+        } else {
+          openSearchableSelect(selectId);
+        }
+      });
+
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          openSearchableSelect(selectId);
+          const firstOption = menu.querySelector('.searchable-select-option');
+          if (firstOption) firstOption.focus();
+        }
+        if (event.key === 'Escape') {
+          closeSearchableSelect(selectId);
+        }
+      });
+    }
+
     ['phoneNo', 'pincode'].forEach(id => {
       document.getElementById(id).addEventListener('input', function () {
         this.value = this.value.replace(/\D/g, '');
       });
     });
 
+    setupSearchableSelect('country', ['India']);
+    setupSearchableSelect('state', INDIA_STATES);
+
     Object.entries(fieldInputs).forEach(([id, input]) => {
       input.addEventListener('input', () => {
         touchedFields.add(id);
+        if (id === 'country') {
+          input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+          renderSearchableOptions(id);
+        }
+        if (id === 'state') {
+          input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+          renderSearchableOptions(id);
+        }
+        if (id === 'district' || id === 'username') {
+          input.value = input.value.replace(/[^A-Za-z]/g, '');
+        }
+        if (id === 'address') {
+          input.value = input.value.replace(/[^A-Za-z0-9,.-]/g, '');
+        }
+        if (id === 'houseFlatNo') {
+          input.value = input.value.replace(/[^A-Za-z0-9\s/-]/g, '');
+        }
         validateField(id, submitAttempted);
       });
 
       input.addEventListener('blur', () => {
         touchedFields.add(id);
-        validateField(id, true);
+        setTimeout(() => {
+          validateField(id, true);
+          if (id === 'country' || id === 'state') {
+            closeSearchableSelect(id);
+          }
+        }, 120);
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      Object.entries(searchableSelects).forEach(([selectId, config]) => {
+        if (!config.wrapper.contains(event.target)) {
+          closeSearchableSelect(selectId);
+        }
       });
     });
 
@@ -174,7 +442,17 @@
       if (!validateForm(true)) return;
       const addressType = document.querySelector('input[name="addressType"]:checked');
       if (!addressType) return SwalCustom.error('Error', 'Please choose an address type');
-      const body = { username: username.value, phoneNo: phoneNo.value, address: addressInput.value, country: country.value, state: state.value, district: district.value, pincode: pincode.value, houseFlatNo: houseFlatNo.value, addressType: addressType.value };
+      const body = {
+        username: username.value.trim(),
+        phoneNo: phoneNo.value.trim(),
+        address: addressInput.value.trim(),
+        country: country.value.trim(),
+        state: state.value.trim(),
+        district: district.value.trim(),
+        pincode: pincode.value.trim(),
+        houseFlatNo: houseFlatNo.value.trim(),
+        addressType: addressType.value
+      };
       const endpoint = '<%= mode === "add" ? "/profile/address/add" : `/profile/address/edit/${address?._id}` %>';
       const method = '<%= mode === "add" ? "POST" : "PUT" %>';
       const response = await SwalCustom.withDelayedProcessing(

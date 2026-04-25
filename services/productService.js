@@ -19,7 +19,7 @@ function validateDescriptionOrThrow(description) {
 
 const productService = {
   getAdminProducts: async (queryParams) => {
-    const { page = 1, limit = 4, search = "", sort = "latest" } = queryParams;
+    const { page = 1, limit = 5, search = "", sort = "latest" } = queryParams;
     const skip = (page - 1) * limit;
 
     let query = {};

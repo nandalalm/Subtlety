@@ -5,6 +5,8 @@ const categorySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
+      maxlength: 50,
     },
     image: {
       type: String,
@@ -13,13 +15,7 @@ const categorySchema = new mongoose.Schema(
     isListed: {
       type: Boolean,
       default: true,
-    },
-    offers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Offer",
-      },
-    ],
+    }
   },
   { timestamps: true }
 );

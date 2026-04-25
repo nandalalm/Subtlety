@@ -2,38 +2,44 @@
   <div class="col-md-8 mt-3">
     <h4>Products</h4>
     <% cart.products.forEach(cartItem => { %>
-    <div class="product-card" data-product-id="<%= cartItem.productId._id %>">
+    <% const isUnavailable = !cartItem.productId.isListed || !cartItem.productId.category || cartItem.productId.category.isListed === false; %>
+    <% const isOutOfStock = cartItem.productId.stock === 0; %>
+    <% const hasLowStock = cartItem.productId.stock > 0 && cartItem.productId.stock < cartItem.quantity; %>
+    <% const lockAllQuantityControls = isUnavailable; %>
+    <% const currentUnitPrice = Math.floor(cartItem.discountedPrice ?? cartItem.productId.bestOffer?.discountedPrice ?? cartItem.productId.price); %>
+    <% const originalUnitPrice = Math.floor(cartItem.productId.price); %>
+    <% const hasActiveOffer = currentUnitPrice < originalUnitPrice; %>
+    <div class="product-card <%= isUnavailable ? 'product-card-unavailable' : (isOutOfStock || hasLowStock) ? 'product-card-stock-issue' : '' %>" data-product-id="<%= cartItem.productId._id %>">
       <div class="product-info">
         <img src="<%= cartItem.productId.images[0] %>" alt="Product Image">
         <div class="product-details">
           <p class="font-weight-bold"><%= cartItem.productId.name %></p>
-          <p>
-            <% if (cartItem.productId.bestOffer) { %>
-              <span class="text-muted cart-original-price" style="text-decoration: line-through; font-size: 0.85rem;">₹ <%= Math.floor(cartItem.productId.price) %></span>
-              <span class="font-weight-bold ml-1 cart-current-price" style="color: #008000;">₹ <%= Math.floor(cartItem.productId.bestOffer.discountedPrice) %></span>
+          <p class="cart-price-block">
+            <% if (hasActiveOffer) { %>
+              <span class="text-muted cart-original-price" style="text-decoration: line-through; font-size: 0.85rem;">₹ <%= originalUnitPrice %></span>
+              <span class="font-weight-bold ml-1 cart-current-price" style="color: #008000;">₹ <%= currentUnitPrice %></span>
             <% } else { %>
-              <span class="font-weight-bold cart-current-price">₹ <%= Math.floor(cartItem.productId.price) %></span>
+              <span class="font-weight-bold cart-current-price">₹ <%= currentUnitPrice %></span>
             <% } %>
           </p>
-          <small class="cart-issue-message text-danger d-block mt-1"></small>
         </div>
         <div class="status-container">
           <% if (!cartItem.productId.isListed) { %>
           <span class="status-badge badge-unavailable unavailable-text">Unavailable</span>
           <% } else if (!cartItem.productId.category || cartItem.productId.category.isListed === false) { %>
-          <span class="status-badge badge-unavailable category-unlisted-text">Category Unavailable</span>
+          <span class="status-badge badge-unavailable unavailable-text">Unavailable</span>
           <% } else if (cartItem.productId.stock === 0) { %>
           <span class="status-badge badge-out-of-stock out-of-stock-text">Out of Stock</span>
-          <% } else if (cartItem.productId.stock < cartItem.quantity) { %>
-          <span class="status-badge badge-low-stock low-stock-text">Only <%= cartItem.productId.stock %> units left</span>
+          <% } else if (hasLowStock) { %>
+          <span class="status-badge badge-low-stock low-stock-text"><i class="fas fa-exclamation-triangle mr-1"></i>Only <%= cartItem.productId.stock %> left</span>
           <% } %>
         </div>
       </div>
       <div class="controls-container">
-        <div class="quantity-group">
-          <button class="quantity-btn" type="button" onclick="decreaseQuantity(this)">-</button>
-          <input type="number" value="<%= cartItem.quantity %>" min="1" max="<%= cartItem.productId.stock %>" class="quantity-input" oninput="debounceUpdateQuantity('<%= cartItem.productId._id %>', this.value, this.getAttribute('max'))">
-          <button class="quantity-btn" type="button" onclick="increaseQuantity(this)">+</button>
+        <div class="quantity-group" data-max="<%= cartItem.productId.stock %>">
+          <button class="quantity-btn" type="button" onclick="decreaseQuantity(this)" <%= lockAllQuantityControls ? 'disabled aria-disabled="true" tabindex="-1"' : '' %>>-</button>
+          <span class="quantity-display" aria-disabled="<%= lockAllQuantityControls ? 'true' : 'false' %>"><%= cartItem.quantity %></span>
+          <button class="quantity-btn" type="button" onclick="increaseQuantity(this)" <%= lockAllQuantityControls ? 'disabled aria-disabled="true" tabindex="-1"' : '' %>>+</button>
         </div>
         <span class="delete-icon" onclick="confirmRemoveProduct('<%= cartItem.productId._id %>')">
           <i class="fas fa-trash-alt"></i>

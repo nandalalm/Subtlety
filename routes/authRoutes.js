@@ -4,10 +4,21 @@ import passport from 'passport';
 import * as controller from '../controller/authController.js';
 import { userAuthenticated } from '../middleware/authentication.js';
 
-router.get('/google', passport.authenticate('google', {
-    scope: ['profile', 'email'],
-    prompt: 'select_account'
-}));
+router.get('/google', (req, res, next) => {
+    const safeReturnTo = controller.getSafeReturnTo(req.query.returnTo || req.session.returnTo);
+    if (safeReturnTo) {
+        req.session.returnTo = safeReturnTo;
+    }
+    
+    req.session.save((saveError) => {
+        if (saveError) return next(saveError);
+        passport.authenticate('google', {
+            scope: ['profile', 'email'],
+            prompt: 'select_account',
+            state: safeReturnTo || ''
+        })(req, res, next);
+    });
+});
 
 router.get('/google/callback', (req, res, next) => {
     passport.authenticate('google', async (err, user, info) => {
@@ -26,7 +37,15 @@ router.get('/google/callback', (req, res, next) => {
         req.logIn(user, (err) => {
             if (err) return next(err);
             req.session.user = user;
-            return res.redirect('/user/home');
+            const redirectTo =
+                controller.getSafeReturnTo(req.query.state) ||
+                controller.getSafeReturnTo(req.session.returnTo) ||
+                '/user/home';
+            delete req.session.returnTo;
+            req.session.save((saveError) => {
+                if (saveError) return next(saveError);
+                return res.redirect(redirectTo);
+            });
         });
     })(req, res, next);
 });

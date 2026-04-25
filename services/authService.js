@@ -1,10 +1,11 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import userRepository from "../repositories/userRepository.js";
-import Admin from "../model/admin.js";
+import adminRepository from "../repositories/adminRepository.js";
 import walletRepository from "../repositories/walletRepository.js";
 import transactionRepository from "../repositories/transactionRepository.js";
 import { sendOtpEmail, getOtpEmailTemplate, getPasswordResetEmailTemplate } from "../utils/otpHelper.js";
+import { normalizeSubmittedName } from "../utils/nameHelper.js";
 import MESSAGES from "../Constants/messages.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 
@@ -12,7 +13,15 @@ const OTP_VALIDITY_DURATION = 60 * 1000;
 
 const authService = {
   signup: async (userData, referral) => {
-    const { firstname, lastname, email, password } = userData;
+    const firstname = normalizeSubmittedName(userData.firstname, {
+      fieldLabel: "First name",
+      required: true,
+      minLength: 4,
+    });
+    const lastname = normalizeSubmittedName(userData.lastname, {
+      fieldLabel: "Last name",
+    });
+    const { email, password } = userData;
     const existingUser = await userRepository.findOne({ email });
     if (existingUser) {
       throw { statusCode: HTTP_STATUS.CONFLICT, message: MESSAGES.AUTH.EMAIL_ALREADY_REGISTERED };
@@ -20,6 +29,7 @@ const authService = {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = String(crypto.randomInt(100000, 999999));
+    
     const otpTimestamp = Date.now();
 
     await sendOtpEmail(email, otp, MESSAGES.AUTH.OTP_EMAIL_SUBJECT, getOtpEmailTemplate);
@@ -109,7 +119,7 @@ const authService = {
   },
 
   adminLogin: async (email, password) => {
-    const admin = await Admin.findOne({ email });
+    const admin = await adminRepository.findOne({ email });
     if (admin && (await bcrypt.compare(password, admin.password))) {
       return admin;
     }

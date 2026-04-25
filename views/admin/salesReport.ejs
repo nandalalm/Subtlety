@@ -148,7 +148,8 @@
         color: #7a2bc7 !important;
     }
 
-    .sidebar .sidebar-item.active i {
+    .sidebar .sidebar-item.active i,
+    .sidebar .sidebar-item.active:hover i {
         color: #ffffff !important;
     }
 
@@ -186,6 +187,17 @@
         #customDateRange {
             width: 100%;
             flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 600px) {
+        #salesTableContainerParent > .d-flex.mb-4.flex-wrap {
+            flex-direction: column;
+        }
+
+        #salesTableContainerParent > .d-flex.mb-4.flex-wrap .summary-card {
+            margin-right: 0;
+            width: 100%;
         }
     }
 
@@ -247,8 +259,7 @@
         </div>
 
         <div id="salesTableContainerParent">
-          <%- include('../partials/Admin/salesSummary') %>
-          <%- include('../partials/Admin/salesTable') %>
+          <%- include('../partials/Admin/salesReportContent') %>
         </div>
       </div>
     </div>
