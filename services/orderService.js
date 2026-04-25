@@ -879,7 +879,7 @@ const orderService = {
   getSalesReportData: async (queryParams) => {
     const { reportType = "all", startDate, endDate, sort = "latest", page, limit = 6 } = queryParams;
     const normalizedLimit = Math.max(1, parseInt(limit, 10) || 6);
-    const hasPagination = page !== null && page !== undefined && page !== "";
+    const hasPagination = page !== null;
     const safePage = hasPagination ? Math.max(1, parseInt(page, 10) || 1) : 1;
     const skip = hasPagination ? (safePage - 1) * normalizedLimit : 0;
 
