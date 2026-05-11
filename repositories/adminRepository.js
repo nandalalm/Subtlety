@@ -1,9 +1,9 @@
 import Admin from "../model/admin.js";
 
-const adminRepository = {
-  findOne: async (query) => {
+class AdminRepository {
+async findOne(query) {
     return await Admin.findOne(query);
   }
-};
+}
 
-export default adminRepository;
+export default new AdminRepository();

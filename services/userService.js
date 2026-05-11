@@ -40,8 +40,8 @@ async function getProductAvailabilityState(productId) {
   };
 }
 
-const userService = {
-  getHomeData: async () => {
+class UserService {
+async getHomeData() {
     const [categories, listedCategoryIds] = await Promise.all([
       categoryRepository.find({ isListed: true }),
       getListedCategoryIds()
@@ -106,9 +106,9 @@ const userService = {
       latestProducts: latestWithOffers,
       fallbackProducts
     };
-  },
+  }
 
-  getShopData: async (queryParams) => {
+async getShopData(queryParams) {
     const { page = 1, limit = 8, search = "", category = "", sort = "" } = queryParams;
     const skip = (page - 1) * limit;
     const listedCategoryIds = await getListedCategoryIds();
@@ -154,9 +154,9 @@ const userService = {
       hasMore: totalProducts > skip + products.length,
       limit
     };
-  },
+  }
 
-  getProductDetails: async (id) => {
+async getProductDetails(id) {
     const product = await productRepository.findByIdAndPopulate(id, "category");
     if (!product) return null;
 
@@ -255,9 +255,9 @@ const userService = {
       hasMoreReviews: totalReviews > reviews.length,
       averageRating: ratingStats.length > 0 ? ratingStats[0].averageRating.toFixed(1) : 0
     };
-  },
+  }
 
-  getMoreRelatedProducts: async (productId, categoryId, page = 2, limit = 4) => {
+async getMoreRelatedProducts(productId, categoryId, page = 2, limit = 4) {
     const skip = (page - 1) * limit;
     const listedCategoryIds = await getListedCategoryIds();
     const query = {
@@ -283,9 +283,9 @@ const userService = {
       products: productsWithOffers,
       hasMore: total > skip + products.length
     };
-  },
+  }
 
-  getSectionReplacement: async ({ section, excludeProductIds = [], productId = null, categoryId = null }) => {
+async getSectionReplacement({ section, excludeProductIds = [], productId = null, categoryId = null }) {
     const listedCategories = await categoryRepository.find({ isListed: true });
     const listedCategoryIds = listedCategories.map((category) => category._id);
     const excludedIds = excludeProductIds
@@ -340,16 +340,16 @@ const userService = {
     }
 
     return { products: [], hasMore: false };
-  },
+  }
 
-  getProductAvailability: async (productId) => {
+async getProductAvailability(productId) {
     const availability = await getProductAvailabilityState(productId);
     return {
       status: availability.status,
       categoryId: availability.categoryId
     };
   }
-};
+}
 
 async function mapSectionProducts(products, query, totalAvailable = null) {
   if (!products.length) return { products: [], hasMore: false };
@@ -382,4 +382,4 @@ async function aggregateProductFrequency(limit = 0) {
   return await orderRepository.aggregate(pipeline);
 }
 
-export default userService;
+export default new UserService();

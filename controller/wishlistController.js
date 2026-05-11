@@ -3,7 +3,8 @@ import { getCartItemMap } from "../utils/helper.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-async function getWishlist(req, res, next) {
+class WishlistController {
+async getWishlist(req, res, next) {
   try {
     const userId = req.session.user._id;
     const cartItemMap = await getCartItemMap(userId);
@@ -31,7 +32,7 @@ async function getWishlist(req, res, next) {
   }
 }
 
-async function addToWishlist(req, res, next) {
+async addToWishlist(req, res, next) {
   const { productId } = req.body;
   const userId = req.session.user._id;
 
@@ -46,7 +47,7 @@ async function addToWishlist(req, res, next) {
   }
 }
 
-async function deleteFromWishlist(req, res, next) {
+async deleteFromWishlist(req, res, next) {
   const userId = req.session.user._id;
   const { productId } = req.params;
 
@@ -60,6 +61,13 @@ async function deleteFromWishlist(req, res, next) {
     next(error);
   }
 }
+}
+
+const wishlistController = new WishlistController();
+
+const getWishlist = wishlistController.getWishlist.bind(wishlistController);
+const addToWishlist = wishlistController.addToWishlist.bind(wishlistController);
+const deleteFromWishlist = wishlistController.deleteFromWishlist.bind(wishlistController);
 
 export {
   getWishlist,

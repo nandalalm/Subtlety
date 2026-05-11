@@ -103,12 +103,12 @@ function normalizeAddressData(addressData) {
   return normalized;
 }
 
-const profileService = {
-  updateProfile: async (userId, updateData) => {
+class ProfileService {
+async updateProfile(userId, updateData) {
     return await userRepository.updateById(userId, updateData);
-  },
+  }
 
-  updatePassword: async (userId, currentPassword, newPassword) => {
+async updatePassword(userId, currentPassword, newPassword) {
     const user = await userRepository.findById(userId);
     if (!user) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.USER_NOT_FOUND };
@@ -134,9 +134,9 @@ const profileService = {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     return await userRepository.updateById(userId, { password: hashedPassword });
-  },
+  }
 
-  getAddresses: async (userId, page = 1, limit = 2) => {
+async getAddresses(userId, page = 1, limit = 2) {
     const skip = (page - 1) * limit;
     const totalAddresses = await addressRepository.countDocuments({ userId });
     const addresses = await addressRepository.find({ userId }, { createdAt: -1 }, skip, limit);
@@ -145,39 +145,39 @@ const profileService = {
       totalPages: Math.ceil(totalAddresses / limit) || 1,
       limit
     };
-  },
+  }
 
-  addAddress: async (userId, addressData) => {
+async addAddress(userId, addressData) {
     const normalizedAddress = normalizeAddressData(addressData);
     return await addressRepository.save({ userId, ...normalizedAddress });
-  },
+  }
 
-  getAddressById: async (addressId) => {
+async getAddressById(addressId) {
     const address = await addressRepository.findById(addressId);
     if (!address) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
     }
     return address;
-  },
+  }
 
-  updateAddress: async (addressId, updateData) => {
+async updateAddress(addressId, updateData) {
     const normalizedAddress = normalizeAddressData(updateData);
     const updated = await addressRepository.findByIdAndUpdate(addressId, normalizedAddress);
     if (!updated) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
     }
     return updated;
-  },
+  }
 
-  deleteAddress: async (addressId) => {
+async deleteAddress(addressId) {
     const deleted = await addressRepository.findByIdAndDelete(addressId);
     if (!deleted) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.ADDRESS_NOT_FOUND };
     }
     return deleted;
-  },
+  }
 
-  getWalletData: async (userId, queryParams) => {
+async getWalletData(userId, queryParams) {
     const { page = 1, limit = 4, search, sort } = queryParams;
     const skip = (page - 1) * limit;
 
@@ -208,17 +208,17 @@ const profileService = {
       totalTransactionsUnfiltered,
       limit
     };
-  },
+  }
 
-  getWalletBalance: async (userId) => {
+async getWalletBalance(userId) {
     let wallet = await walletRepository.findOne({ userId });
     if (!wallet) {
       wallet = await walletRepository.save({ userId, balance: 0 });
     }
     return wallet.balance;
-  },
+  }
 
-  deductWalletAmount: async (userId, orderId, amount) => {
+async deductWalletAmount(userId, orderId, amount) {
     const [user, wallet, order] = await Promise.all([
       userRepository.findById(userId),
       walletRepository.findOne({ userId }),
@@ -257,6 +257,6 @@ const profileService = {
 
     return { balance: wallet.balance };
   }
-};
+}
 
-export default profileService;
+export default new ProfileService();

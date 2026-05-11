@@ -338,8 +338,8 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
   });
 }
 
-const orderService = {
-  getCheckoutData: async (userId) => {
+class OrderService {
+async getCheckoutData(userId) {
     const addresses = await addressRepository.find({ userId });
     const validationState = await getCheckoutValidationState(userId);
 
@@ -365,9 +365,9 @@ const orderService = {
       validationIssues: validationState.errors,
       cartState: validationState
     };
-  },
+  }
 
-  validateCoupon: async (userId, couponCode, totalAmount) => {
+async validateCoupon(userId, couponCode, totalAmount) {
     const couponState = await getCouponValidationState(
       userId,
       couponCode,
@@ -388,9 +388,53 @@ const orderService = {
     }
 
     return { discount: couponState.discount, couponState };
-  },
+  }
 
-  placeOrder: async (userId, orderData) => {
+async applyCoupon(userId, couponCode) {
+    const checkoutData = await this.getCheckoutData(userId);
+    if (checkoutData.validationIssues && checkoutData.validationIssues.length > 0) {
+      throw {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: checkoutData.message,
+        errors: checkoutData.validationIssues,
+        cartState: checkoutData.cartState
+      };
+    }
+
+    const couponState = await getCouponValidationState(
+      userId,
+      couponCode,
+      {
+        subtotal: checkoutData.subtotal,
+        offerDiscount: checkoutData.offerDiscount,
+        deliveryCharge: checkoutData.deliveryCharge,
+        baseTotal: checkoutData.totalAmount
+      }
+    );
+
+    if (couponState.status !== "applied") {
+      throw {
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+        message: couponState.message,
+        couponState
+      };
+    }
+
+    const couponDiscount = Math.floor(couponState.discount);
+    const finalTotal = Math.floor(checkoutData.totalAmount - couponDiscount);
+
+    return {
+      success: true,
+      subtotal: checkoutData.subtotal,
+      offerDiscount: checkoutData.offerDiscount,
+      couponDiscount,
+      deliveryCharge: checkoutData.deliveryCharge,
+      totalAmount: finalTotal,
+      couponState
+    };
+  }
+
+async placeOrder(userId, orderData) {
     const { items, totalAmount, shippingAddress, paymentMethod, couponCode, couponDiscount: submittedCouponDiscount = 0 } = orderData;
     let couponDiscount = 0;
 
@@ -559,9 +603,9 @@ const orderService = {
     await cartRepository.updateByQuery({ user: userId }, { $set: { products: [] } });
 
     return savedOrder;
-  },
+  }
 
-  createRazorpayOrder: async (orderId) => {
+async createRazorpayOrder(orderId) {
     const order = await orderRepository.findById(orderId);
     if (!order || order.paymentStatus !== "Failed") {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.RAZORPAY_INVALID_ORDER };
@@ -574,9 +618,9 @@ const orderService = {
     };
 
     return await razorpayInstance.orders.create(options);
-  },
+  }
 
-  confirmRazorpayPayment: async (orderId) => {
+async confirmRazorpayPayment(orderId) {
     const order = await orderRepository.findById(orderId);
     if (!order) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.ORDER.NOT_FOUND };
 
@@ -587,9 +631,9 @@ const orderService = {
       await productRepository.updateByQuery({ _id: item.productId }, { $inc: { stock: -item.quantity } });
     }
     return order;
-  },
+  }
 
-  getUserOrders: async (userId, queryParams) => {
+async getUserOrders(userId, queryParams) {
     const { page = 1, limit = 5, search = "", sort = "latest", paymentStatus = "" } = queryParams;
     const skip = (page - 1) * limit;
 
@@ -618,9 +662,9 @@ const orderService = {
       totalOrdersUnfiltered,
       limit
     };
-  },
+  }
 
-  getOrderDetail: async (userId, orderId, isAdmin = false) => {
+async getOrderDetail(userId, orderId, isAdmin = false) {
     const query = isAdmin ? { _id: orderId } : { _id: orderId, userId };
     const order = await orderRepository.findOneWithPopulate(query, {
       path: "items.productId",
@@ -657,9 +701,9 @@ const orderService = {
     }
 
     return order;
-  },
+  }
 
-  cancelOrderItem: async (userId, orderId, productId) => {
+async cancelOrderItem(userId, orderId, productId) {
     const order = await orderRepository.findOne({ _id: orderId, userId });
     if (!order) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.ORDER.NOT_FOUND };
 
@@ -695,9 +739,9 @@ const orderService = {
     const allCancelled = order.items.every(i => i.status === "Cancelled");
     if (allCancelled) order.orderStatus = "Cancelled";
     return await order.save();
-  },
+  }
 
-  submitReturnRequest: async (userId, orderId, productId, reason) => {
+async submitReturnRequest(userId, orderId, productId, reason) {
     const order = await orderRepository.findOne({ _id: orderId, userId });
     if (!order) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.ORDER.NOT_FOUND };
 
@@ -735,9 +779,9 @@ const orderService = {
     if (!order.returnRequests) order.returnRequests = [];
     order.returnRequests.push({ productId, reason: normalizedReason, requestedAt: new Date(), status: "Pending" });
     return await order.save();
-  },
+  }
 
-  getAdminOrders: async (queryParams) => {
+async getAdminOrders(queryParams) {
     const normalizedQueryParams = {
       ...queryParams,
       sort: queryParams.sort || "default"
@@ -756,9 +800,9 @@ const orderService = {
       totalOrders,
       limit
     };
-  },
+  }
 
-  changeItemStatus: async (orderId, productId, status) => {
+async changeItemStatus(orderId, productId, status) {
     const order = await orderRepository.findById(orderId);
     if (!order) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.ORDER.NOT_FOUND };
 
@@ -787,9 +831,9 @@ const orderService = {
     else order.orderStatus = "Pending";
 
     return await order.save();
-  },
+  }
 
-  changeOrderStatus: async (orderId, newStatus) => {
+async changeOrderStatus(orderId, newStatus) {
     const order = await orderRepository.findById(orderId);
     if (!order || !newStatus) throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.NOT_FOUND };
     if (newStatus === "Cancelled") throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.ORDER.ADMIN_CANNOT_CANCEL };
@@ -810,9 +854,9 @@ const orderService = {
     }
 
     return await order.save();
-  },
+  }
 
-  handleReturn: async (orderId, productId, action, rejectReason = "") => {
+async handleReturn(orderId, productId, action, rejectReason = "") {
     const order = await orderRepository.findById(orderId);
     if (!order) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.ORDER.NOT_FOUND };
 
@@ -869,14 +913,14 @@ const orderService = {
     }
 
     return await order.save();
-  },
+  }
 
-  calculateTotals: async (userId) => {
+async calculateTotals(userId) {
     const cart = await cartRepository.findOneWithPopulate({ user: userId }, "products.productId");
     return calculateTotalsInternal(cart.products);
-  },
+  }
 
-  getSalesReportData: async (queryParams) => {
+async getSalesReportData(queryParams) {
     const { reportType = "all", startDate, endDate, sort = "latest", page, limit = 6 } = queryParams;
     const normalizedLimit = Math.max(1, parseInt(limit, 10) || 6);
     const hasPagination = page !== null;
@@ -913,6 +957,6 @@ const orderService = {
       limit: normalizedLimit
     };
   }
-};
+}
 
-export default orderService;
+export default new OrderService();

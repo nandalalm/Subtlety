@@ -1,50 +1,50 @@
 import Product from "../model/product.js";
 
-const productRepository = {
-  findById: async (id) => {
+class ProductRepository {
+async findById(id) {
     return await Product.findById(id);
-  },
+  }
 
-  findByIdAndPopulate: async (id, populatePath) => {
+async findByIdAndPopulate(id, populatePath) {
     return await Product.findById(id).populate(populatePath);
-  },
+  }
 
-  findOne: async (query) => {
+async findOne(query) {
     return await Product.findOne(query);
-  },
+  }
 
-  find: async (query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0) => {
+async find(query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0) {
     let q = Product.find(query).sort(sort).skip(skip);
     if (limit > 0) q = q.limit(limit);
     return await q;
-  },
+  }
 
-  findWithPopulate: async (query = {}, populatePath = "", sort = { createdAt: -1 }, skip = 0, limit = 0) => {
+async findWithPopulate(query = {}, populatePath = "", sort = { createdAt: -1 }, skip = 0, limit = 0) {
     let q = Product.find(query).populate(populatePath).sort(sort).skip(skip);
     if (limit > 0) q = q.limit(limit);
     return await q;
-  },
+  }
 
-  countDocuments: async (query = {}) => {
+async countDocuments(query = {}) {
     return await Product.countDocuments(query);
-  },
+  }
 
-  save: async (productData) => {
+async save(productData) {
     const product = new Product(productData);
     return await product.save();
-  },
+  }
 
-  updateById: async (id, updateData, options = { new: true, runValidators: true }) => {
+async updateById(id, updateData, options = { new: true, runValidators: true }) {
     return await Product.findByIdAndUpdate(id, updateData, options);
-  },
+  }
 
-  updateByQuery: async (query, updateData, options = { new: true }) => {
+async updateByQuery(query, updateData, options = { new: true }) {
     return await Product.findOneAndUpdate(query, updateData, options);
-  },
+  }
 
-  findByIdAndDelete: async (id) => {
+async findByIdAndDelete(id) {
     return await Product.findByIdAndDelete(id);
   }
-};
+}
 
-export default productRepository;
+export default new ProductRepository();

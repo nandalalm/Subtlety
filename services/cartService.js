@@ -28,8 +28,8 @@ function normalizeCartProducts(products = []) {
   return Array.from(mergedProducts.values());
 }
 
-const cartService = {
-  getCart: async (userId) => {
+class CartService {
+async getCart(userId) {
     const cart = await cartRepository.findOneWithPopulate({ user: userId }, {
       path: "products.productId",
       populate: { path: "category", model: "Category" }
@@ -41,7 +41,7 @@ const cartService = {
     if (normalizedProducts.length !== cart.products.length) {
       cart.products = normalizedProducts;
       await cart.save();
-      return await cartService.getCart(userId);
+      return await this.getCart(userId);
     }
 
     const products = cart.products.map(item => item.productId);
@@ -72,11 +72,11 @@ const cartService = {
       await cart.save();
     }
 
-    const totals = await cartService.getCartTotals(userId);
+    const totals = await this.getCartTotals(userId);
     return { ...cart.toObject(), products: productsWithPrices, ...totals };
-  },
+  }
 
-  addToCart: async (userId, productId, quantity) => {
+async addToCart(userId, productId, quantity) {
     const product = await productRepository.findByIdAndPopulate(productId, "category");
     if (!product) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CART.PRODUCT_NOT_FOUND };
@@ -132,9 +132,9 @@ const cartService = {
 
     cart.products = normalizeCartProducts(cart.products);
     return await cart.save();
-  },
+  }
 
-  updateQuantity: async (userId, productId, quantity) => {
+async updateQuantity(userId, productId, quantity) {
     const cart = await cartRepository.findOne({ user: userId });
     if (!cart) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CART.CART_NOT_FOUND };
@@ -193,19 +193,19 @@ const cartService = {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CART.PRODUCT_NOT_IN_CART };
     }
 
-    const totals = await cartService.getCartTotals(userId);
+    const totals = await this.getCartTotals(userId);
     return { newQuantity: quantity, stock: product.stock, ...totals };
-  },
+  }
 
-  removeFromCart: async (userId, productId) => {
+async removeFromCart(userId, productId) {
     await cartRepository.updateByQuery(
       { user: userId },
       { $pull: { products: { productId } } }
     );
-    return await cartService.getCartTotals(userId);
-  },
+    return await this.getCartTotals(userId);
+  }
 
-  getCartTotals: async (userId) => {
+async getCartTotals(userId) {
     const cart = await cartRepository.findOneWithPopulate({ user: userId }, {
       path: "products.productId",
       select: "price stock isListed category",
@@ -248,6 +248,6 @@ const cartService = {
       cartCount: cart.products.length
     };
   }
-};
+}
 
-export default cartService;
+export default new CartService();

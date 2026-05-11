@@ -1,25 +1,9 @@
-import path from "path";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 import categoryService from "../services/categoryService.js";
-import multer from "multer";
-import { categoryStorage } from "../config/cloudinary.js";
 
-const categoryUpload = multer({
-  storage: categoryStorage,
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif|webp/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb(new Error(MESSAGES.CATEGORY.FILE_TYPE_ERROR + filetypes));
-  },
-});
-
-async function getCategories(req, res, next) {
+class CategoryController {
+async getCategories(req, res, next) {
   try {
     const queryParams = {
       page: parseInt(req.query.page) || 1,
@@ -53,7 +37,7 @@ async function getCategories(req, res, next) {
   }
 }
 
-async function getAddCategoryPage(req, res, next) {
+async getAddCategoryPage(req, res, next) {
   try {
     res.render("admin/categoryForm", {
       category: null,
@@ -65,7 +49,7 @@ async function getAddCategoryPage(req, res, next) {
   }
 }
 
-async function getEditCategoryPage(req, res, next) {
+async getEditCategoryPage(req, res, next) {
   try {
     const category = await categoryService.getCategoryById(req.params.id);
     res.render("admin/categoryForm", {
@@ -79,21 +63,12 @@ async function getEditCategoryPage(req, res, next) {
   }
 }
 
-let ongoingRequests = new Set();
-
-async function addCategory(req, res, next) {
+async addCategory(req, res, next) {
   const { name, isListed } = req.body;
 
   if (!req.file) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({ status: false, message: MESSAGES.CATEGORY.NO_IMAGE });
   }
-
-  const requestKey = `${name}_${isListed}`;
-  if (ongoingRequests.has(requestKey)) {
-    return res.status(HTTP_STATUS.CONFLICT).json({ status: false, message: MESSAGES.CATEGORY.DUPLICATE_REQUEST });
-  }
-
-  ongoingRequests.add(requestKey);
 
   try {
     await categoryService.addCategory({
@@ -103,16 +78,14 @@ async function addCategory(req, res, next) {
     });
     return res.status(HTTP_STATUS.OK).json({ status: true, message: MESSAGES.CATEGORY.ADDED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ status: false, message: error.message });
+    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.CONFLICT) {
+      return res.status(error.statusCode).json({ status: false, message: error.message });
     }
     next(error);
-  } finally {
-    ongoingRequests.delete(requestKey);
   }
 }
 
-async function editCategory(req, res, next) {
+async editCategory(req, res, next) {
   const { name, isListed } = req.body;
   const id = req.params.id;
   const updates = {
@@ -135,7 +108,7 @@ async function editCategory(req, res, next) {
   }
 }
 
-async function toggleCategoryStatus(req, res, next) {
+async toggleCategoryStatus(req, res, next) {
   const categoryId = req.params.id;
   try {
     const updatedCategory = await categoryService.toggleStatus(categoryId);
@@ -149,6 +122,16 @@ async function toggleCategoryStatus(req, res, next) {
     next(error);
   }
 }
+}
+
+const categoryController = new CategoryController();
+
+const getCategories = categoryController.getCategories.bind(categoryController);
+const getAddCategoryPage = categoryController.getAddCategoryPage.bind(categoryController);
+const getEditCategoryPage = categoryController.getEditCategoryPage.bind(categoryController);
+const addCategory = categoryController.addCategory.bind(categoryController);
+const editCategory = categoryController.editCategory.bind(categoryController);
+const toggleCategoryStatus = categoryController.toggleCategoryStatus.bind(categoryController);
 
 export {
   getCategories,
@@ -156,6 +139,5 @@ export {
   getEditCategoryPage,
   addCategory,
   editCategory,
-  toggleCategoryStatus,
-  categoryUpload,
+  toggleCategoryStatus
 };

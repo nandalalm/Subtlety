@@ -1,26 +1,10 @@
 import productService from "../services/productService.js";
 import categoryService from "../services/categoryService.js";
-import path from "path";
-import multer from "multer";
-import { productStorage } from "../config/cloudinary.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-const productUpload = multer({
-  storage: productStorage,
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif|webp/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb(new Error(MESSAGES.PRODUCT.FILE_TYPE_ERROR + filetypes));
-  },
-});
-
-async function addProduct(req, res, next) {
+class ProductController {
+async addProduct(req, res, next) {
   try {
     const { name, description, category, price, stock } = req.body;
 
@@ -47,7 +31,7 @@ async function addProduct(req, res, next) {
   }
 }
 
-async function getProducts(req, res, next) {
+async getProducts(req, res, next) {
   try {
     const queryParams = {
       page: parseInt(req.query.page) || 1,
@@ -80,20 +64,19 @@ async function getProducts(req, res, next) {
   }
 }
 
-async function getAddProduct(req, res, next) {
+async getAddProduct(req, res, next) {
   try {
-    const data = await categoryService.getCategories({ limit: 1000 }); // Get all listed categories
+    const data = await categoryService.getCategories({ limit: 1000 });
     res.render("admin/addProduct", { categories: data.categories.filter(c => c.isListed) });
   } catch (error) {
     next(error);
   }
 }
 
-async function getEditProduct(req, res, next) {
+async getEditProduct(req, res, next) {
   try {
     const { id } = req.params;
-    const data = await productService.getAdminProducts({ page: 1, limit: 1, search: id }); 
-    const product = await productService.updateProduct(id, {}); 
+    const product = await productService.getAdminProductDetail(id); 
     const categoriesData = await categoryService.getCategories({ limit: 1000 });
     
     res.render("admin/editProduct", { 
@@ -109,7 +92,7 @@ async function getEditProduct(req, res, next) {
   }
 }
 
-async function getProductView(req, res, next) {
+async getProductView(req, res, next) {
   try {
     const product = await productService.getAdminProductDetail(req.params.id);
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
@@ -120,14 +103,14 @@ async function getProductView(req, res, next) {
   }
 }
 
-async function editProduct(req, res, next) {
+async editProduct(req, res, next) {
   try {
     const { id, name, description, category, price, stock } = req.body;
     let imageSlots = [];
     try {
       if (req.body.imageSlots) imageSlots = JSON.parse(req.body.imageSlots);
     } catch (e) {
-      console.error(MESSAGES.PRODUCT.SLOTS_PARSE_ERROR, e);
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.PRODUCT.SLOTS_PARSE_ERROR });
     }
 
     if (imageSlots.length < 3 || imageSlots.length > 8) {
@@ -161,7 +144,7 @@ async function editProduct(req, res, next) {
   }
 }
 
-async function toggleProductStatus(req, res, next) {
+async toggleProductStatus(req, res, next) {
   const productId = req.params.id;
   try {
     const product = await productService.toggleStatus(productId);
@@ -175,6 +158,17 @@ async function toggleProductStatus(req, res, next) {
     next(error);
   }
 }
+}
+
+const productController = new ProductController();
+
+const addProduct = productController.addProduct.bind(productController);
+const getProducts = productController.getProducts.bind(productController);
+const getAddProduct = productController.getAddProduct.bind(productController);
+const getEditProduct = productController.getEditProduct.bind(productController);
+const getProductView = productController.getProductView.bind(productController);
+const editProduct = productController.editProduct.bind(productController);
+const toggleProductStatus = productController.toggleProductStatus.bind(productController);
 
 export {
   addProduct,
@@ -183,6 +177,5 @@ export {
   getEditProduct,
   getProductView,
   editProduct,
-  toggleProductStatus,
-  productUpload,
+  toggleProductStatus
 };

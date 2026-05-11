@@ -1,47 +1,47 @@
 import Order from "../model/order.js";
 
-const orderRepository = {
-  findById: async (id) => {
+class OrderRepository {
+async findById(id) {
     return await Order.findById(id);
-  },
+  }
 
-  findByIdWithPopulate: async (id, populateOptions) => {
+async findByIdWithPopulate(id, populateOptions) {
     return await Order.findById(id).populate(populateOptions);
-  },
+  }
 
-  findOne: async (query) => {
+async findOne(query) {
     return await Order.findOne(query);
-  },
+  }
 
-  findOneWithPopulate: async (query, populateOptions) => {
+async findOneWithPopulate(query, populateOptions) {
     return await Order.findOne(query).populate(populateOptions);
-  },
+  }
 
-  find: async (query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0, populateOptions = null) => {
+async find(query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0, populateOptions = null) {
     let q = Order.find(query).sort(sort).skip(skip);
     if (limit > 0) q = q.limit(limit);
     if (populateOptions) q = q.populate(populateOptions);
     return await q;
-  },
+  }
 
-  countDocuments: async (query = {}) => {
+async countDocuments(query = {}) {
     return await Order.countDocuments(query);
-  },
+  }
 
-  save: async (orderData) => {
+async save(orderData) {
     const order = new Order(orderData);
     return await order.save();
-  },
+  }
 
-  updateById: async (id, updateData, options = { new: true }) => {
+async updateById(id, updateData, options = { new: true }) {
     return await Order.findByIdAndUpdate(id, updateData, options);
-  },
+  }
 
-  aggregate: async (pipeline) => {
+async aggregate(pipeline) {
     return await Order.aggregate(pipeline);
-  },
+  }
 
-  getSalesStats: async () => {
+async getSalesStats() {
     return await Order.aggregate([
       { $match: { "items.status": "Delivered" } },
       { $unwind: "$items" },
@@ -72,9 +72,9 @@ const orderRepository = {
         }
       }
     ]);
-  },
+  }
 
-  getBestSellingProducts: async (limit = 10) => {
+async getBestSellingProducts(limit = 10) {
     return await Order.aggregate([
       { $match: { "items.status": "Delivered" } },
       { $unwind: "$items" },
@@ -99,9 +99,9 @@ const orderRepository = {
       },
       { $unwind: "$product" }
     ]);
-  },
+  }
 
-  getBestSellingCategories: async (limit = 10) => {
+async getBestSellingCategories(limit = 10) {
     return await Order.aggregate([
       { $match: { "items.status": "Delivered" } },
       { $unwind: "$items" },
@@ -133,9 +133,9 @@ const orderRepository = {
       },
       { $unwind: "$category" }
     ]);
-  },
+  }
 
-  getAdminOrders: async (queryParams, skip, limit) => {
+async getAdminOrders(queryParams, skip, limit) {
     const { search, sort, paymentStatus } = queryParams;
     const match = {};
     if (paymentStatus) match.paymentStatus = paymentStatus;
@@ -191,9 +191,9 @@ const orderRepository = {
     pipeline.push({ $sort: sortObj }, { $skip: skip }, { $limit: limit });
 
     return await Order.aggregate(pipeline);
-  },
+  }
 
-  countAdminOrders: async (queryParams) => {
+async countAdminOrders(queryParams) {
     const { search, sort, paymentStatus } = queryParams;
     const match = {};
     if (paymentStatus) match.paymentStatus = paymentStatus;
@@ -221,9 +221,9 @@ const orderRepository = {
 
     const result = await Order.aggregate(pipeline);
     return result.length > 0 ? result[0].total : 0;
-  },
+  }
 
-  getSalesReportStats: async (dateFilter) => {
+async getSalesReportStats(dateFilter) {
     return await Order.aggregate([
       { $match: dateFilter },
       {
@@ -236,6 +236,6 @@ const orderRepository = {
       }
     ]);
   }
-};
+}
 
-export default orderRepository;
+export default new OrderRepository();

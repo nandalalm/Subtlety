@@ -1,40 +1,40 @@
 import User from "../model/user.js";
 
-const userRepository = {
-  findById: async (id) => {
+class UserRepository {
+async findById(id) {
     return await User.findById(id);
-  },
+  }
 
-  findOne: async (query) => {
+async findOne(query) {
     return await User.findOne(query);
-  },
+  }
 
-  updateById: async (id, updateData) => {
+async updateById(id, updateData) {
     return await User.findByIdAndUpdate(id, updateData, { new: true });
-  },
+  }
 
-  updateOne: async (query, updateData) => {
+async updateOne(query, updateData) {
     return await User.updateOne(query, updateData);
-  },
+  }
 
-  save: async (userData) => {
+async save(userData) {
     const user = new User(userData);
     return await user.save();
-  },
+  }
 
-  find: async (query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0) => {
+async find(query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0) {
     let q = User.find(query).sort(sort).skip(skip);
     if (limit > 0) q = q.limit(limit);
     return await q;
-  },
+  }
 
-  countDocuments: async (query = {}) => {
+async countDocuments(query = {}) {
     return await User.countDocuments(query);
-  },
+  }
 
-  findByIdWithPopulate: async (id, populateField) => {
+async findByIdWithPopulate(id, populateField) {
     return await User.findById(id).populate(populateField);
   }
-};
+}
 
-export default userRepository;
+export default new UserRepository();

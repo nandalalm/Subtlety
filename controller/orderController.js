@@ -7,7 +7,8 @@ import {
   generateSalesReportExcel 
 } from "../utils/reportHelper.js";
 
-async function checkoutPage(req, res, next) {
+class OrderController {
+async checkoutPage(req, res, next) {
   try {
     const userId = req.session.user?._id;
     if (!userId) {
@@ -43,73 +44,28 @@ async function checkoutPage(req, res, next) {
   }
 }
 
-async function applyCoupon(req, res, next) {
-  let checkoutData = null;
+async applyCoupon(req, res, next) {
   try {
     const { couponCode } = req.body;
     const userId = req.session.user?._id;
     if (!userId) return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: MESSAGES.ORDER.USER_NOT_AUTHENTICATED });
 
-    checkoutData = await orderService.getCheckoutData(userId);
-    if (checkoutData.validationIssues && checkoutData.validationIssues.length > 0) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: checkoutData.message,
-        errors: checkoutData.validationIssues,
-        cartState: checkoutData.cartState
-      });
-    }
-    const netTotalBeforeCoupon = checkoutData.totalAmount;
-
-    const result = await orderService.validateCoupon(userId, couponCode, netTotalBeforeCoupon);
-    
-    const couponDiscount = Math.floor(result.discount);
-    const finalTotal = Math.floor(netTotalBeforeCoupon - couponDiscount);
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      subtotal: checkoutData.subtotal,
-      offerDiscount: checkoutData.offerDiscount,
-      couponDiscount: couponDiscount,
-      deliveryCharge: checkoutData.deliveryCharge,
-      totalAmount: finalTotal,
-      couponState: result.couponState
-        ? {
-            ...result.couponState,
-            totals: {
-              subtotal: checkoutData.subtotal,
-              offerDiscount: checkoutData.offerDiscount,
-              couponDiscount,
-              deliveryCharge: checkoutData.deliveryCharge,
-              totalAmount: finalTotal
-            }
-          }
-        : null
-    });
+    const result = await orderService.applyCoupon(userId, couponCode);
+    res.status(HTTP_STATUS.OK).json(result);
   } catch (error) {
     if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
       return res.status(error.statusCode).json({
         message: error.message,
         errors: error.errors,
         cartState: error.cartState,
-        couponState: error.couponState && checkoutData
-          ? {
-              ...error.couponState,
-              totals: {
-                subtotal: checkoutData.subtotal,
-                offerDiscount: checkoutData.offerDiscount,
-                couponDiscount: error.couponState.discount || 0,
-                deliveryCharge: checkoutData.deliveryCharge,
-                totalAmount: Math.floor((checkoutData.totalAmount || 0) - (error.couponState.discount || 0))
-              }
-            }
-          : error.couponState || null
+        couponState: error.couponState || null
       });
     }
     next(error);
   }
 }
 
-async function confirmOrder(req, res, next) {
+async confirmOrder(req, res, next) {
   try {
     const userId = req.session.user?._id;
     if (!userId) return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: MESSAGES.ORDER.USER_NOT_AUTHENTICATED });
@@ -137,7 +93,7 @@ async function confirmOrder(req, res, next) {
   }
 }
 
-async function createRazorpayOrder(req, res, next) {
+async createRazorpayOrder(req, res, next) {
   try {
     const { orderId } = req.body;
     const razorpayOrder = await orderService.createRazorpayOrder(orderId);
@@ -152,7 +108,7 @@ async function createRazorpayOrder(req, res, next) {
   }
 }
 
-async function confirmRazorpayPayment(req, res, next) {
+async confirmRazorpayPayment(req, res, next) {
   try {
     const { orderId } = req.body;
     await orderService.confirmRazorpayPayment(orderId);
@@ -163,7 +119,7 @@ async function confirmRazorpayPayment(req, res, next) {
   }
 }
 
-async function getOrderSuccessPage(req, res, next) {
+async getOrderSuccessPage(req, res, next) {
   try {
     const { orderId } = req.query;
     const order = await orderService.getOrderDetail(req.session.user._id, orderId);
@@ -174,7 +130,7 @@ async function getOrderSuccessPage(req, res, next) {
   }
 }
 
-async function getUserOrders(req, res, next) {
+async getUserOrders(req, res, next) {
   try {
     const userId = req.session.user._id;
     const data = await orderService.getUserOrders(userId, req.query);
@@ -198,7 +154,7 @@ async function getUserOrders(req, res, next) {
   }
 }
 
-async function getUserOrderDetails(req, res, next) {
+async getUserOrderDetails(req, res, next) {
   try {
     const userId = req.session.user._id;
     const orderId = req.params.id;
@@ -210,7 +166,7 @@ async function getUserOrderDetails(req, res, next) {
   }
 }
 
-async function downloadInvoice(req, res, next) {
+async downloadInvoice(req, res, next) {
   try {
     const userId = req.session.user._id;
     const orderId = req.params.id;
@@ -222,7 +178,7 @@ async function downloadInvoice(req, res, next) {
   }
 }
 
-async function cancelProduct(req, res, next) {
+async cancelProduct(req, res, next) {
   try {
     const userId = req.session.user._id;
     const { id: orderId, productId } = req.params;
@@ -236,7 +192,7 @@ async function cancelProduct(req, res, next) {
   }
 }
 
-async function returnProduct(req, res, next) {
+async returnProduct(req, res, next) {
   try {
     const userId = req.session.user._id;
     const { id: orderId, productId } = req.params;
@@ -251,9 +207,7 @@ async function returnProduct(req, res, next) {
   }
 }
 
-// --- ADMIN SIDE FUNCTIONS ---
-
-async function getAdminOrders(req, res, next) {
+async getAdminOrders(req, res, next) {
   try {
     const data = await orderService.getAdminOrders(req.query);
     const viewData = {
@@ -276,7 +230,7 @@ async function getAdminOrders(req, res, next) {
   }
 }
 
-async function changeProductStatus(req, res, next) {
+async changeProductStatus(req, res, next) {
   try {
     const { orderId, productId, status } = req.body;
     await orderService.changeItemStatus(orderId, productId, status);
@@ -287,7 +241,7 @@ async function changeProductStatus(req, res, next) {
   }
 }
 
-async function changeOrderStatus(req, res, next) {
+async changeOrderStatus(req, res, next) {
   try {
     const { orderId, newStatus } = req.body;
     await orderService.changeOrderStatus(orderId, newStatus);
@@ -300,7 +254,7 @@ async function changeOrderStatus(req, res, next) {
   }
 }
 
-async function getAdminOrderDetails(req, res, next) {
+async getAdminOrderDetails(req, res, next) {
   try {
     const orderId = req.params.id;
     const order = await orderService.getOrderDetail(null, orderId, true);
@@ -311,7 +265,7 @@ async function getAdminOrderDetails(req, res, next) {
   }
 }
 
-async function getAdminOrderView(req, res, next) {
+async getAdminOrderView(req, res, next) {
   try {
     const orderId = req.params.id;
     const order = await orderService.getOrderDetail(null, orderId, true);
@@ -329,7 +283,7 @@ async function getAdminOrderView(req, res, next) {
   }
 }
 
-async function getAdminOrderDetailsJson(req, res, next) {
+async getAdminOrderDetailsJson(req, res, next) {
   try {
     const orderId = req.params.id;
     const order = await orderService.getOrderDetail(null, orderId, true);
@@ -340,7 +294,7 @@ async function getAdminOrderDetailsJson(req, res, next) {
   }
 }
 
-async function approveReturn(req, res, next) {
+async approveReturn(req, res, next) {
   try {
     const { orderId, productId, action, rejectReason } = req.body;
     await orderService.handleReturn(orderId, productId, action, rejectReason);
@@ -356,7 +310,7 @@ async function approveReturn(req, res, next) {
   }
 }
 
-async function getSalesReport(req, res, next) {
+async getSalesReport(req, res, next) {
   try {
     const data = await orderService.getSalesReportData(req.query);
     const viewData = {
@@ -379,7 +333,7 @@ async function getSalesReport(req, res, next) {
   }
 }
 
-async function generateSalesReport(req, res, next) {
+async generateSalesReport(req, res, next) {
   try {
     const data = await orderService.getSalesReportData({ ...req.body, page: null }); 
     res.json({ success: true, ...data });
@@ -388,7 +342,7 @@ async function generateSalesReport(req, res, next) {
   }
 }
 
-async function downloadSalesReportPdf(req, res, next) {
+async downloadSalesReportPdf(req, res, next) {
   try {
     const data = await orderService.getSalesReportData({ ...req.body, page: null });
     generateSalesReportPdf(res, data.orders);
@@ -397,7 +351,7 @@ async function downloadSalesReportPdf(req, res, next) {
   }
 }
 
-async function downloadSalesReportExcel(req, res, next) {
+async downloadSalesReportExcel(req, res, next) {
   try {
     const data = await orderService.getSalesReportData({ ...req.body, page: null });
     await generateSalesReportExcel(res, data.orders);
@@ -405,6 +359,32 @@ async function downloadSalesReportExcel(req, res, next) {
     next(error);
   }
 }
+}
+
+const orderController = new OrderController();
+
+const checkoutPage = orderController.checkoutPage.bind(orderController);
+const applyCoupon = orderController.applyCoupon.bind(orderController);
+const confirmOrder = orderController.confirmOrder.bind(orderController);
+const createRazorpayOrder = orderController.createRazorpayOrder.bind(orderController);
+const confirmRazorpayPayment = orderController.confirmRazorpayPayment.bind(orderController);
+const getOrderSuccessPage = orderController.getOrderSuccessPage.bind(orderController);
+const getUserOrders = orderController.getUserOrders.bind(orderController);
+const getUserOrderDetails = orderController.getUserOrderDetails.bind(orderController);
+const downloadInvoice = orderController.downloadInvoice.bind(orderController);
+const cancelProduct = orderController.cancelProduct.bind(orderController);
+const returnProduct = orderController.returnProduct.bind(orderController);
+const getAdminOrders = orderController.getAdminOrders.bind(orderController);
+const changeProductStatus = orderController.changeProductStatus.bind(orderController);
+const changeOrderStatus = orderController.changeOrderStatus.bind(orderController);
+const getAdminOrderDetails = orderController.getAdminOrderDetails.bind(orderController);
+const getAdminOrderView = orderController.getAdminOrderView.bind(orderController);
+const getAdminOrderDetailsJson = orderController.getAdminOrderDetailsJson.bind(orderController);
+const approveReturn = orderController.approveReturn.bind(orderController);
+const getSalesReport = orderController.getSalesReport.bind(orderController);
+const generateSalesReport = orderController.generateSalesReport.bind(orderController);
+const downloadSalesReportPdf = orderController.downloadSalesReportPdf.bind(orderController);
+const downloadSalesReportExcel = orderController.downloadSalesReportExcel.bind(orderController);
 
 export {
   checkoutPage,
@@ -428,5 +408,5 @@ export {
   getSalesReport,
   generateSalesReport,
   downloadSalesReportPdf,
-  downloadSalesReportExcel,
+  downloadSalesReportExcel
 };

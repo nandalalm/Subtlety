@@ -96,11 +96,11 @@ app.use("/admin/offers", offerRoute);
 app.use("/admin/reviews", adminReviewRoute);
 
 app.use((req, res, next) => {
-  res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: MESSAGES.GENERAL.PAGE_NOT_FOUND });
+  const error = new Error(MESSAGES.GENERAL.PAGE_NOT_FOUND);
+  error.statusCode = HTTP_STATUS.NOT_FOUND;
+  next(error);
 });
 
 app.use(errorHandler);
 
 export default app;
-
-app.listen(3000, () => { console.log('Server running on http://localhost:3000') });

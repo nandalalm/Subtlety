@@ -2,7 +2,8 @@ import cartService from "../services/cartService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-async function getCart(req, res, next) {
+class CartController {
+async getCart(req, res, next) {
   const userId = req.session.user._id;
   try {
     const data = await cartService.getCart(userId);
@@ -15,7 +16,7 @@ async function getCart(req, res, next) {
   }
 }
 
-async function addToCart(req, res, next) {
+async addToCart(req, res, next) {
   const { user, productId, quantity } = req.body;
   if (!user) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: MESSAGES.CART.USER_REQUIRED });
@@ -40,7 +41,7 @@ async function addToCart(req, res, next) {
   }
 }
 
-async function removeFromCart(req, res, next) {
+async removeFromCart(req, res, next) {
   const userId = req.session.user._id;
   const { productId } = req.body;
   try {
@@ -57,7 +58,7 @@ async function removeFromCart(req, res, next) {
   }
 }
 
-async function updateQuantity(req, res, next) {
+async updateQuantity(req, res, next) {
   const userId = req.session.user._id;
   const { productId, quantity } = req.body;
   try {
@@ -83,6 +84,14 @@ async function updateQuantity(req, res, next) {
     next(error);
   }
 }
+}
+
+const cartController = new CartController();
+
+const getCart = cartController.getCart.bind(cartController);
+const addToCart = cartController.addToCart.bind(cartController);
+const removeFromCart = cartController.removeFromCart.bind(cartController);
+const updateQuantity = cartController.updateQuantity.bind(cartController);
 
 export {
   getCart,

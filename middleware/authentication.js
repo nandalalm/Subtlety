@@ -46,8 +46,9 @@ async function userAuthenticated(req, res, next) {
     }
     next();
   } catch (err) {
-    console.error(MESSAGES.MIDDLEWARE.AUTH_MIDDLEWARE_ERROR, err);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send(MESSAGES.MIDDLEWARE.INTERNAL_SERVER_ERROR);
+    err.message = err.message || MESSAGES.MIDDLEWARE.INTERNAL_SERVER_ERROR;
+    err.statusCode = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    next(err);
   }
 }
 

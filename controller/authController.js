@@ -1,8 +1,10 @@
 import authService from "../services/authService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
+import passport from "passport";
 
-function getSafeReturnTo(returnTo) {
+class AuthController {
+getSafeReturnTo(returnTo) {
   const normalized = String(returnTo || "").trim();
   if (!normalized.startsWith("/")) return null;
   if (normalized.startsWith("//")) return null;
@@ -13,12 +15,58 @@ function getSafeReturnTo(returnTo) {
   return isShopPage || isSingleProductPage ? normalized : null;
 }
 
-function getLogin(req, res) {
+googleLogin(req, res, next) {
+  const safeReturnTo = this.getSafeReturnTo(req.query.returnTo || req.session.returnTo);
+  if (safeReturnTo) {
+    req.session.returnTo = safeReturnTo;
+  }
+
+  req.session.save((saveError) => {
+    if (saveError) return next(saveError);
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      prompt: "select_account",
+      state: safeReturnTo || ""
+    })(req, res, next);
+  });
+}
+
+googleCallback(req, res, next) {
+  passport.authenticate("google", async (err, user, info) => {
+    if (err) return next(err);
+    if (!user) {
+      if (info && info.message === "User is blocked") {
+        req.session.errorMessage = "Your account has been blocked. Please contact support.";
+        return res.redirect("/auth/login");
+      }
+      return res.redirect("/");
+    }
+    if (user.isBlocked) {
+      req.session.errorMessage = "Your account has been blocked. Please contact support.";
+      return res.redirect("/auth/login");
+    }
+    req.logIn(user, (loginError) => {
+      if (loginError) return next(loginError);
+      req.session.user = user;
+      const redirectTo =
+        this.getSafeReturnTo(req.query.state) ||
+        this.getSafeReturnTo(req.session.returnTo) ||
+        "/user/home";
+      delete req.session.returnTo;
+      req.session.save((saveError) => {
+        if (saveError) return next(saveError);
+        return res.redirect(redirectTo);
+      });
+    });
+  })(req, res, next);
+}
+
+getLogin(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
 
-  const safeReturnTo = getSafeReturnTo(req.query.returnTo);
+  const safeReturnTo = this.getSafeReturnTo(req.query.returnTo);
   if (safeReturnTo) {
     req.session.returnTo = safeReturnTo;
   }
@@ -38,7 +86,7 @@ function getLogin(req, res) {
   });
 }
 
-async function getSignup(req, res) {
+async getSignup(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
@@ -53,7 +101,7 @@ async function getSignup(req, res) {
   });
 }
 
-async function addUser(req, res, next) {
+async addUser(req, res, next) {
   try {
     const { referral } = req.body;
     const tempUser = await authService.signup(req.body, referral);
@@ -72,7 +120,7 @@ async function addUser(req, res, next) {
   }
 }
 
-async function verifyOtp(req, res, next) {
+async verifyOtp(req, res, next) {
   const { email, otp, referral } = req.body;
   try {
     const tempUser = req.session.tempUser;
@@ -91,7 +139,7 @@ async function verifyOtp(req, res, next) {
   }
 }
 
-async function resendOtp(req, res, next) {
+async resendOtp(req, res, next) {
   const { email } = req.body;
   try {
     const tempUser = req.session.tempUser;
@@ -113,12 +161,12 @@ async function resendOtp(req, res, next) {
   }
 }
 
-async function loginUser(req, res, next) {
+async loginUser(req, res, next) {
   const { email, password } = req.body;
   try {
     const user = await authService.login(email, password);
     req.session.user = user;
-    const redirectTo = getSafeReturnTo(req.session.returnTo) || "/user/home";
+    const redirectTo = this.getSafeReturnTo(req.session.returnTo) || "/user/home";
     delete req.session.returnTo;
     return res.status(HTTP_STATUS.OK).json({
       success: true,
@@ -133,7 +181,7 @@ async function loginUser(req, res, next) {
   }
 }
 
-async function logout(req, res) {
+async logout(req, res) {
   if (req.session.user) {
     delete req.session.user;
   }
@@ -141,7 +189,7 @@ async function logout(req, res) {
   res.redirect("/auth/login");
 }
 
-async function getForgotPassword(req, res) {
+async getForgotPassword(req, res) {
   if (req.session.user) {
     return res.redirect("/user/home");
   }
@@ -155,7 +203,7 @@ async function getForgotPassword(req, res) {
   });
 }
 
-async function sendOtpForPasswordReset(req, res, next) {
+async sendOtpForPasswordReset(req, res, next) {
   const { email } = req.body;
   try {
     const resetData = await authService.sendOtpForPasswordReset(email);
@@ -169,7 +217,7 @@ async function sendOtpForPasswordReset(req, res, next) {
   }
 }
 
-async function verifyOtpForPasswordReset(req, res, next) {
+async verifyOtpForPasswordReset(req, res, next) {
   const { email, otp } = req.body;
   try {
     const resetUser = req.session.passwordResetUser;
@@ -185,7 +233,7 @@ async function verifyOtpForPasswordReset(req, res, next) {
   }
 }
 
-async function resetPassword(req, res, next) {
+async resetPassword(req, res, next) {
   const { email, newPassword } = req.body;
   try {
     const resetUser = req.session.passwordResetUser;
@@ -203,7 +251,7 @@ async function resetPassword(req, res, next) {
   }
 }
 
-async function resendPasswordResetOtp(req, res, next) {
+async resendPasswordResetOtp(req, res, next) {
   const { email } = req.body;
   try {
     const resetUser = req.session.passwordResetUser;
@@ -226,14 +274,14 @@ async function resendPasswordResetOtp(req, res, next) {
   }
 }
 
-function getAdminLogin(req, res) {
+getAdminLogin(req, res) {
   if (req.session.admin) {
     return res.redirect("/admin/dashboard");
   }
   res.render("admin/login");
 }
 
-async function loginadmin(req, res, next) {
+async loginadmin(req, res, next) {
   const { email, password } = req.body;
   try {
     const admin = await authService.adminLogin(email, password);
@@ -247,15 +295,39 @@ async function loginadmin(req, res, next) {
   }
 }
 
-async function adminLogout(req, res) {
+async adminLogout(req, res) {
   if (req.session.admin) {
     delete req.session.admin;
   }
   res.redirect("/admin/login");
 }
+}
+
+const authController = new AuthController();
+
+const getSafeReturnTo = authController.getSafeReturnTo.bind(authController);
+const googleLogin = authController.googleLogin.bind(authController);
+const googleCallback = authController.googleCallback.bind(authController);
+const getLogin = authController.getLogin.bind(authController);
+const getSignup = authController.getSignup.bind(authController);
+const addUser = authController.addUser.bind(authController);
+const verifyOtp = authController.verifyOtp.bind(authController);
+const resendOtp = authController.resendOtp.bind(authController);
+const loginUser = authController.loginUser.bind(authController);
+const logout = authController.logout.bind(authController);
+const getForgotPassword = authController.getForgotPassword.bind(authController);
+const sendOtpForPasswordReset = authController.sendOtpForPasswordReset.bind(authController);
+const verifyOtpForPasswordReset = authController.verifyOtpForPasswordReset.bind(authController);
+const resetPassword = authController.resetPassword.bind(authController);
+const resendPasswordResetOtp = authController.resendPasswordResetOtp.bind(authController);
+const getAdminLogin = authController.getAdminLogin.bind(authController);
+const loginadmin = authController.loginadmin.bind(authController);
+const adminLogout = authController.adminLogout.bind(authController);
 
 export {
   getSafeReturnTo,
+  googleLogin,
+  googleCallback,
   getLogin,
   getSignup,
   addUser,

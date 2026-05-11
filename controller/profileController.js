@@ -2,7 +2,8 @@ import profileService from "../services/profileService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-async function getUserProfile(req, res, next) {
+class ProfileController {
+async getUserProfile(req, res, next) {
   try {
     const user = req.session.user;
     res.render("user/profile", { user });
@@ -11,7 +12,7 @@ async function getUserProfile(req, res, next) {
   }
 }
 
-async function updateUserProfile(req, res, next) {
+async updateUserProfile(req, res, next) {
   const { firstname, lastname } = req.body;
   const userId = req.session.user._id;
   try {
@@ -24,7 +25,7 @@ async function updateUserProfile(req, res, next) {
   }
 }
 
-async function updateEmail(req, res, next) {
+async updateEmail(req, res, next) {
   const { email } = req.body;
   const userId = req.session.user._id;
   try {
@@ -36,7 +37,7 @@ async function updateEmail(req, res, next) {
   }
 }
 
-async function updatePhoneNumber(req, res, next) {
+async updatePhoneNumber(req, res, next) {
   const { phone } = req.body;
   const userId = req.session.user._id;
   try {
@@ -48,7 +49,7 @@ async function updatePhoneNumber(req, res, next) {
   }
 }
 
-async function getAddresses(req, res, next) {
+async getAddresses(req, res, next) {
   const userId = req.session.user._id;
   const page = parseInt(req.query.page) || 1;
   try {
@@ -63,7 +64,7 @@ async function getAddresses(req, res, next) {
   }
 }
 
-async function getAddAddressPage(req, res, next) {
+async getAddAddressPage(req, res, next) {
   try {
     res.render("user/addressForm", {
       user: req.session.user,
@@ -75,7 +76,7 @@ async function getAddAddressPage(req, res, next) {
   }
 }
 
-async function getEditAddressPage(req, res, next) {
+async getEditAddressPage(req, res, next) {
   try {
     const address = await profileService.getAddressById(req.params.id);
     res.render("user/addressForm", {
@@ -89,7 +90,7 @@ async function getEditAddressPage(req, res, next) {
   }
 }
 
-async function addAddress(req, res, next) {
+async addAddress(req, res, next) {
   const userId = req.session.user._id;
   try {
     await profileService.addAddress(userId, req.body);
@@ -99,7 +100,7 @@ async function addAddress(req, res, next) {
   }
 }
 
-async function editAddress(req, res, next) {
+async editAddress(req, res, next) {
   const { id } = req.params;
   try {
     const updated = await profileService.updateAddress(id, req.body);
@@ -112,7 +113,7 @@ async function editAddress(req, res, next) {
   }
 }
 
-async function deleteAddress(req, res, next) {
+async deleteAddress(req, res, next) {
   const { id } = req.params;
   try {
     await profileService.deleteAddress(id);
@@ -122,7 +123,7 @@ async function deleteAddress(req, res, next) {
   }
 }
 
-async function changePassword(req, res, next) {
+async changePassword(req, res, next) {
   const { currentPassword, newPassword, confirmPassword } = req.body;
   const userId = req.session.user._id;
   try {
@@ -139,7 +140,7 @@ async function changePassword(req, res, next) {
   }
 }
 
-const getWalletBalance = async (req, res, next) => {
+async getWalletBalance(req, res, next) {
   try {
     const userId = req.session.user._id;
     const balance = await profileService.getWalletBalance(userId);
@@ -147,9 +148,9 @@ const getWalletBalance = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}
 
-const deductWalletAmount = async (req, res, next) => {
+async deductWalletAmount(req, res, next) {
   try {
     const userId = req.session.user._id;
     const { orderId, amount } = req.body;
@@ -164,9 +165,9 @@ const deductWalletAmount = async (req, res, next) => {
     }
     next(error);
   }
-};
+}
 
-async function getWallet(req, res, next) {
+async getWallet(req, res, next) {
   const userId = req.session.user._id;
   const queryParams = {
     page: parseInt(req.query.page) || 1,
@@ -198,6 +199,24 @@ async function getWallet(req, res, next) {
     next(error);
   }
 }
+}
+
+const profileController = new ProfileController();
+
+const getUserProfile = profileController.getUserProfile.bind(profileController);
+const updateUserProfile = profileController.updateUserProfile.bind(profileController);
+const updateEmail = profileController.updateEmail.bind(profileController);
+const updatePhoneNumber = profileController.updatePhoneNumber.bind(profileController);
+const getAddresses = profileController.getAddresses.bind(profileController);
+const getAddAddressPage = profileController.getAddAddressPage.bind(profileController);
+const getEditAddressPage = profileController.getEditAddressPage.bind(profileController);
+const addAddress = profileController.addAddress.bind(profileController);
+const editAddress = profileController.editAddress.bind(profileController);
+const deleteAddress = profileController.deleteAddress.bind(profileController);
+const changePassword = profileController.changePassword.bind(profileController);
+const getWalletBalance = profileController.getWalletBalance.bind(profileController);
+const deductWalletAmount = profileController.deductWalletAmount.bind(profileController);
+const getWallet = profileController.getWallet.bind(profileController);
 
 export {
   getUserProfile,

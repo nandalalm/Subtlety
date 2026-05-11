@@ -17,8 +17,8 @@ function validateDescriptionOrThrow(description) {
   return normalizedDescription;
 }
 
-const productService = {
-  getAdminProducts: async (queryParams) => {
+class ProductService {
+async getAdminProducts(queryParams) {
     const { page = 1, limit = 5, search = "", sort = "latest" } = queryParams;
     const skip = (page - 1) * limit;
 
@@ -55,9 +55,9 @@ const productService = {
       totalProducts,
       limit
     };
-  },
+  }
 
-  validatePriceAgainstOffers: async (productId, categoryId, newPrice) => {
+async validatePriceAgainstOffers(productId, categoryId, newPrice) {
     const activeFlatOffers = await offerRepository.find({
       $or: [
         { targetId: productId, offerFor: "Product" },
@@ -76,9 +76,9 @@ const productService = {
         };
       }
     }
-  },
+  }
 
-  addProduct: async (productData) => {
+async addProduct(productData) {
     const normalizedDescription = validateDescriptionOrThrow(productData.description);
     const existing = await productRepository.findOne({ name: { $regex: `^${productData.name.trim()}$`, $options: "i" } });
     if (existing) {
@@ -88,9 +88,9 @@ const productService = {
       ...productData,
       description: normalizedDescription
     });
-  },
+  }
 
-  updateProduct: async (id, updateData) => {
+async updateProduct(id, updateData) {
     const product = await productRepository.findById(id);
     if (!product) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PRODUCT.NOT_FOUND };
@@ -107,7 +107,7 @@ const productService = {
     }
 
     if (updateData.price && updateData.price !== product.price) {
-      await productService.validatePriceAgainstOffers(id, updateData.category || product.category, updateData.price);
+      await this.validatePriceAgainstOffers(id, updateData.category || product.category, updateData.price);
     }
 
     const normalizedUpdateData = { ...updateData };
@@ -116,24 +116,24 @@ const productService = {
     }
 
     return await productRepository.updateById(id, normalizedUpdateData);
-  },
+  }
 
-  toggleStatus: async (id) => {
+async toggleStatus(id) {
     const product = await productRepository.findById(id);
     if (!product) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PRODUCT.NOT_FOUND };
     }
     product.isListed = !product.isListed;
     return await product.save();
-  },
+  }
 
-  getAdminProductDetail: async (id) => {
+async getAdminProductDetail(id) {
     const product = await productRepository.findByIdAndPopulate(id, "category");
     if (!product) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PRODUCT.NOT_FOUND };
     }
     return product;
   }
-};
+}
 
-export default productService;
+export default new ProductService();

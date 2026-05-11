@@ -3,8 +3,8 @@ import orderRepository from "../repositories/orderRepository.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-const reviewService = {
-  postReview: async (userId, reviewData) => {
+class ReviewService {
+async postReview(userId, reviewData) {
     const { productId, orderId, rating, comment } = reviewData;
     const normalizedComment = typeof comment === "string" ? comment.trim() : "";
 
@@ -84,9 +84,9 @@ const reviewService = {
     }
 
     return { success: true };
-  },
+  }
 
-  getLoadMoreReviews: async (productId, page = 1) => {
+async getLoadMoreReviews(productId, page = 1) {
     const limit = 5;
     const skip = (page - 1) * limit;
 
@@ -115,9 +115,9 @@ const reviewService = {
     }));
 
     return { reviews: formattedReviews, hasMore };
-  },
+  }
 
-  getAdminReviews: async (queryParams) => {
+async getAdminReviews(queryParams) {
     const page = parseInt(queryParams.page) || 1;
     const limit = parseInt(queryParams.limit) || 5;
     const skip = (page - 1) * limit;
@@ -130,9 +130,9 @@ const reviewService = {
     const totalPages = Math.ceil(totalReviews / limit);
 
     return { reviews, totalPages, totalReviews, limit };
-  },
+  }
 
-  toggleReviewStatus: async (reviewId) => {
+async toggleReviewStatus(reviewId) {
     const review = await reviewRepository.findById(reviewId);
     if (!review) {
       const error = new Error(MESSAGES.REVIEW.NOT_FOUND);
@@ -142,9 +142,9 @@ const reviewService = {
     review.isListed = !review.isListed;
     await reviewRepository.updateById(reviewId, { isListed: review.isListed });
     return { isListed: review.isListed };
-  },
+  }
 
-  getAdminReviewDetail: async (reviewId) => {
+async getAdminReviewDetail(reviewId) {
     const review = await reviewRepository.findByIdAndPopulate(reviewId, [
       { path: "productId", select: "name images category price isListed" },
       { path: "userId", select: "firstname lastname email phoneNo" },
@@ -159,6 +159,6 @@ const reviewService = {
 
     return review;
   }
-};
+}
 
-export default reviewService;
+export default new ReviewService();

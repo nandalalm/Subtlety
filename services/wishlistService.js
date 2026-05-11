@@ -5,8 +5,8 @@ import { getBestOffer, getAverageRatingsForProducts } from "../utils/helper.js";
 import MESSAGES from "../Constants/messages.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 
-const wishlistService = {
-  getWishlistData: async (userId, page = 1) => {
+class WishlistService {
+async getWishlistData(userId, page = 1) {
     const limit = 4;
 
     const userDoc = await userRepository.findById(userId);
@@ -47,9 +47,9 @@ const wishlistService = {
       totalPages,
       currentPage
     };
-  },
+  }
 
-  addToWishlist: async (userId, productId) => {
+async addToWishlist(userId, productId) {
     const user = await userRepository.findById(userId);
     if (!user) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.USER_NOT_FOUND };
 
@@ -66,9 +66,9 @@ const wishlistService = {
 
     user.wishlisted.push(productId);
     return await user.save();
-  },
+  }
 
-  removeFromWishlist: async (userId, productId) => {
+async removeFromWishlist(userId, productId) {
     const user = await userRepository.findById(userId);
     if (!user) throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.PROFILE.USER_NOT_FOUND };
 
@@ -78,6 +78,6 @@ const wishlistService = {
     user.wishlisted.splice(index, 1);
     return await user.save();
   }
-};
+}
 
-export default wishlistService;
+export default new WishlistService();

@@ -3,7 +3,8 @@ import { getCartItemMap } from "../utils/helper.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-async function getHome(req, res, next) {
+class UserController {
+async getHome(req, res, next) {
   try {
     const user = req.session.user || null;
     const cartItemMap = await getCartItemMap(user ? user._id : null);
@@ -20,7 +21,7 @@ async function getHome(req, res, next) {
   }
 }
 
-async function getShopPage(req, res, next) {
+async getShopPage(req, res, next) {
   try {
     const user = req.session.user || null;
     const cartItemMap = await getCartItemMap(user ? user._id : null);
@@ -70,7 +71,7 @@ async function getShopPage(req, res, next) {
   }
 }
 
-async function getSingleProduct(req, res, next) {
+async getSingleProduct(req, res, next) {
   const { id } = req.params;
   try {
     const user = req.session.user || null;
@@ -98,7 +99,7 @@ async function getSingleProduct(req, res, next) {
   }
 }
 
-async function loadMoreRelatedProducts(req, res, next) {
+async loadMoreRelatedProducts(req, res, next) {
   try {
     const user = req.session.user || null;
     const cartItemMap = await getCartItemMap(user ? user._id : null);
@@ -112,7 +113,7 @@ async function loadMoreRelatedProducts(req, res, next) {
   }
 }
 
-async function loadMoreProducts(req, res, next) {
+async loadMoreProducts(req, res, next) {
   try {
     const user = req.session.user || null;
     const cartItemMap = await getCartItemMap(user ? user._id : null);
@@ -126,7 +127,7 @@ async function loadMoreProducts(req, res, next) {
   }
 }
 
-async function getSectionReplacement(req, res, next) {
+async getSectionReplacement(req, res, next) {
   try {
     const user = req.session.user || null;
     const cartItemMap = await getCartItemMap(user ? user._id : null);
@@ -162,7 +163,7 @@ async function getSectionReplacement(req, res, next) {
   }
 }
 
-async function getProductAvailability(req, res, next) {
+async getProductAvailability(req, res, next) {
   try {
     const data = await userService.getProductAvailability(req.params.id);
     res.status(HTTP_STATUS.OK).json(data);
@@ -170,6 +171,17 @@ async function getProductAvailability(req, res, next) {
     next(error);
   }
 }
+}
+
+const userController = new UserController();
+
+const getHome = userController.getHome.bind(userController);
+const getSingleProduct = userController.getSingleProduct.bind(userController);
+const loadMoreRelatedProducts = userController.loadMoreRelatedProducts.bind(userController);
+const getShopPage = userController.getShopPage.bind(userController);
+const loadMoreProducts = userController.loadMoreProducts.bind(userController);
+const getSectionReplacement = userController.getSectionReplacement.bind(userController);
+const getProductAvailability = userController.getProductAvailability.bind(userController);
 
 export {
   getHome,

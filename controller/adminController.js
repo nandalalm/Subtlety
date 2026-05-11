@@ -1,7 +1,8 @@
 import adminService from "../services/adminService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 
-async function getHome(req, res, next) {
+class AdminController {
+async getHome(req, res, next) {
   try {
     const data = await adminService.getDashboardData();
     res.render("admin/dashboard", {
@@ -13,7 +14,7 @@ async function getHome(req, res, next) {
   }
 }
 
-async function getUsers(req, res, next) {
+async getUsers(req, res, next) {
   try {
     const data = await adminService.getUsers(req.query);
     const viewData = {
@@ -37,7 +38,7 @@ async function getUsers(req, res, next) {
   }
 }
 
-async function toggleUserStatus(req, res, next) {
+async toggleUserStatus(req, res, next) {
   try {
     const userId = req.params.id;
     const sessionUserId = req.session.user?._id;
@@ -54,9 +55,16 @@ async function toggleUserStatus(req, res, next) {
     next(error);
   }
 }
+}
+
+const adminController = new AdminController();
+
+const getHome = adminController.getHome.bind(adminController);
+const getUsers = adminController.getUsers.bind(adminController);
+const toggleUserStatus = adminController.toggleUserStatus.bind(adminController);
 
 export {
   getHome,
   getUsers,
-  toggleUserStatus,
+  toggleUserStatus
 };

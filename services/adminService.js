@@ -2,8 +2,8 @@ import userRepository from "../repositories/userRepository.js";
 import orderRepository from "../repositories/orderRepository.js";
 import reviewRepository from "../repositories/reviewRepository.js";
 
-const adminService = {
-  getDashboardData: async () => {
+class AdminService {
+async getDashboardData() {
     const [
       usersCount,
       ordersCount,
@@ -84,9 +84,9 @@ const adminService = {
       bestSellingCategories: formattedBestCategories,
       topRatedProducts
     };
-  },
+  }
 
-  getUsers: async (queryParams) => {
+async getUsers(queryParams) {
     const page = parseInt(queryParams.page) || 1;
     const limit = parseInt(queryParams.limit) || 6;
     const skip = (page - 1) * limit;
@@ -111,9 +111,9 @@ const adminService = {
     const totalPages = Math.ceil(totalUsers / limit);
 
     return { users, totalPages, totalUsers, limit };
-  },
+  }
 
-  toggleUserStatus: async (userId, sessionUserId) => {
+async toggleUserStatus(userId, sessionUserId) {
     const user = await userRepository.findById(userId);
     if (!user) {
       const error = new Error(MESSAGES.ADMIN.USER_NOT_FOUND);
@@ -131,6 +131,6 @@ const adminService = {
 
     return { isBlocked: user.isBlocked, loggedOut };
   }
-};
+}
 
-export default adminService;
+export default new AdminService();

@@ -2,7 +2,8 @@ import offerService from "../services/offerService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-async function getOffers(req, res, next) {
+class OfferController {
+async getOffers(req, res, next) {
   try {
     const queryParams = {
       page: parseInt(req.query.page) || 1,
@@ -36,7 +37,7 @@ async function getOffers(req, res, next) {
   }
 }
 
-async function getAddOfferPage(req, res, next) {
+async getAddOfferPage(req, res, next) {
   try {
     res.render("admin/offerForm", {
       offer: null,
@@ -48,7 +49,7 @@ async function getAddOfferPage(req, res, next) {
   }
 }
 
-async function getEditOfferPage(req, res, next) {
+async getEditOfferPage(req, res, next) {
   try {
     const offer = await offerService.getAdminOfferDetail(req.params.id);
     res.render("admin/offerForm", {
@@ -62,7 +63,7 @@ async function getEditOfferPage(req, res, next) {
   }
 }
 
-async function searchOfferTargets(req, res, next) {
+async searchOfferTargets(req, res, next) {
   try {
     const targets = await offerService.searchOfferTargets({
       offerFor: req.query.offerFor,
@@ -77,7 +78,7 @@ async function searchOfferTargets(req, res, next) {
   }
 }
 
-async function addOffer(req, res, next) {
+async addOffer(req, res, next) {
   const { offerFor, targetId, offerType, value, minProductPrice, expiresAt } = req.body;
 
   if (!offerFor || !targetId || !offerType || value === undefined || !expiresAt) {
@@ -99,7 +100,7 @@ async function addOffer(req, res, next) {
   }
 }
 
-async function editOffer(req, res, next) {
+async editOffer(req, res, next) {
   const offerId = req.params.id;
   const { targetId, offerFor, offerType, value, minProductPrice, expiresAt } = req.body;
   try {
@@ -115,7 +116,7 @@ async function editOffer(req, res, next) {
   }
 }
 
-async function toggleOfferStatus(req, res, next) {
+async toggleOfferStatus(req, res, next) {
   const offerId = req.params.id;
   try {
     const updatedOffer = await offerService.toggleOfferStatus(offerId);
@@ -130,7 +131,7 @@ async function toggleOfferStatus(req, res, next) {
   }
 }
 
-async function getOfferView(req, res, next) {
+async getOfferView(req, res, next) {
   try {
     const offer = await offerService.getAdminOfferDetail(req.params.id);
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
@@ -141,7 +142,7 @@ async function getOfferView(req, res, next) {
   }
 }
 
-async function getCoupons(req, res, next) {
+async getCoupons(req, res, next) {
   const queryParams = {
     page: parseInt(req.query.page) || 1,
     limit: 6,
@@ -173,7 +174,7 @@ async function getCoupons(req, res, next) {
   }
 }
 
-async function getAddCouponPage(req, res, next) {
+async getAddCouponPage(req, res, next) {
   try {
     res.render("admin/couponForm", {
       coupon: null,
@@ -185,7 +186,7 @@ async function getAddCouponPage(req, res, next) {
   }
 }
 
-async function getEditCouponPage(req, res, next) {
+async getEditCouponPage(req, res, next) {
   try {
     const coupon = await offerService.getAdminCouponDetail(req.params.id);
     res.render("admin/couponForm", {
@@ -199,7 +200,7 @@ async function getEditCouponPage(req, res, next) {
   }
 }
 
-async function addCoupon(req, res, next) {
+async addCoupon(req, res, next) {
   const { code, discountAmount, discountType, maxDiscount, minOrderValue, expiresAt, usageLimit } = req.body;
   if (!code || !discountAmount || !expiresAt || !usageLimit) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.COUPON.REQUIRED_FIELDS });
@@ -221,7 +222,7 @@ async function addCoupon(req, res, next) {
   }
 }
 
-async function editCoupon(req, res, next) {
+async editCoupon(req, res, next) {
   const { id } = req.params;
   const { code, discountAmount, discountType, maxDiscount, minOrderValue, expiresAt, usageLimit } = req.body;
   try {
@@ -237,7 +238,7 @@ async function editCoupon(req, res, next) {
   }
 }
 
-async function toggleCouponStatus(req, res, next) {
+async toggleCouponStatus(req, res, next) {
   const { id } = req.params;
   try {
     const updatedCoupon = await offerService.toggleCouponStatus(id);
@@ -252,7 +253,7 @@ async function toggleCouponStatus(req, res, next) {
   }
 }
 
-async function getCouponView(req, res, next) {
+async getCouponView(req, res, next) {
   try {
     const coupon = await offerService.getAdminCouponDetail(req.params.id);
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
@@ -262,6 +263,25 @@ async function getCouponView(req, res, next) {
     next(error);
   }
 }
+}
+
+const offerController = new OfferController();
+
+const getOffers = offerController.getOffers.bind(offerController);
+const getAddOfferPage = offerController.getAddOfferPage.bind(offerController);
+const getEditOfferPage = offerController.getEditOfferPage.bind(offerController);
+const searchOfferTargets = offerController.searchOfferTargets.bind(offerController);
+const addOffer = offerController.addOffer.bind(offerController);
+const editOffer = offerController.editOffer.bind(offerController);
+const getOfferView = offerController.getOfferView.bind(offerController);
+const toggleOfferStatus = offerController.toggleOfferStatus.bind(offerController);
+const getCoupons = offerController.getCoupons.bind(offerController);
+const getAddCouponPage = offerController.getAddCouponPage.bind(offerController);
+const getEditCouponPage = offerController.getEditCouponPage.bind(offerController);
+const addCoupon = offerController.addCoupon.bind(offerController);
+const editCoupon = offerController.editCoupon.bind(offerController);
+const getCouponView = offerController.getCouponView.bind(offerController);
+const toggleCouponStatus = offerController.toggleCouponStatus.bind(offerController);
 
 export {
   getOffers,
@@ -278,5 +298,5 @@ export {
   addCoupon,
   editCoupon,
   getCouponView,
-  toggleCouponStatus,
+  toggleCouponStatus
 };

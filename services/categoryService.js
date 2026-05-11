@@ -16,8 +16,10 @@ function normalizeCategoryNameOrThrow(name) {
   return normalizedName;
 }
 
-const categoryService = {
-  getCategories: async (queryParams) => {
+const ongoingCategoryRequests = new Set();
+
+class CategoryService {
+async getCategories(queryParams) {
     const { page = 1, limit = 5, search = "", sort = "latest" } = queryParams;
     const skip = (page - 1) * limit;
 
@@ -41,18 +43,28 @@ const categoryService = {
       totalCategories,
       limit
     };
-  },
+  }
 
-  addCategory: async (categoryData) => {
+async addCategory(categoryData) {
     const normalizedName = normalizeCategoryNameOrThrow(categoryData.name);
-    const existing = await categoryRepository.findOne({ name: { $regex: `^${normalizedName}$`, $options: "i" } });
-    if (existing) {
-      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.ALREADY_EXISTS };
+    const requestKey = `${normalizedName}_${categoryData.isListed}`;
+    if (ongoingCategoryRequests.has(requestKey)) {
+      throw { statusCode: HTTP_STATUS.CONFLICT, message: MESSAGES.CATEGORY.DUPLICATE_REQUEST };
     }
-    return await categoryRepository.save({ ...categoryData, name: normalizedName });
-  },
 
-  updateCategory: async (id, updateData) => {
+    ongoingCategoryRequests.add(requestKey);
+    try {
+      const existing = await categoryRepository.findOne({ name: { $regex: `^${normalizedName}$`, $options: "i" } });
+      if (existing) {
+        throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.ALREADY_EXISTS };
+      }
+      return await categoryRepository.save({ ...categoryData, name: normalizedName });
+    } finally {
+      ongoingCategoryRequests.delete(requestKey);
+    }
+  }
+
+async updateCategory(id, updateData) {
     const category = await categoryRepository.findById(id);
     if (!category) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CATEGORY.NOT_FOUND };
@@ -72,17 +84,17 @@ const categoryService = {
     }
 
     return await categoryRepository.findByIdAndUpdate(id, updateData);
-  },
+  }
 
-  getCategoryById: async (id) => {
+async getCategoryById(id) {
     const category = await categoryRepository.findById(id);
     if (!category) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CATEGORY.NOT_FOUND };
     }
     return category;
-  },
+  }
 
-  toggleStatus: async (id) => {
+async toggleStatus(id) {
     const category = await categoryRepository.findById(id);
     if (!category) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.CATEGORY.NOT_FOUND };
@@ -90,6 +102,6 @@ const categoryService = {
     category.isListed = !category.isListed;
     return await category.save();
   }
-};
+}
 
-export default categoryService;
+export default new CategoryService();

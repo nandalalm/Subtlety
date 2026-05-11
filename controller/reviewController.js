@@ -2,7 +2,8 @@ import reviewService from "../services/reviewService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 
-async function postReview(req, res, next) {
+class ReviewController {
+async postReview(req, res, next) {
   try {
     const user = req.session.user;
     if (!user) {
@@ -19,7 +20,7 @@ async function postReview(req, res, next) {
   }
 }
 
-async function loadMoreReviews(req, res, next) {
+async loadMoreReviews(req, res, next) {
   try {
     const { productId } = req.params;
     const page = parseInt(req.query.page) || 1;
@@ -30,7 +31,7 @@ async function loadMoreReviews(req, res, next) {
   }
 }
 
-async function getReviews(req, res, next) {
+async getReviews(req, res, next) {
   try {
     const data = await reviewService.getAdminReviews(req.query);
     if (req.query.ajax) {
@@ -56,7 +57,7 @@ async function getReviews(req, res, next) {
   }
 }
 
-async function toggleReviewStatus(req, res, next) {
+async toggleReviewStatus(req, res, next) {
   try {
     const { id } = req.params;
     const review = await reviewService.toggleReviewStatus(id);
@@ -67,7 +68,7 @@ async function toggleReviewStatus(req, res, next) {
   }
 }
 
-async function getReviewView(req, res, next) {
+async getReviewView(req, res, next) {
   try {
     const review = await reviewService.getAdminReviewDetail(req.params.id);
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}&rating=${req.query.rating || ""}`;
@@ -79,6 +80,15 @@ async function getReviewView(req, res, next) {
     next(error);
   }
 }
+}
+
+const reviewController = new ReviewController();
+
+const postReview = reviewController.postReview.bind(reviewController);
+const loadMoreReviews = reviewController.loadMoreReviews.bind(reviewController);
+const getReviews = reviewController.getReviews.bind(reviewController);
+const toggleReviewStatus = reviewController.toggleReviewStatus.bind(reviewController);
+const getReviewView = reviewController.getReviewView.bind(reviewController);
 
 export {
   postReview,

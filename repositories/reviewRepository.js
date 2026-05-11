@@ -1,44 +1,44 @@
 import Review from "../model/review.js";
 
-const reviewRepository = {
-  find: async (query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0) => {
+class ReviewRepository {
+async find(query = {}, sort = { createdAt: -1 }, skip = 0, limit = 0) {
     let q = Review.find(query).sort(sort).skip(skip);
     if (limit > 0) q = q.limit(limit);
     return await q;
-  },
+  }
 
-  findWithPopulate: async (query = {}, populatePath = "", sort = { createdAt: -1 }, skip = 0, limit = 0) => {
+async findWithPopulate(query = {}, populatePath = "", sort = { createdAt: -1 }, skip = 0, limit = 0) {
     let q = Review.find(query).populate(populatePath).sort(sort).skip(skip);
     if (limit > 0) q = q.limit(limit);
     return await q;
-  },
+  }
 
-  countDocuments: async (query = {}) => {
+async countDocuments(query = {}) {
     return await Review.countDocuments(query);
-  },
+  }
 
-  aggregate: async (pipeline) => {
+async aggregate(pipeline) {
     return await Review.aggregate(pipeline);
-  },
+  }
 
-  save: async (reviewData) => {
+async save(reviewData) {
     const review = new Review(reviewData);
     return await review.save();
-  },
+  }
 
-  findById: async (id) => {
+async findById(id) {
     return await Review.findById(id);
-  },
+  }
 
-  findByIdAndPopulate: async (id, populatePath) => {
+async findByIdAndPopulate(id, populatePath) {
     return await Review.findById(id).populate(populatePath);
-  },
+  }
 
-  updateById: async (id, updateData, options = { new: true }) => {
+async updateById(id, updateData, options = { new: true }) {
     return await Review.findByIdAndUpdate(id, updateData, options);
-  },
+  }
 
-  getTopRatedProducts: async (limit = 5) => {
+async getTopRatedProducts(limit = 5) {
     return await Review.aggregate([
       { $match: { isListed: true } },
       { $group: { _id: "$productId", avgRating: { $avg: "$rating" }, reviewCount: { $sum: 1 } } },
@@ -48,9 +48,9 @@ const reviewRepository = {
       { $unwind: "$product" },
       { $project: { name: "$product.name", image: { $arrayElemAt: ["$product.images", 0] }, avgRating: 1, reviewCount: 1 } }
     ]);
-  },
+  }
 
-  getAdminReviews: async (queryParams, skip, limit) => {
+async getAdminReviews(queryParams, skip, limit) {
     const { search, sort, rating } = queryParams;
     const pipeline = [
       { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userDetails" } },
@@ -83,9 +83,9 @@ const reviewRepository = {
     });
 
     return await Review.aggregate(pipeline);
-  },
+  }
 
-  countAdminReviews: async (queryParams) => {
+async countAdminReviews(queryParams) {
     const { search, sort } = queryParams;
     const pipeline = [
       { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userDetails" } },
@@ -105,6 +105,6 @@ const reviewRepository = {
     const result = await Review.aggregate(pipeline);
     return result.length > 0 ? result[0].total : 0;
   }
-};
+}
 
-export default reviewRepository;
+export default new ReviewRepository();

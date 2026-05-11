@@ -209,8 +209,8 @@ async function validateOfferPayload(offerData, excludeOfferId = null) {
   };
 }
 
-const offerService = {
-  searchOfferTargets: async ({ offerFor, search = "" }) => {
+class OfferService {
+async searchOfferTargets({ offerFor, search = "" }) {
     const trimmedSearch = search.trim();
     const query = trimmedSearch ? { name: { $regex: trimmedSearch, $options: "i" } } : {};
 
@@ -231,9 +231,9 @@ const offerService = {
     }
 
     throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.INVALID_TARGET_TYPE };
-  },
+  }
 
-  getAdminOffers: async (queryParams) => {
+async getAdminOffers(queryParams) {
     const { page = 1, limit = 6, search = "", sort = "latest" } = queryParams;
     const skip = (page - 1) * limit;
 
@@ -282,14 +282,14 @@ const offerService = {
       totalOffers,
       limit
     };
-  },
+  }
 
-  addOffer: async (offerData) => {
+async addOffer(offerData) {
     const validatedData = await validateOfferPayload(offerData);
     return await offerRepository.save(validatedData);
-  },
+  }
 
-  updateOffer: async (id, updateData) => {
+async updateOffer(id, updateData) {
     const offer = await offerRepository.findById(id);
     if (!offer) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.NOT_FOUND };
@@ -306,26 +306,26 @@ const offerService = {
       id
     );
     return await offerRepository.updateById(id, validatedData);
-  },
+  }
 
-  toggleOfferStatus: async (id) => {
+async toggleOfferStatus(id) {
     const offer = await offerRepository.findById(id);
     if (!offer) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.NOT_FOUND };
     }
     offer.isActive = !offer.isActive;
     return await offer.save();
-  },
+  }
 
-  getAdminOfferDetail: async (id) => {
+async getAdminOfferDetail(id) {
     const offer = await offerRepository.findByIdAndPopulate(id, "targetId");
     if (!offer) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.OFFER.NOT_FOUND };
     }
     return offer;
-  },
+  }
 
-  getAdminCoupons: async (queryParams) => {
+async getAdminCoupons(queryParams) {
     const { page = 1, limit = 6, search = "", sort = "latest" } = queryParams;
     const skip = (page - 1) * limit;
 
@@ -357,9 +357,9 @@ const offerService = {
       totalCoupons,
       limit
     };
-  },
+  }
 
-  addCoupon: async (couponData) => {
+async addCoupon(couponData) {
     const normalizedCode = validateCouponCodeOrThrow(couponData.code);
     validateCouponPayloadOrThrow(couponData);
     const normalizedCouponData = normalizeCouponPayload(couponData);
@@ -368,9 +368,9 @@ const offerService = {
       throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.ALREADY_EXISTS };
     }
     return await couponRepository.save({ ...normalizedCouponData, code: normalizedCode });
-  },
+  }
 
-  updateCoupon: async (id, updateData) => {
+async updateCoupon(id, updateData) {
     const coupon = await couponRepository.findById(id);
     if (!coupon) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.COUPON.NOT_FOUND };
@@ -378,24 +378,24 @@ const offerService = {
     validateCouponPayloadOrThrow(updateData);
     const normalizedCouponData = normalizeCouponPayload(updateData);
     return await couponRepository.updateById(id, { ...normalizedCouponData, code: coupon.code });
-  },
+  }
 
-  toggleCouponStatus: async (id) => {
+async toggleCouponStatus(id) {
     const coupon = await couponRepository.findById(id);
     if (!coupon) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.COUPON.NOT_FOUND };
     }
     coupon.isActive = !coupon.isActive;
     return await coupon.save();
-  },
+  }
 
-  getAdminCouponDetail: async (id) => {
+async getAdminCouponDetail(id) {
     const coupon = await couponRepository.findById(id);
     if (!coupon) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.COUPON.NOT_FOUND };
     }
     return coupon;
   }
-};
+}
 
-export default offerService;
+export default new OfferService();

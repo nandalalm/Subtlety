@@ -1,26 +1,26 @@
 import Cart from "../model/cart.js";
 
-const cartRepository = {
-  findOne: async (query) => {
+class CartRepository {
+async findOne(query) {
     return await Cart.findOne(query);
-  },
+  }
 
-  findOneWithPopulate: async (query, populatePath) => {
+async findOneWithPopulate(query, populatePath) {
     return await Cart.findOne(query).populate(populatePath);
-  },
+  }
 
-  save: async (cartData) => {
+async save(cartData) {
     const cart = new Cart(cartData);
     return await cart.save();
-  },
+  }
 
-  updateByQuery: async (query, updateData, options = { new: true }) => {
+async updateByQuery(query, updateData, options = { new: true }) {
     return await Cart.findOneAndUpdate(query, updateData, options);
-  },
+  }
 
-  deleteOne: async (query) => {
+async deleteOne(query) {
     return await Cart.deleteOne(query);
   }
-};
+}
 
-export default cartRepository;
+export default new CartRepository();

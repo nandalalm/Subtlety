@@ -11,8 +11,8 @@ import HTTP_STATUS from "../Constants/httpStatus.js";
 
 const OTP_VALIDITY_DURATION = 60 * 1000;
 
-const authService = {
-  signup: async (userData, referral) => {
+class AuthService {
+async signup(userData, referral) {
     const firstname = normalizeSubmittedName(userData.firstname, {
       fieldLabel: "First name",
       required: true,
@@ -43,9 +43,9 @@ const authService = {
       otpTimestamp,
       referral
     };
-  },
+  }
 
-  verifyOtp: async (tempUser, inputOtp) => {
+async verifyOtp(tempUser, inputOtp) {
     if (!tempUser) {
       throw { statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION };
     }
@@ -69,9 +69,9 @@ const authService = {
     }
 
     return newUser;
-  },
+  }
 
-  resendOtp: async (tempUser) => {
+async resendOtp(tempUser) {
     if (!tempUser) {
       throw { statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION };
     }
@@ -82,9 +82,9 @@ const authService = {
     await sendOtpEmail(tempUser.email, otp, MESSAGES.AUTH.OTP_EMAIL_SUBJECT, getOtpEmailTemplate);
 
     return { otp, otpTimestamp };
-  },
+  }
 
-  sendOtpForPasswordReset: async (email) => {
+async sendOtpForPasswordReset(email) {
     const existingUser = await userRepository.findOne({ email });
     if (!existingUser) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.AUTH.EMAIL_NOT_REGISTERED };
@@ -97,9 +97,9 @@ const authService = {
     await sendOtpEmail(email, otp, MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SUBJECT, getPasswordResetEmailTemplate);
 
     return { email, otp, otpTimestamp };
-  },
+  }
 
-  verifyOtpForPasswordReset: async (resetUser, inputOtp) => {
+async verifyOtpForPasswordReset(resetUser, inputOtp) {
     if (!resetUser) {
       throw { statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET };
     }
@@ -111,22 +111,22 @@ const authService = {
     }
 
     return true;
-  },
+  }
 
-  resetPassword: async (email, newPassword) => {
+async resetPassword(email, newPassword) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     return await userRepository.updateOne({ email }, { password: hashedPassword });
-  },
+  }
 
-  adminLogin: async (email, password) => {
+async adminLogin(email, password) {
     const admin = await adminRepository.findOne({ email });
     if (admin && (await bcrypt.compare(password, admin.password))) {
       return admin;
     }
     throw { statusCode: HTTP_STATUS.UNAUTHORIZED, message: MESSAGES.AUTH.INVALID_CREDENTIALS };
-  },
+  }
 
-  login: async (email, password) => {
+async login(email, password) {
     const user = await userRepository.findOne({ email });
     if (!user) {
       throw { statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.AUTH.EMAIL_NOT_REGISTERED_LOGIN };
@@ -142,7 +142,7 @@ const authService = {
     }
     return user;
   }
-};
+}
 
 async function handleReferral(referrerId, newUserId) {
   const referrer = await userRepository.findById(referrerId);
@@ -169,4 +169,4 @@ async function handleReferral(referrerId, newUserId) {
   }
 }
 
-export default authService;
+export default new AuthService();
