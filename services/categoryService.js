@@ -6,11 +6,11 @@ function normalizeCategoryNameOrThrow(name) {
   const normalizedName = String(name || "").trim();
 
   if (!normalizedName) {
-    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Category name is required." };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.NAME_REQUIRED };
   }
 
   if (normalizedName.length > 50) {
-    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Category name cannot exceed 50 characters." };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.NAME_TOO_LONG };
   }
 
   return normalizedName;

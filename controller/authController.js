@@ -35,14 +35,14 @@ googleCallback(req, res, next) {
   passport.authenticate("google", async (err, user, info) => {
     if (err) return next(err);
     if (!user) {
-      if (info && info.message === "User is blocked") {
-        req.session.errorMessage = "Your account has been blocked. Please contact support.";
+      if (info && info.message === MESSAGES.AUTH.GOOGLE_BLOCKED_INFO) {
+        req.session.errorMessage = MESSAGES.AUTH.USER_BLOCKED;
         return res.redirect("/auth/login");
       }
       return res.redirect("/");
     }
     if (user.isBlocked) {
-      req.session.errorMessage = "Your account has been blocked. Please contact support.";
+      req.session.errorMessage = MESSAGES.AUTH.USER_BLOCKED;
       return res.redirect("/auth/login");
     }
     req.logIn(user, (loginError) => {
@@ -125,7 +125,7 @@ async verifyOtp(req, res, next) {
   try {
     const tempUser = req.session.tempUser;
     if (!tempUser || tempUser.email !== email) {
-      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION });
+      return next({ statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION });
     }
 
     const newUser = await authService.verifyOtp(tempUser, otp);
@@ -144,7 +144,7 @@ async resendOtp(req, res, next) {
   try {
     const tempUser = req.session.tempUser;
     if (!tempUser || tempUser.email !== email) {
-      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION });
+      return next({ statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION });
     }
 
     const { otp, otpTimestamp } = await authService.resendOtp(tempUser);
@@ -174,9 +174,6 @@ async loginUser(req, res, next) {
       redirect: redirectTo
     });
   } catch (error) {
-    if ([HTTP_STATUS.BAD_REQUEST, HTTP_STATUS.UNAUTHORIZED, HTTP_STATUS.FORBIDDEN, HTTP_STATUS.NOT_FOUND].includes(error.statusCode)) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -222,7 +219,7 @@ async verifyOtpForPasswordReset(req, res, next) {
   try {
     const resetUser = req.session.passwordResetUser;
     if (!resetUser || resetUser.email !== email) {
-      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
+      return next({ statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
     }
 
     await authService.verifyOtpForPasswordReset(resetUser, otp);
@@ -238,10 +235,10 @@ async resetPassword(req, res, next) {
   try {
     const resetUser = req.session.passwordResetUser;
     if (!resetUser || resetUser.email !== email) {
-      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
+      return next({ statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
     }
     if (!resetUser.isOtpVerified) {
-      return res.status(HTTP_STATUS.CONFLICT).json({ message: MESSAGES.AUTH.INVALID_OTP });
+      return next({ statusCode: HTTP_STATUS.CONFLICT, message: MESSAGES.AUTH.INVALID_OTP });
     }
     await authService.resetPassword(email, newPassword);
     req.session.passwordResetUser = null;
@@ -256,7 +253,7 @@ async resendPasswordResetOtp(req, res, next) {
   try {
     const resetUser = req.session.passwordResetUser;
     if (!resetUser || resetUser.email !== email) {
-      return res.status(HTTP_STATUS.GONE).json({ message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
+      return next({ statusCode: HTTP_STATUS.GONE, message: MESSAGES.AUTH.USER_NOT_IN_SESSION_RESET });
     }
 
     const { otp, otpTimestamp } = await authService.resendOtp(resetUser); 
@@ -288,9 +285,6 @@ async loginadmin(req, res, next) {
     req.session.admin = admin;
     res.redirect("/admin/dashboard");
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.UNAUTHORIZED) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).send(error.message);
-    }
     next(error);
   }
 }

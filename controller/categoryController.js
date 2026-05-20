@@ -58,7 +58,6 @@ async getEditCategoryPage(req, res, next) {
       backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -67,7 +66,7 @@ async addCategory(req, res, next) {
   const { name, isListed } = req.body;
 
   if (!req.file) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ status: false, message: MESSAGES.CATEGORY.NO_IMAGE });
+    return next({ statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CATEGORY.NO_IMAGE, statusFlag: false });
   }
 
   try {
@@ -78,9 +77,7 @@ async addCategory(req, res, next) {
     });
     return res.status(HTTP_STATUS.OK).json({ status: true, message: MESSAGES.CATEGORY.ADDED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.CONFLICT) {
-      return res.status(error.statusCode).json({ status: false, message: error.message });
-    }
+    error.statusFlag = false;
     next(error);
   }
 }
@@ -101,9 +98,7 @@ async editCategory(req, res, next) {
     await categoryService.updateCategory(id, updates);
     res.status(HTTP_STATUS.OK).json({ status: true, message: MESSAGES.CATEGORY.UPDATED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({ status: false, message: error.message });
-    }
+    error.statusFlag = false;
     next(error);
   }
 }
@@ -118,7 +113,6 @@ async toggleCategoryStatus(req, res, next) {
       category: updatedCategory
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }

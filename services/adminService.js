@@ -1,6 +1,8 @@
 import userRepository from "../repositories/userRepository.js";
 import orderRepository from "../repositories/orderRepository.js";
 import reviewRepository from "../repositories/reviewRepository.js";
+import MESSAGES from "../Constants/messages.js";
+import HTTP_STATUS from "../Constants/httpStatus.js";
 
 class AdminService {
 async getDashboardData() {
@@ -60,14 +62,14 @@ async getDashboardData() {
       images: p.product.images,
       quantity: p.totalQuantity,
       unitPrice: p.product.price,
-      offerDiscount: p.totalOfferDiscount > 0 ? `₹${p.totalOfferDiscount}` : "N/A",
-      totalAmount: p.totalSales >= 0 ? `₹${p.totalSales}` : "N/A",
+      offerDiscount: p.totalOfferDiscount > 0 ? `₹${p.totalOfferDiscount}` : MESSAGES.ADMIN.NOT_AVAILABLE,
+      totalAmount: p.totalSales >= 0 ? `₹${p.totalSales}` : MESSAGES.ADMIN.NOT_AVAILABLE,
     }));
 
     const formattedBestCategories = bestSellingCategories.map((c, index) => ({
       index: index + 1,
       name: c.category.name,
-      discountAmount: "N/A",
+      discountAmount: MESSAGES.ADMIN.NOT_AVAILABLE,
       image: c.category.image,
     }));
 
@@ -117,7 +119,7 @@ async toggleUserStatus(userId, sessionUserId) {
     const user = await userRepository.findById(userId);
     if (!user) {
       const error = new Error(MESSAGES.ADMIN.USER_NOT_FOUND);
-      error.statusCode = 404;
+      error.statusCode = HTTP_STATUS.NOT_FOUND;
       throw error;
     }
 

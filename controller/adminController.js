@@ -51,7 +51,6 @@ async toggleUserStatus(req, res, next) {
 
     return res.status(HTTP_STATUS.OK).json({ success: true, isBlocked, user: { isBlocked } });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(error.statusCode).json({ success: false, message: error.message });
     next(error);
   }
 }

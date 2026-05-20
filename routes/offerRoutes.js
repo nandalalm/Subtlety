@@ -2,22 +2,23 @@ import express from 'express';
 const router = express.Router();
 import * as offerController from '../controller/offerController.js';
 import { isAuthenticated } from '../middleware/authentication.js';
+import asyncHandler from '../middleware/asyncHandler.js';
 
-router.get('/', isAuthenticated, offerController.getOffers);
-router.get('/add', isAuthenticated, offerController.getAddOfferPage);
-router.get('/edit/:id', isAuthenticated, offerController.getEditOfferPage);
-router.get('/search-targets', isAuthenticated, offerController.searchOfferTargets);
-router.get('/:id/view', isAuthenticated, offerController.getOfferView);
-router.post('/add', isAuthenticated, offerController.addOffer);
-router.post('/edit/:id', isAuthenticated, offerController.editOffer);
-router.post('/toggle-status/:id', isAuthenticated, offerController.toggleOfferStatus);
+router.get('/', isAuthenticated, asyncHandler(offerController.getOffers));
+router.get('/add', isAuthenticated, asyncHandler(offerController.getAddOfferPage));
+router.get('/edit/:id', isAuthenticated, asyncHandler(offerController.getEditOfferPage));
+router.get('/search-targets', isAuthenticated, asyncHandler(offerController.searchOfferTargets));
+router.get('/:id/view', isAuthenticated, asyncHandler(offerController.getOfferView));
+router.post('/add', isAuthenticated, asyncHandler(offerController.addOffer));
+router.post('/edit/:id', isAuthenticated, asyncHandler(offerController.editOffer));
+router.post('/toggle-status/:id', isAuthenticated, asyncHandler(offerController.toggleOfferStatus));
 
-router.get('/coupons', isAuthenticated, offerController.getCoupons);
-router.get('/coupons/add', isAuthenticated, offerController.getAddCouponPage);
-router.get('/coupons/edit/:id', isAuthenticated, offerController.getEditCouponPage);
-router.get('/coupons/:id/view', isAuthenticated, offerController.getCouponView);
-router.post('/coupons/add', isAuthenticated, offerController.addCoupon);
-router.put('/coupons/:id', isAuthenticated, offerController.editCoupon);
-router.post('/coupons/toggle-status/:id', isAuthenticated, offerController.toggleCouponStatus);
+router.get('/coupons', isAuthenticated, asyncHandler(offerController.getCoupons));
+router.get('/coupons/add', isAuthenticated, asyncHandler(offerController.getAddCouponPage));
+router.get('/coupons/edit/:id', isAuthenticated, asyncHandler(offerController.getEditCouponPage));
+router.get('/coupons/:id/view', isAuthenticated, asyncHandler(offerController.getCouponView));
+router.post('/coupons/add', isAuthenticated, asyncHandler(offerController.addCoupon));
+router.put('/coupons/:id', isAuthenticated, asyncHandler(offerController.editCoupon));
+router.post('/coupons/toggle-status/:id', isAuthenticated, asyncHandler(offerController.toggleCouponStatus));
 
 export default router;

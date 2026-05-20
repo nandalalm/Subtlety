@@ -103,4 +103,8 @@ app.use((req, res, next) => {
 
 app.use(errorHandler);
 
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT);
+
 export default app;

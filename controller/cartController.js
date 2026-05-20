@@ -19,24 +19,19 @@ async getCart(req, res, next) {
 async addToCart(req, res, next) {
   const { user, productId, quantity } = req.body;
   if (!user) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: MESSAGES.CART.USER_REQUIRED });
+    return next({ statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.CART.USER_REQUIRED });
   }
   try {
     await cartService.addToCart(user, productId, quantity);
     const totals = await cartService.getCartTotals(user);
     return res.status(HTTP_STATUS.OK).json({ message: MESSAGES.CART.ITEM_ADDED, newQuantity: quantity, ...totals });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({
-        status: error.status || (
-          error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' :
-          error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' :
-          error.message === MESSAGES.CART.CATEGORY_UNLISTED ? 'category-unlisted' :
-          'error'
-        ),
-        message: error.message
-      });
-    }
+    error.status = error.status || (
+      error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' :
+      error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' :
+      error.message === MESSAGES.CART.CATEGORY_UNLISTED ? 'category-unlisted' :
+      'error'
+    );
     next(error);
   }
 }
@@ -51,9 +46,6 @@ async removeFromCart(req, res, next) {
       ...data
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
-    }
     next(error);
   }
 }
@@ -68,19 +60,13 @@ async updateQuantity(req, res, next) {
       ...data
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({
-        status: error.status || (
-          error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' :
-          error.message === MESSAGES.CART.CATEGORY_UNLISTED ? 'category-unlisted' :
-          error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' :
-          error.message.startsWith('Only ') ? 'low-stock' :
-          'error'
-        ),
-        message: error.message,
-        availableStock: error.availableStock
-      });
-    }
+    error.status = error.status || (
+      error.message === MESSAGES.CART.PRODUCT_UNLISTED ? 'unlisted' :
+      error.message === MESSAGES.CART.CATEGORY_UNLISTED ? 'category-unlisted' :
+      error.message === MESSAGES.CART.OUT_OF_STOCK ? 'out-of-stock' :
+      error.message.startsWith(MESSAGES.CART.LOW_STOCK_PREFIX) ? 'low-stock' :
+      'error'
+    );
     next(error);
   }
 }

@@ -27,7 +27,6 @@ async getWishlist(req, res, next) {
       currentPage: data.currentPage
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -40,9 +39,6 @@ async addToWishlist(req, res, next) {
     await wishlistService.addToWishlist(userId, productId);
     res.status(HTTP_STATUS.OK).json({ message: MESSAGES.WISHLIST.ADD_SUCCESS });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({ message: error.message, status: error.status || null });
-    }
     next(error);
   }
 }
@@ -55,9 +51,6 @@ async deleteFromWishlist(req, res, next) {
     await wishlistService.removeFromWishlist(userId, productId);
     res.status(HTTP_STATUS.OK).json({ message: MESSAGES.WISHLIST.REMOVE_SUCCESS });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
     next(error);
   }
 }

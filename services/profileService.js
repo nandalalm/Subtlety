@@ -70,34 +70,34 @@ function normalizeAddressData(addressData) {
     addressType: normalizeAddressField(addressData.addressType).toLowerCase(),
   };
 
-  if (!normalized.username) throwAddressValidation("Username is required.");
-  if (normalized.username.length > 50) throwAddressValidation("Username cannot exceed 50 characters.");
-  if (!/^[A-Za-z]+$/.test(normalized.username)) throwAddressValidation("Username must contain only letters with no spaces.");
-  if (normalized.username.length < 3) throwAddressValidation("Username must be at least 3 letters long.");
+  if (!normalized.username) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_USERNAME_REQUIRED);
+  if (normalized.username.length > 50) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_USERNAME_TOO_LONG);
+  if (!/^[A-Za-z]+$/.test(normalized.username)) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_USERNAME_INVALID);
+  if (normalized.username.length < 3) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_USERNAME_TOO_SHORT);
 
-  if (!/^\d{10}$/.test(normalized.phoneNo)) throwAddressValidation("Phone number must be exactly 10 digits.");
+  if (!/^\d{10}$/.test(normalized.phoneNo)) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_PHONE_INVALID);
 
-  if (!normalized.address) throwAddressValidation("Address is required.");
-  if (normalized.address.length > 200) throwAddressValidation("Address cannot exceed 200 characters.");
-  if (normalized.address.length < 10) throwAddressValidation("Address must be at least 10 characters long.");
-  if (!/^[A-Za-z0-9,.-]+$/.test(normalized.address)) throwAddressValidation("Address contains invalid characters.");
+  if (!normalized.address) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_REQUIRED);
+  if (normalized.address.length > 200) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_TOO_LONG);
+  if (normalized.address.length < 10) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_TOO_SHORT);
+  if (!/^[A-Za-z0-9,.-]+$/.test(normalized.address)) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_INVALID);
 
-  if (normalized.country !== "India") throwAddressValidation("Country must be India.");
+  if (normalized.country !== "India") throwAddressValidation(MESSAGES.PROFILE.ADDRESS_COUNTRY_INVALID);
 
-  if (!INDIA_STATES.has(normalized.state)) throwAddressValidation("Please select a valid state in India.");
+  if (!INDIA_STATES.has(normalized.state)) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_STATE_INVALID);
 
-  if (!normalized.district) throwAddressValidation("District is required.");
-  if (normalized.district.length > 40) throwAddressValidation("District cannot exceed 40 characters.");
-  if (!/^[A-Za-z]+$/.test(normalized.district)) throwAddressValidation("District must contain only letters with no spaces.");
+  if (!normalized.district) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_DISTRICT_REQUIRED);
+  if (normalized.district.length > 40) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_DISTRICT_TOO_LONG);
+  if (!/^[A-Za-z]+$/.test(normalized.district)) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_DISTRICT_INVALID);
 
-  if (!/^\d{6}$/.test(normalized.pincode)) throwAddressValidation("Pincode must be exactly 6 digits.");
+  if (!/^\d{6}$/.test(normalized.pincode)) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_PINCODE_INVALID);
 
-  if (!normalized.houseFlatNo) throwAddressValidation("House/Flat No is required.");
-  if (normalized.houseFlatNo.length > 20) throwAddressValidation("House/Flat No cannot exceed 20 characters.");
-  if (!/^[A-Za-z0-9\s/-]+$/.test(normalized.houseFlatNo)) throwAddressValidation("House/Flat No must be alphanumeric.");
+  if (!normalized.houseFlatNo) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_HOUSE_REQUIRED);
+  if (normalized.houseFlatNo.length > 20) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_HOUSE_TOO_LONG);
+  if (!/^[A-Za-z0-9\s/-]+$/.test(normalized.houseFlatNo)) throwAddressValidation(MESSAGES.PROFILE.ADDRESS_HOUSE_INVALID);
 
   if (!["home", "work"].includes(normalized.addressType)) {
-    throwAddressValidation("Please choose a valid address type.");
+    throwAddressValidation(MESSAGES.PROFILE.ADDRESS_TYPE_INVALID);
   }
 
   return normalized;
@@ -250,7 +250,6 @@ async deductWalletAmount(userId, orderId, amount) {
     order.paymentStatus = "Successful";
     await order.save();
 
-    // Reduce stock
     for (const item of order.items) {
       await productRepository.updateById(item.productId, { $inc: { stock: -item.quantity } });
     }

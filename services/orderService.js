@@ -84,7 +84,7 @@ async function getCheckoutValidationState(userId) {
       errors.push({
         productId: String(item.productId || ""),
         status: "unavailable",
-        message: MESSAGES.ORDER.PRODUCT_UNAVAILABLE_CART("Unknown product")
+        message: MESSAGES.ORDER.PRODUCT_UNAVAILABLE_CART(MESSAGES.ORDER.UNKNOWN_PRODUCT)
       });
       return null;
     }
@@ -118,8 +118,8 @@ async function getCheckoutValidationState(userId) {
         productId: String(product._id),
         status: "category-unlisted",
         productName: product.name,
-        categoryName: category?.name || "This category",
-        message: MESSAGES.ORDER.CATEGORY_UNAVAILABLE_CART(product.name, category?.name || "This category")
+        categoryName: category?.name || MESSAGES.ORDER.CATEGORY_FALLBACK,
+        message: MESSAGES.ORDER.CATEGORY_UNAVAILABLE_CART(product.name, category?.name || MESSAGES.ORDER.CATEGORY_FALLBACK)
       });
       return { ...item.toObject(), productId: enrichedProduct, discountedPrice: currentDiscountedPrice };
     }
@@ -319,7 +319,7 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
     return buildCouponState({
       code: normalizedCode,
       status: "changed",
-      message: `The applied coupon was updated. Your discount changed from Rs. ${normalizedPreviousDiscount} to Rs. ${discount}.`,
+      message: MESSAGES.COUPON.UPDATED_DISCOUNT(normalizedPreviousDiscount, discount),
       pricingSnapshot,
       coupon,
       discount,
@@ -330,7 +330,7 @@ async function getCouponValidationState(userId, couponCode, pricingSnapshot, pre
   return buildCouponState({
     code: normalizedCode,
     status: "applied",
-    message: "Coupon applied successfully!",
+    message: MESSAGES.COUPON.APPLIED,
     pricingSnapshot,
     coupon,
     discount,
@@ -468,14 +468,14 @@ async placeOrder(userId, orderData) {
       if (!product || !product.isListed) {
         throw {
           statusCode: HTTP_STATUS.BAD_REQUEST,
-          message: MESSAGES.ORDER.PRODUCT_UNAVAILABLE_CART(product ? product.name : "Unknown"),
+          message: MESSAGES.ORDER.PRODUCT_UNAVAILABLE_CART(product ? product.name : MESSAGES.ORDER.UNKNOWN_PRODUCT_SHORT),
           errors: validationState.errors
         };
       }
       if (!product.category || product.category.isListed === false) {
         throw {
           statusCode: HTTP_STATUS.BAD_REQUEST,
-          message: MESSAGES.ORDER.CATEGORY_UNAVAILABLE_CART(product.name, product.category?.name || "This category"),
+          message: MESSAGES.ORDER.CATEGORY_UNAVAILABLE_CART(product.name, product.category?.name || MESSAGES.ORDER.CATEGORY_FALLBACK),
           errors: validationState.errors
         };
       }

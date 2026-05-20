@@ -9,7 +9,7 @@ async addProduct(req, res, next) {
     const { name, description, category, price, stock } = req.body;
 
     if (!req.files || req.files.length < 3 || req.files.length > 8) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.PRODUCT.IMAGE_COUNT_ERROR });
+      return next({ statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PRODUCT.IMAGE_COUNT_ERROR });
     }
 
     const images = req.files.map((file) => file.path);
@@ -24,9 +24,6 @@ async addProduct(req, res, next) {
 
     return res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.PRODUCT.ADDED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -87,7 +84,6 @@ async getEditProduct(req, res, next) {
       sort: req.query.sort || 'latest' 
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -98,7 +94,6 @@ async getProductView(req, res, next) {
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
     res.render("admin/productView", { product, backQuery });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -110,11 +105,11 @@ async editProduct(req, res, next) {
     try {
       if (req.body.imageSlots) imageSlots = JSON.parse(req.body.imageSlots);
     } catch (e) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.PRODUCT.SLOTS_PARSE_ERROR });
+      return next({ statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PRODUCT.SLOTS_PARSE_ERROR });
     }
 
     if (imageSlots.length < 3 || imageSlots.length > 8) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.PRODUCT.IMAGE_COUNT_ERROR });
+      return next({ statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.PRODUCT.IMAGE_COUNT_ERROR });
     }
 
     let finalImages = [];
@@ -137,9 +132,6 @@ async editProduct(req, res, next) {
 
     return res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.PRODUCT.UPDATED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -154,7 +146,6 @@ async toggleProductStatus(req, res, next) {
       product: product
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
     next(error);
   }
 }

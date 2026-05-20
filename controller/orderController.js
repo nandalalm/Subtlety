@@ -12,15 +12,15 @@ async checkoutPage(req, res, next) {
   try {
     const userId = req.session.user?._id;
     if (!userId) {
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: MESSAGES.ORDER.UNAUTHORIZED });
+      return next({ statusCode: HTTP_STATUS.UNAUTHORIZED, message: MESSAGES.ORDER.UNAUTHORIZED });
     }
 
     const data = await orderService.getCheckoutData(userId);
     
     if (req.headers.accept && req.headers.accept.includes("application/json")) {
       if (data.validationIssues && data.validationIssues.length > 0) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({
-          success: false,
+        return next({
+          statusCode: HTTP_STATUS.BAD_REQUEST,
           message: data.message,
           errors: data.validationIssues,
           cartState: data.cartState
@@ -34,12 +34,6 @@ async checkoutPage(req, res, next) {
       user: req.session.user
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST && error.redirect) {
-        if (req.headers.accept && req.headers.accept.includes("application/json")) {
-            return res.status(error.statusCode).json({ message: error.message, errors: error.errors, cartState: error.cartState });
-        }
-        return res.redirect(error.redirect);
-    }
     next(error);
   }
 }
@@ -48,19 +42,11 @@ async applyCoupon(req, res, next) {
   try {
     const { couponCode } = req.body;
     const userId = req.session.user?._id;
-    if (!userId) return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: MESSAGES.ORDER.USER_NOT_AUTHENTICATED });
+    if (!userId) return next({ statusCode: HTTP_STATUS.UNAUTHORIZED, message: MESSAGES.ORDER.USER_NOT_AUTHENTICATED });
 
     const result = await orderService.applyCoupon(userId, couponCode);
     res.status(HTTP_STATUS.OK).json(result);
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
-      return res.status(error.statusCode).json({
-        message: error.message,
-        errors: error.errors,
-        cartState: error.cartState,
-        couponState: error.couponState || null
-      });
-    }
     next(error);
   }
 }
@@ -68,7 +54,7 @@ async applyCoupon(req, res, next) {
 async confirmOrder(req, res, next) {
   try {
     const userId = req.session.user?._id;
-    if (!userId) return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: MESSAGES.ORDER.USER_NOT_AUTHENTICATED });
+    if (!userId) return next({ statusCode: HTTP_STATUS.UNAUTHORIZED, message: MESSAGES.ORDER.USER_NOT_AUTHENTICATED });
 
     const orderData = {
         ...req.body,
@@ -86,9 +72,6 @@ async confirmOrder(req, res, next) {
         orderId: savedOrder._id
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
-      return res.status(error.statusCode).json({ message: error.message, errors: error.errors, cartState: error.cartState, couponState: error.couponState || null });
-    }
     next(error);
   }
 }
@@ -103,7 +86,6 @@ async createRazorpayOrder(req, res, next) {
       amount: razorpayOrder.amount,
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) return res.status(error.statusCode).json({ success: false, message: error.message });
     next(error);
   }
 }
@@ -114,7 +96,6 @@ async confirmRazorpayPayment(req, res, next) {
     await orderService.confirmRazorpayPayment(orderId);
     res.status(HTTP_STATUS.OK).json({ message: MESSAGES.ORDER.PAYMENT_CONFIRMED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: error.message });
     next(error);
   }
 }
@@ -125,7 +106,6 @@ async getOrderSuccessPage(req, res, next) {
     const order = await orderService.getOrderDetail(req.session.user._id, orderId);
     res.render("user/orderSuccess", { order });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -161,7 +141,6 @@ async getUserOrderDetails(req, res, next) {
     const order = await orderService.getOrderDetail(userId, orderId);
     res.render("user/orderDetails", { order, user: req.session.user });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -173,7 +152,6 @@ async downloadInvoice(req, res, next) {
     const order = await orderService.getOrderDetail(userId, orderId);
     generateInvoicePdf(res, order);
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -185,9 +163,6 @@ async cancelProduct(req, res, next) {
     await orderService.cancelOrderItem(userId, orderId, productId);
     res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.ORDER.CANCELLED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-        return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -200,9 +175,6 @@ async returnProduct(req, res, next) {
     await orderService.submitReturnRequest(userId, orderId, productId, reason);
     res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.ORDER.RETURN_SUBMITTED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-        return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -236,7 +208,6 @@ async changeProductStatus(req, res, next) {
     await orderService.changeItemStatus(orderId, productId, status);
     res.json({ success: true });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(error.statusCode).json({ success: false, message: error.message });
     next(error);
   }
 }
@@ -247,9 +218,6 @@ async changeOrderStatus(req, res, next) {
     await orderService.changeOrderStatus(orderId, newStatus);
     res.json({ success: true });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-        return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -260,7 +228,6 @@ async getAdminOrderDetails(req, res, next) {
     const order = await orderService.getOrderDetail(null, orderId, true);
     res.json({ order });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(error.statusCode).json({ message: error.message });
     next(error);
   }
 }
@@ -278,7 +245,6 @@ async getAdminOrderView(req, res, next) {
 
     res.render("admin/orderView", { order, backQuery });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -289,7 +255,6 @@ async getAdminOrderDetailsJson(req, res, next) {
     const order = await orderService.getOrderDetail(null, orderId, true);
     res.json({ success: true, order });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(error.statusCode).json({ success: false, message: error.message });
     next(error);
   }
 }
@@ -303,9 +268,6 @@ async approveReturn(req, res, next) {
       message: action === "approve" ? MESSAGES.ORDER.RETURN_APPROVED : MESSAGES.ORDER.RETURN_REJECTED,
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND || error.statusCode === HTTP_STATUS.BAD_REQUEST) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }

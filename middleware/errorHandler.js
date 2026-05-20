@@ -4,7 +4,13 @@ import MESSAGES from "../Constants/messages.js";
 import { logErrorToFile } from "./logger.js";
 
 function wantsJson(req) {
-  return req.xhr || req.accepts(["html", "json"]) === "json";
+  return (
+    req.xhr ||
+    req.is("application/json") ||
+    req.get("accept") === "*/*" ||
+    req.get("accept")?.includes("application/json") ||
+    req.accepts(["html", "json"]) === "json"
+  );
 }
 
 function getStatusCode(err) {
@@ -19,6 +25,27 @@ function getViewName(statusCode) {
   return statusCode === HTTP_STATUS.NOT_FOUND ? "404" : "500";
 }
 
+function buildJsonError(err, message) {
+  const payload = { success: false, message, error: message };
+  const fields = ["redirect", "errors", "cartState", "couponState", "availableStock", "logout"];
+
+  if (Object.prototype.hasOwnProperty.call(err, "status") && typeof err.status !== "number") {
+    payload.status = err.status;
+  }
+
+  if (err.statusFlag !== undefined) {
+    payload.status = err.statusFlag;
+  }
+
+  fields.forEach((field) => {
+    if (err[field] !== undefined) {
+      payload[field] = err[field];
+    }
+  });
+
+  return payload;
+}
+
 const errorHandler = (err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
@@ -31,7 +58,11 @@ const errorHandler = (err, req, res, next) => {
   logErrorToFile(`${req.method} ${req.originalUrl}\n${stack}`);
 
   if (wantsJson(req)) {
-    return res.status(statusCode).json({ success: false, message });
+    return res.status(statusCode).json(buildJsonError(err, message));
+  }
+
+  if (err.redirect) {
+    return res.redirect(err.redirect);
   }
 
   res.status(statusCode).render(getViewName(statusCode), { message });

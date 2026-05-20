@@ -79,11 +79,11 @@ async getSingleProduct(req, res, next) {
     
     const data = await userService.getProductDetails(id);
     if (!data) {
-      return res.status(HTTP_STATUS.NOT_FOUND).send(MESSAGES.USER.PRODUCT_NOT_FOUND);
+      return next({ statusCode: HTTP_STATUS.NOT_FOUND, message: MESSAGES.USER.PRODUCT_NOT_FOUND });
     }
 
     const { product } = data;
-    const categoryName = product.category ? product.category.name : "Uncategorized";
+    const categoryName = product.category ? product.category.name : MESSAGES.USER.UNCATEGORIZED;
     const discountedPrice = data.bestOffer ? data.bestOffer.discountedPrice : product.price;
 
     res.render("user/single-product", {

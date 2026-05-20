@@ -58,7 +58,6 @@ async getEditOfferPage(req, res, next) {
       backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -71,9 +70,6 @@ async searchOfferTargets(req, res, next) {
     });
     res.status(HTTP_STATUS.OK).json({ success: true, targets });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -82,7 +78,7 @@ async addOffer(req, res, next) {
   const { offerFor, targetId, offerType, value, minProductPrice, expiresAt } = req.body;
 
   if (!offerFor || !targetId || !offerType || value === undefined || !expiresAt) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.OFFER.REQUIRED_FIELDS });
+    return next({ statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.OFFER.REQUIRED_FIELDS });
   }
 
   try {
@@ -93,9 +89,6 @@ async addOffer(req, res, next) {
     });
     res.status(HTTP_STATUS.CREATED).json({ success: true, message: MESSAGES.OFFER.ADDED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -109,9 +102,6 @@ async editOffer(req, res, next) {
     });
     res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.OFFER.UPDATED, offer: updated });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -126,7 +116,6 @@ async toggleOfferStatus(req, res, next) {
       offer: updatedOffer
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -137,7 +126,6 @@ async getOfferView(req, res, next) {
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
     res.render("admin/offerView", { offer, backQuery });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -195,7 +183,6 @@ async getEditCouponPage(req, res, next) {
       backQuery: `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }
@@ -203,7 +190,7 @@ async getEditCouponPage(req, res, next) {
 async addCoupon(req, res, next) {
   const { code, discountAmount, discountType, maxDiscount, minOrderValue, expiresAt, usageLimit } = req.body;
   if (!code || !discountAmount || !expiresAt || !usageLimit) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: MESSAGES.COUPON.REQUIRED_FIELDS });
+    return next({ statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.REQUIRED_FIELDS });
   }
 
   try {
@@ -215,9 +202,6 @@ async addCoupon(req, res, next) {
     });
     res.status(HTTP_STATUS.CREATED).json({ success: true, message: MESSAGES.COUPON.ADDED });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -231,9 +215,6 @@ async editCoupon(req, res, next) {
     });
     res.status(HTTP_STATUS.OK).json({ success: true, message: MESSAGES.COUPON.UPDATED, coupon: updated });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.BAD_REQUEST || error.statusCode === HTTP_STATUS.NOT_FOUND) {
-      return res.status(error.statusCode).json({ success: false, message: error.message });
-    }
     next(error);
   }
 }
@@ -248,7 +229,6 @@ async toggleCouponStatus(req, res, next) {
       coupon: updatedCoupon
     });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).send(error.message);
     next(error);
   }
 }
@@ -259,7 +239,6 @@ async getCouponView(req, res, next) {
     const backQuery = `page=${req.query.page || 1}&search=${encodeURIComponent(req.query.search || "")}&sort=${req.query.sort || "latest"}`;
     res.render("admin/couponView", { coupon, backQuery });
   } catch (error) {
-    if (error.statusCode === HTTP_STATUS.NOT_FOUND) return res.status(HTTP_STATUS.NOT_FOUND).render("404", { message: error.message });
     next(error);
   }
 }

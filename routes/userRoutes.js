@@ -1,13 +1,14 @@
 import express from 'express';
 const router = express.Router();
 import * as controller from '../controller/userController.js';
+import asyncHandler from '../middleware/asyncHandler.js';
 
-router.get('/home', controller.getHome);
-router.get('/single-product/:id', controller.getSingleProduct);
-router.get('/product-availability/:id', controller.getProductAvailability);
-router.get('/related-products/load-more', controller.loadMoreRelatedProducts);
-router.get('/section-product/replacement', controller.getSectionReplacement);
-router.get('/shop', controller.getShopPage);
-router.get('/shop/load-more', controller.loadMoreProducts);
+router.get('/home', asyncHandler(controller.getHome));
+router.get('/single-product/:id', asyncHandler(controller.getSingleProduct));
+router.get('/product-availability/:id', asyncHandler(controller.getProductAvailability));
+router.get('/related-products/load-more', asyncHandler(controller.loadMoreRelatedProducts));
+router.get('/section-product/replacement', asyncHandler(controller.getSectionReplacement));
+router.get('/shop', asyncHandler(controller.getShopPage));
+router.get('/shop/load-more', asyncHandler(controller.loadMoreProducts));
 
 export default router;

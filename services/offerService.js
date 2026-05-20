@@ -48,7 +48,7 @@ function normalizeCouponPayload(couponData) {
 function validateCouponCodeOrThrow(code) {
   const normalizedCode = normalizeCouponCode(code);
   if (normalizedCode.length > 20) {
-    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Coupon code cannot exceed 20 characters." };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.CODE_TOO_LONG };
   }
   if (!/^[A-Z0-9]{4,}$/.test(normalizedCode)) {
     throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.INVALID_CODE };
@@ -68,7 +68,7 @@ function validateCouponPayloadOrThrow(couponData) {
   }
 
   if (!["flat", "percentage"].includes(discountType)) {
-    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Please select a valid discount type." };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.INVALID_DISCOUNT_TYPE };
   }
 
   if (!ensureFutureOrToday(couponData.expiresAt)) {
@@ -76,7 +76,7 @@ function validateCouponPayloadOrThrow(couponData) {
   }
 
   if (usageLimit < 1) {
-    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Usage limit must be at least 1." };
+    throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.USAGE_LIMIT_MIN };
   }
 
   if (discountType === "percentage") {
@@ -85,21 +85,21 @@ function validateCouponPayloadOrThrow(couponData) {
     }
 
     if (maxDiscount === null) {
-      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Maximum discount is required for percentage coupons." };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.MAX_DISCOUNT_REQUIRED };
     }
 
     if (maxDiscount < 50 || maxDiscount > 500) {
-      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Maximum discount must be between Rs. 50 and Rs. 500." };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.MAX_DISCOUNT_RANGE };
     }
   }
 
   if (discountType === "flat") {
     if (discountAmount <= 0) {
-      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Discount amount must be greater than 0." };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.DISCOUNT_AMOUNT_POSITIVE };
     }
 
     if (minOrderValue === null || minOrderValue <= 0) {
-      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: "Minimum order value must be greater than 0." };
+      throw { statusCode: HTTP_STATUS.BAD_REQUEST, message: MESSAGES.COUPON.MIN_ORDER_VALUE_POSITIVE };
     }
 
     if (discountAmount >= minOrderValue) {
@@ -239,7 +239,6 @@ async getAdminOffers(queryParams) {
 
     let query = {};
     if (search) {
-      // 1. Find matching Products and Categories by name
       const [matchingProducts, matchingCategories] = await Promise.all([
         productRepository.find({ name: { $regex: search, $options: "i" } }),
         categoryRepository.find({ name: { $regex: search, $options: "i" } })
@@ -250,7 +249,6 @@ async getAdminOffers(queryParams) {
         ...matchingCategories.map(c => c._id)
       ];
 
-      // 2. Build the $or query
       query.$or = [
         { offerFor: { $regex: search, $options: "i" } },
         { offerType: { $regex: search, $options: "i" } },
