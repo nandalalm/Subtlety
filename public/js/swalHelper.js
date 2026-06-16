@@ -1,11 +1,10 @@
 const SwalCustom = {
     _activeProcessingToken: 0,
-    // Shared configurations for premium look
     premiumOptions: {
         confirmButtonColor: '#9135ED',
         cancelButtonColor: '#6c757d',
         buttonsStyling: true,
-        heightAuto: false, // Prevents page shift
+        heightAuto: false, 
         scrollbarPadding: false,
         returnFocus: false,
         customClass: {
@@ -22,7 +21,7 @@ const SwalCustom = {
             text: text,
             showConfirmButton: false,
             timer: 1000,
-            timerProgressBar: false, // Cleaner look
+            timerProgressBar: false,
             showClass: {
                 popup: 'animate__animated animate__fadeInDown'
             },
@@ -128,7 +127,6 @@ const SwalCustom = {
     }
 };
 
-// Add styles to suppress focus borders and ensure premium look
 const style = document.createElement('style');
 style.innerHTML = `
     html {

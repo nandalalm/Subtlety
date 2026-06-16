@@ -1,12 +1,6 @@
 /**
- * Shared AJAX Table Logic for SUBTLETY
- * Handles pagination, search, sort, and filters without page reloads.
- */
-
-/**
- * Refreshes the table content by fetching an HTML fragment from the server.
- * @param {string} containerId - The ID of the div containing the table partial.
- * @param {string} url - The URL to fetch (optional, defaults to current location).
+ * @param {string} containerId 
+ * @param {string} url 
  */
 async function refreshTable(containerId, url = window.location.href) {
     try {
@@ -22,22 +16,16 @@ async function refreshTable(containerId, url = window.location.href) {
         if (container) {
             container.innerHTML = html;
 
-            // Re-initialize pagination listeners for the new content
             initializePagination(containerId);
-
-            // Dispatch a custom event after refresh to allow page-specific re-initialization
             container.dispatchEvent(new CustomEvent('tableRefreshed', { detail: { containerId, url } }));
         }
     } catch (error) {
         console.error('Error refreshing table:', error);
-        // Fallback to full page reload if AJAX fails? 
-        // Window.location.href = url;
     }
 }
 
 /**
- * Attaches AJAX listeners to all pagination links within a container.
- * @param {string} containerId - The ID of the container with pagination.
+ * @param {string} containerId
  */
 function initializePagination(containerId) {
     const container = document.getElementById(containerId);
@@ -47,12 +35,9 @@ function initializePagination(containerId) {
     paginationLinks.forEach(link => {
         link.addEventListener('click', function (e) {
             const pageUrl = this.getAttribute('href');
-            // Ignore dead links, disabled links, and hash links
             if (pageUrl && pageUrl !== 'javascript:void(0)' && pageUrl !== '#' && !this.classList.contains('disabled')) {
                 e.preventDefault();
                 refreshTable(containerId, pageUrl);
-
-                // Update browser URL without reload
                 window.history.pushState({}, '', pageUrl);
             }
         });
@@ -60,9 +45,8 @@ function initializePagination(containerId) {
 }
 
 /**
- * Attaches AJAX listener to a search form.
- * @param {string} formId - The ID of the search <form>.
- * @param {string} containerId - The ID of the table container to refresh.
+ * @param {string} formId 
+ * @param {string} containerId
  */
 function initializeAjaxSearch(formId, containerId) {
     const form = document.getElementById(formId);
@@ -74,7 +58,6 @@ function initializeAjaxSearch(formId, containerId) {
         const formData = new FormData(this);
         const searchParams = new URLSearchParams(formData);
 
-        // Reset page to 1 on new search
         searchParams.set('page', '1');
 
         const action = this.getAttribute('action') || window.location.pathname;
@@ -85,10 +68,6 @@ function initializeAjaxSearch(formId, containerId) {
     });
 }
 
-/**
- * Called by the unified searchBar partial's search button.
- * Reads data attributes from the .unified-search wrapper.
- */
 function unifiedSearchApply(btn) {
     const wrapper = btn.closest('.unified-search');
     const input = wrapper.querySelector('.unified-search-input');
@@ -101,9 +80,7 @@ function unifiedSearchApply(btn) {
     applyAjaxFilter(containerId, param, val, basePath || null);
 }
 
-/**
- * Called by the unified searchBar partial's clear (×) button.
- */
+
 function unifiedSearchClear(btn) {
     const wrapper = btn.closest('.unified-search');
     const input = wrapper.querySelector('.unified-search-input');
@@ -116,17 +93,15 @@ function unifiedSearchClear(btn) {
 }
 
 /**
- * Programmatically applies a filter or sort and refreshes the table.
- * @param {string} containerId - The ID of the table container.
- * @param {string} param - The query parameter key (e.g., 'sort', 'status').
- * @param {string} value - The value to set.
- * @param {string} basePath - Optional custom base path for the fetch URL.
+ * @param {string} containerId 
+ * @param {string} param
+ * @param {string} value 
+ * @param {string} basePath 
  */
 function applyAjaxFilter(containerId, param, value, basePath = null) {
     const url = new URL(window.location.href);
 
     if (basePath) {
-        // If a relative path is provided, ensure it starts with / for absolute resolution
         const absolutePath = basePath.startsWith('/') ? basePath : `/${basePath}`;
         url.pathname = absolutePath;
     }
@@ -137,7 +112,6 @@ function applyAjaxFilter(containerId, param, value, basePath = null) {
         url.searchParams.set(param, value);
     }
 
-    // Reset page to 1 on new filter
     url.searchParams.set('page', '1');
 
     const newUrl = `${url.pathname}${url.search}`;
@@ -147,10 +121,9 @@ function applyAjaxFilter(containerId, param, value, basePath = null) {
 }
 
 /**
- * Clears a specific query parameter and refreshes the table.
- * @param {string} containerId - The ID of the table container.
- * @param {string} param - The query parameter key to clear.
- * @param {string} basePath - Optional custom base path for the fetch URL.
+ * @param {string} containerId 
+ * @param {string} param 
+ * @param {string} basePath 
  */
 function clearAjaxFilter(containerId, param, basePath = null) {
     const url = new URL(window.location.href);
@@ -162,7 +135,6 @@ function clearAjaxFilter(containerId, param, basePath = null) {
 
     url.searchParams.delete(param);
 
-    // Reset page to 1 when clearing filters
     url.searchParams.set('page', '1');
 
     const newUrl = `${url.pathname}${url.search}`;
@@ -171,7 +143,6 @@ function clearAjaxFilter(containerId, param, basePath = null) {
     window.history.pushState({}, '', newUrl);
 }
 
-// Automatically initialize pagination on page load for known containers
 document.addEventListener('DOMContentLoaded', () => {
     const standardContainers = [
         'categoryTableContainer',
@@ -184,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'salesTableContainerParent',
         'userOrderContainer',
         'walletTableContainer',
-        'product-grid', // For Shop Page
+        'product-grid', 
         'wishlistContainer',
         'manage-address'
     ];
@@ -195,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // If a search form exists with ID 'searchForm' or 'wallet-search-form', link it
     const searchForms = ['searchForm', 'wallet-search-form'];
     searchForms.forEach(formId => {
         const form = document.getElementById(formId);
@@ -206,15 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
-    // Special handling for Shop Page "Load More" button if it exists
     const loadMoreBtn = document.getElementById('load-more-btn');
     if (loadMoreBtn && document.getElementById('product-grid-container')) {
         loadMoreBtn.addEventListener('click', function (e) {
-            // If the user wants FULL AJAX for shop pagination, we might need to 
-            // translate this load-more into a standard numeric pagination or 
-            // ensure the refreshTable handles appending. 
-            // For now, we'll focus on the sort/filter being AJAX.
         });
     }
 });

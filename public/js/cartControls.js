@@ -352,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetElement) {
         targetElement.outerHTML = newCartHtml;
       } else {
-        // Fallback: prepend to container (should not happen if initial EJS is correct)
         container.insertAdjacentHTML('afterbegin', newCartHtml);
       }
     });
@@ -512,7 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!productId) return;
 
-    // AUTH CHECK
     if (!userId && (target.classList.contains('btn-add-to-cart') ||
       target.classList.contains('btn-increment') ||
       target.classList.contains('btn-decrement') ||
@@ -522,12 +520,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // ADD TO CART
     if (target.classList.contains('btn-add-to-cart')) {
       e.preventDefault();
       target.blur();
       
-      // Optimistic update
       setDesiredQuantity(productId, 1);
       updateUI(productId, 1);
       
@@ -541,14 +537,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const { response: res, data } = result;
         if (res.ok) {
           showToast(data.message);
-          // Sync with potentially different quantity (e.g. if already in cart)
           setQuantityControlState(productId, 'default');
           setDesiredQuantity(productId, data.newQuantity || 1);
           updateUI(productId, data.newQuantity || 1);
           await auditSingleProductPageAvailability();
         } else {
           showToast(data.message, 'error');
-          // Rollback
           setDesiredQuantity(productId, 0);
           updateUI(productId, 0);
           if (data.status === 'unlisted' || data.status === 'category-unlisted') {
@@ -561,15 +555,12 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error(err);
         showToast("Something went wrong", 'error');
-        // Rollback
         setDesiredQuantity(productId, 0);
         updateUI(productId, 0);
       }
     }
 
-  // syncProductAvailability moved to top scope
 
-    // INCREMENT
     if (target.classList.contains('btn-increment')) {
       e.preventDefault();
       target.blur();
@@ -601,18 +592,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const newQty = currentQty + 1;
-      // Optimistic update
       setDesiredQuantity(productId, newQty);
       updateUI(productId, newQty);
 
-      // Debounce the API call
       clearTimeout(debounceTimers[productId]);
       debounceTimers[productId] = setTimeout(() => {
         performUpdate(productId, newQty, currentQty);
       }, 500);
     }
 
-    // DECREMENT
     if (target.classList.contains('btn-decrement')) {
       e.preventDefault();
       target.blur();
@@ -622,18 +610,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (currentQty > 1) {
         const newQty = currentQty - 1;
-        // Optimistic update
         setDesiredQuantity(productId, newQty);
         updateUI(productId, newQty);
 
-        // Debounce the API call
         clearTimeout(debounceTimers[productId]);
         debounceTimers[productId] = setTimeout(() => {
           performUpdate(productId, newQty, currentQty);
         }, 500);
       } else {
-        // REMOVE FROM CART - Instant removal
-        clearTimeout(debounceTimers[productId]); // Clear any pending update for this product
+        clearTimeout(debounceTimers[productId]); 
         try {
           const result = await guardedJsonFetch('/cart/remove', {
             method: 'DELETE',
@@ -658,7 +643,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // WISHLIST ADD
     if (target.classList.contains('btn-add-to-wishlist')) {
       e.preventDefault();
       target.blur();
@@ -689,7 +673,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // WISHLIST REMOVE
     if (target.classList.contains('btn-remove-from-wishlist')) {
       e.preventDefault();
       target.blur();
@@ -737,12 +720,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // BUY NOW (Specific to single product page)
     if (target.classList.contains('buy-buy')) {
         e.preventDefault();
         target.blur();
 
-        // If product already in cart, just go to cart
         const cartControls = target.parentElement?.querySelector('.cart-action-wrapper');
         const isAlreadyInCart = cartControls?.querySelector('.cart-quantity-controls');
         
