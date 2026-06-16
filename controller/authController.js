@@ -2,6 +2,7 @@ import authService from "../services/authService.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
 import MESSAGES from "../Constants/messages.js";
 import passport from "passport";
+import dtoMapper from "../utils/dtoMapper.js";
 
 class AuthController {
 getSafeReturnTo(returnTo) {
@@ -47,7 +48,7 @@ googleCallback(req, res, next) {
     }
     req.logIn(user, (loginError) => {
       if (loginError) return next(loginError);
-      req.session.user = user;
+      req.session.user = dtoMapper.toUserDto(user);
       const redirectTo =
         this.getSafeReturnTo(req.query.state) ||
         this.getSafeReturnTo(req.session.returnTo) ||

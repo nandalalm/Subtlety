@@ -3,6 +3,7 @@ import orderRepository from "../repositories/orderRepository.js";
 import reviewRepository from "../repositories/reviewRepository.js";
 import MESSAGES from "../Constants/messages.js";
 import HTTP_STATUS from "../Constants/httpStatus.js";
+import dtoMapper from "../utils/dtoMapper.js";
 
 class AdminService {
 async getDashboardData() {
@@ -109,10 +110,11 @@ async getUsers(queryParams) {
     const sortOrder = sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 };
 
     const users = await userRepository.find(query, sortOrder, skip, limit);
+    const mappedUsers = users.map(u => dtoMapper.toUserDto(u));
     const totalUsers = await userRepository.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
-    return { users, totalPages, totalUsers, limit };
+    return { users: mappedUsers, totalPages, totalUsers, limit };
   }
 
 async toggleUserStatus(userId, sessionUserId) {

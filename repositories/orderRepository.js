@@ -144,7 +144,8 @@ async getAdminOrders(queryParams, skip, limit) {
 
     const pipeline = [
       { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userDetails" } },
-      { $unwind: "$userDetails" }
+      { $unwind: "$userDetails" },
+      { $project: { "userDetails.password": 0 } }
     ];
 
     if (search) {

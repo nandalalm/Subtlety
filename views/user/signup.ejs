@@ -474,18 +474,18 @@
         const result = await response.json();
         showOtpSection();
         setOtpState(email, result.otpTimestamp);
-        startOtpTimer(result.otpTimestamp);
+        startOtpTimer(result.otpTimestamp, true);
       } else {
         const error = await response.json().catch(() => ({}));
         SwalCustom.error('Error', error.message || 'Unable to continue signup.');
       }
     });
 
-    function startOtpTimer(otpTimestamp = Date.now()) {
+    function startOtpTimer(otpTimestamp = Date.now(), isNew = false) {
       const timerMessage = document.getElementById('timer-message');
       const resendButton = document.getElementById('resend-otp');
       const expiresAt = Number(otpTimestamp) + OTP_VALIDITY_MS;
-      let timeLeft = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+      let timeLeft = isNew ? 60 : Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
 
       timerMessage.style.display = 'block'; // Show timer message
       resendButton.style.display = 'none'; // Hide resend button initially
@@ -611,7 +611,7 @@
         otpBoxes.forEach(box => box.value = ''); // Clear OTP inputs
         otpBoxes[0].focus(); // Focus on the first box
         setOtpState(email, result.otpTimestamp);
-        startOtpTimer(result.otpTimestamp); // Restart the timer
+        startOtpTimer(result.otpTimestamp, true); // Restart the timer
       } else {
         const errorData = await response.json(); // Get error message
         SwalCustom.error('Error', `Error resending OTP: ${errorData.message || 'Unknown error'}`);
