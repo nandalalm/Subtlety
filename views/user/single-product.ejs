@@ -519,24 +519,26 @@
               bestOffer,
               averageRating
             }) => {
-              const cartQty = (data.cartItemMap && data.cartItemMap[product._id]) ? data.cartItemMap[product._id] : 0;
-               const cartControls = cartQty > 0 ? `
-                 <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
+              const currentProdId = product._id;
+              const cartQty = (data.cartItemMap && data.cartItemMap[currentProdId]) ? data.cartItemMap[currentProdId] : 0;
+              
+              const cartControls = cartQty > 0 ? `
+                <div class="cart-quantity-controls d-flex align-items-center flex-grow-1" style="height: 100%;">
                     <div class="d-flex align-items-center w-100" style="height: 100%; border-radius: 0; overflow: hidden; background: #212529;">
-                        <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="${product._id}" style="height: 100%; border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
+                        <button type="button" class="btn btn-dark btn-decrement m-0 border-0" data-product-id="${currentProdId}" style="height: 100%; border-radius: 0; border-right: 1px solid rgba(255,255,255,0.3); min-width: 40px;">−</button>
                         <span class="quantity-display flex-grow-1 text-center" style="font-weight: bold; color: #fff;">${cartQty}</span>
-                        <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="${product._id}" style="height: 100%; border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
+                        <button type="button" class="btn btn-dark btn-increment m-0 border-0" data-product-id="${currentProdId}" style="height: 100%; border-radius: 0; border-left: 1px solid rgba(255,255,255,0.3); min-width: 40px;">+</button>
                     </div>
                 </div>
                ` : `
-                 <button type="button" class="btn btn-dark m-0 btn-add-to-cart ${product.stock === 0 ? 'disabled' : ''} flex-grow-1" data-product-id="${product._id}" style="border-radius: 0;">
+                 <button type="button" class="btn btn-dark m-0 btn-add-to-cart ${product.stock === 0 ? 'disabled' : ''} flex-grow-1" data-product-id="${currentProdId}" style="border-radius: 0;">
                    <i class="fas fa-shopping-cart"></i> Add to Cart
                  </button>
                `;
 
               const productHtml = `
-                <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 ${product.stock === 0 ? 'out-of-stock' : ''}" data-product-id="${product._id}" data-category-id="${product.category?._id || product.category}">
-                  <a href="/user/single-product/${product._id}" class="card-link" data-product-id="${product._id}" data-category-id="${product.category?._id || product.category}">
+                <div class="card-div col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 ${product.stock === 0 ? 'out-of-stock' : ''}" data-product-id="${currentProdId}" data-category-id="${product.category?._id || product.category}">
+                  <a href="/user/single-product/${currentProdId}" class="card-link" data-product-id="${currentProdId}" data-category-id="${product.category?._id || product.category}">
                     <div class="card-img-half position-relative">
                       <img src="${product.images[0]}" class="card-img-top fixed-height" alt="${product.name}">
                       ${product.stock === 0 ? '<span class="out-of-stock-label">Out of Stock</span>' : ''}
@@ -549,7 +551,7 @@
                             <div class="star-rating d-flex align-items-center" style="color: #ffc107;">
                                 <div class="stars mr-1" style="display: flex; gap: 1px;">
                                     ${averageRating > 0 ? 
-                                        Array.from({length: 5}, (_, i) => `<i class="${i < Math.round(averageRating) ? 'fas' : 'far'} fa-star" style="font-size: 0.75rem !important;"></i>`).join('') :
+                                        Array.from({length: 5}, (_, i) => '<i class="' + (i < Math.round(averageRating) ? 'fas' : 'far') + ' fa-star" style="font-size: 0.75rem !important;"></i>').join('') :
                                         '<i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i><i class="far fa-star" style="font-size: 0.75rem !important;"></i>'
                                     }
                                 </div>
@@ -563,9 +565,9 @@
                                 ` : `<span class="current-price font-weight-bold" style="color: #333; font-size: 0.82rem;">₹${Math.floor(product.price)}</span>`}
                             </div>
                         </div>
-                        <div class="btn-group button-container cart-controls-container" role="group" data-product-id="${product._id}" data-category-id="${product.category?._id || product.category}" data-stock="${product.stock}">
+                        <div class="btn-group button-container cart-controls-container" role="group" data-product-id="${currentProdId}" data-category-id="${product.category?._id || product.category}" data-stock="${product.stock}">
                           ${cartControls}
-                          <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="${product._id}">
+                          <button type="button" class="btn btn-outline-dark m-0 btn-add-to-wishlist" data-product-id="${currentProdId}">
                             <i class="fas fa-heart"></i> Wishlist
                           </button>
                         </div>
