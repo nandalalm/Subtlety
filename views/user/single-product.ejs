@@ -305,7 +305,7 @@
                   <div class="d-flex align-items-start">
                     <span class="mr-3 font-weight-bold text-dark" style="min-width: 20px;"><%= index + 1 %>.</span>
                     <div>
-                      <strong class="text-dark"><%= review.userId.firstname %> <%= review.userId.lastname || '' %></strong>
+                      <strong class="text-dark"><%= review.userId ? `${review.userId.firstname} ${review.userId.lastname || ''}` : 'Anonymous User' %></strong>
                       <div class="text-warning mb-1" style="font-size: 0.8rem;">
                         <% for(let i=1; i<=5; i++) { %>
                           <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
@@ -316,7 +316,9 @@
                   </div>
                   <span class="text-muted" style="font-size: 0.85rem;"><%= new Date(review.createdAt).toLocaleDateString('en-GB') %></span>
                 </div>
-                <p class="mb-0 text-muted mt-2 pl-4" style="font-size: 0.95rem; line-height: 1.5; margin-left: 10px;"><%= review.comment || 'No comment provided.' %></p>
+                <% if (review.comment) { %>
+                  <p class="mb-0 text-muted mt-2 pl-4" style="font-size: 0.95rem; line-height: 1.5; margin-left: 10px;"><%= review.comment %></p>
+                <% } %>
               </div>
             <% }) %>
           <% } else { %>
@@ -610,43 +612,51 @@
           const response = await fetch(`/reviews/load-more/${productId}?page=${page}`);
           const data = await response.json();
 
-          if (data.success && data.reviews.length > 0) {
+          if (data.success) {
             const reviewList = document.getElementById('reviewList');
-            data.reviews.forEach((review, index) => {
-              const serialNo = reviewList.children.length + 1;
-              let stars = '';
-              for (let i = 1; i <= 5; i++) {
-                stars += `<i class="${i <= review.rating ? 'fas' : 'far'} fa-star"></i>`;
-              }
-              
-              const reviewHtml = `
-                <div class="review-item bg-white border-bottom py-3 mb-2 px-3">
-                  <div class="d-flex justify-content-between align-items-start">
-                    <div class="d-flex align-items-start">
-                      <span class="mr-3 font-weight-bold text-dark" style="min-width: 20px;">${serialNo}</span>
-                      <div>
-                        <strong class="text-dark">${review.user}</strong>
-                        <div class="text-warning mb-1" style="font-size: 0.8rem;">
-                          ${stars}
-                          <span class="badge badge-light border ml-2 text-success" style="font-size: 0.65rem; vertical-align: middle;">Verified Purchase</span>
+            
+            if (data.reviews.length > 0) {
+              data.reviews.forEach((review) => {
+                const serialNo = reviewList.children.length + 1;
+                let stars = '';
+                for (let i = 1; i <= 5; i++) {
+                  stars += `<i class="${i <= review.rating ? 'fas' : 'far'} fa-star"></i>`;
+                }
+                
+                const reviewHtml = `
+                  <div class="review-item bg-white border-bottom py-3 mb-2 px-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div class="d-flex align-items-start">
+                        <span class="mr-3 font-weight-bold text-dark" style="min-width: 20px;">${serialNo}</span>
+                        <div>
+                          <strong class="text-dark">${review.user}</strong>
+                          <div class="text-warning mb-1" style="font-size: 0.8rem;">
+                            ${stars}
+                            <span class="badge badge-light border ml-2 text-success" style="font-size: 0.65rem; vertical-align: middle;">Verified Purchase</span>
+                          </div>
                         </div>
                       </div>
+                      <span class="text-muted" style="font-size: 0.85rem;">${review.date}</span>
                     </div>
-                    <span class="text-muted" style="font-size: 0.85rem;">${review.date}</span>
+                    ${review.comment ? `<p class="mb-0 text-muted mt-2 pl-4" style="font-size: 0.95rem; line-height: 1.5; margin-left: 10px;">${review.comment}</p>` : ''}
                   </div>
-                  <p class="mb-0 text-muted mt-2 pl-4" style="font-size: 0.95rem; line-height: 1.5; margin-left: 10px;">${review.comment || 'No comment provided.'}</p>
-                </div>
-              `;
-              reviewList.insertAdjacentHTML('beforeend', reviewHtml);
-            });
+                `;
+                reviewList.insertAdjacentHTML('beforeend', reviewHtml);
+              });
+            }
 
             if (data.hasMore) {
               loadMoreReviewsBtn.setAttribute('data-page', parseInt(page) + 1);
               loadMoreReviewsBtn.disabled = false;
               loadMoreReviewsBtn.innerHTML = 'Load More Reviews';
             } else {
-              document.getElementById('loadMoreReviewsContainer').remove();
+              const container = document.getElementById('loadMoreReviewsContainer');
+              if (container) container.remove();
             }
+          } else {
+            // Handle error case from server
+            loadMoreReviewsBtn.disabled = false;
+            loadMoreReviewsBtn.innerHTML = 'Load More Reviews';
           }
         } catch (error) {
           console.error('Error loading more reviews:', error);

@@ -219,7 +219,7 @@ async getProductDetails(id) {
     const [bestOffer, activeCoupons, reviews, ratingStats] = await Promise.all([
       getBestOffer(product),
       couponRepository.find({ isActive: true, expiresAt: { $gte: new Date() } }),
-      reviewRepository.find({ productId: id, isListed: true, comment: { $exists: true, $ne: "" } }, { createdAt: -1 }, 0, 5),
+      reviewRepository.findWithPopulate({ productId: id, isListed: true }, "userId", { createdAt: -1 }, 0, 5),
       reviewRepository.aggregate([
         { $match: { productId: new mongoose.Types.ObjectId(id), isListed: true } },
         { $group: { _id: null, averageRating: { $avg: "$rating" } } }
@@ -240,7 +240,7 @@ async getProductDetails(id) {
       return { coupon: c, effective };
     }).sort((a, b) => b.effective - a.effective).slice(0, 2).map(item => item.coupon);
 
-    const totalReviews = await reviewRepository.countDocuments({ productId: id, isListed: true, comment: { $exists: true, $ne: "" } });
+    const totalReviews = await reviewRepository.countDocuments({ productId: id, isListed: true });
 
     return {
       product,

@@ -92,8 +92,7 @@ async getLoadMoreReviews(productId, page = 1) {
 
     const query = {
       productId,
-      isListed: true,
-      comment: { $exists: true, $ne: "" }
+      isListed: true
     };
 
     const reviews = await reviewRepository.findWithPopulate(
@@ -108,7 +107,7 @@ async getLoadMoreReviews(productId, page = 1) {
     const hasMore = total > skip + reviews.length;
 
     const formattedReviews = reviews.map(r => ({
-      user: `${r.userId.firstname} ${r.userId.lastname || ""}`,
+      user: r.userId ? `${r.userId.firstname} ${r.userId.lastname || ""}` : "Anonymous User",
       rating: r.rating,
       comment: r.comment,
       date: new Date(r.createdAt).toLocaleDateString("en-GB")
