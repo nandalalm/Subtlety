@@ -28,11 +28,51 @@
       text-align: center;
       margin-top: 10px;
     }
+
+    .password-field-shell {
+      position: relative;
+    }
+
+    .password-field-shell .form-control {
+      padding-right: 3rem;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      top: 50%;
+      right: 0.8rem;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border: 0;
+      background: transparent;
+      color: #6b7280;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: color 0.2s ease;
+      padding: 0;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .password-toggle-btn:hover {
+      color: #111827;
+    }
+
+    .password-toggle-btn:focus,
+    .password-toggle-btn:active {
+      outline: none;
+      box-shadow: none;
+      background: transparent !important;
+      border-color: transparent !important;
+    }
   </style>
 </head>
 
 <body>
-  <div class="login-container">
+  <div class="login-container pb-5" style="padding-bottom: 40px !important;">
     <h2 style="color: #9135ED;" class="text-center">SUBTLETY</h2>
     <div id="loginError" class="alert alert-danger" role="alert">
       Incorrect email or password
@@ -46,14 +86,16 @@
       </div>
       <div class="form-group password-wrapper">
         <label for="password"><small>Password</small></label>
-        <input type="password" class="form-control rounded-pill" id="password" name="password" placeholder="Enter password">
+        <div class="password-field-shell">
+          <input type="password" class="form-control rounded-pill" id="password" name="password" placeholder="Enter password">
+          <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Toggle password visibility">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
         <div class="invalid-feedback" id="passwordFeedback"></div>
       </div>
       <button style="background-color: #9135ED;" type="submit" class="btn btn-primary btn-block rounded-pill mt-4">Login</button>
     </form>
-    <div>
-      <p class="text-center mt-3 text-sm"><small>Forgot Password?</small></p>
-    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -90,6 +132,16 @@
           $('#passwordFeedback').hide();
           $(this).removeClass('is-invalid').addClass('is-valid');
         }
+      });
+
+      $('#togglePassword').on('click', function() {
+        const passwordInput = $('#password');
+        const icon = $(this).find('i');
+        const isPassword = passwordInput.attr('type') === 'password';
+        
+        passwordInput.attr('type', isPassword ? 'text' : 'password');
+        icon.toggleClass('fa-eye', !isPassword);
+        icon.toggleClass('fa-eye-slash', isPassword);
       });
 
       $('#loginForm').on('submit', function(e) {

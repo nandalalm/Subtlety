@@ -284,7 +284,22 @@ async loginadmin(req, res, next) {
   try {
     const admin = await authService.adminLogin(email, password);
     req.session.admin = admin;
-    res.redirect("/admin/dashboard");
+    
+    req.session.save((err) => {
+      if (err) return next(err);
+      
+      const responseData = {
+        success: true,
+        message: MESSAGES.AUTH.LOGIN_SUCCESS,
+        redirect: "/admin/dashboard"
+      };
+
+      if (req.xhr || req.headers.accept?.includes("json")) {
+        return res.status(HTTP_STATUS.OK).json(responseData);
+      }
+      
+      res.redirect("/admin/dashboard");
+    });
   } catch (error) {
     next(error);
   }

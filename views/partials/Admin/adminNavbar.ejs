@@ -19,10 +19,10 @@
             font-size: 1.2rem;
             box-shadow: 0 2px 8px rgba(145, 53, 237, 0.3);
         ">
-            N
+            <%= admin && admin.name ? admin.name.charAt(0).toUpperCase() : 'A' %>
         </div>
         <span class="navbar-text text-dark font-weight-bold ml-1 admin-name-text">
-            Nandalal
+            <%= admin && admin.name ? admin.name : 'Admin' %>
         </span>
     </div>
 </nav>

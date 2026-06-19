@@ -23,6 +23,7 @@ class DtoMapper {
     return {
       _id: adminObj._id,
       email: adminObj.email,
+      name: adminObj.name,
     };
   }
 }

@@ -11,6 +11,7 @@ function isAuthenticated(req, res, next) {
       redirect: "/admin/login"
     });
   }
+  res.locals.admin = req.session.admin;
   next();
 }
 
